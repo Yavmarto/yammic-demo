@@ -15,6 +15,7 @@ const _study = [
   _Tab('/', 'Dashboard', Icons.space_dashboard_outlined),
   _Tab('/participants', 'Participants', Icons.people_outline),
   _Tab('/review', 'AI review', Icons.fact_check_outlined),
+  _Tab('/queries', 'Queries', Icons.help_outline),
   _Tab('/audit', 'Audit trail', Icons.history),
 ];
 const _platform = [

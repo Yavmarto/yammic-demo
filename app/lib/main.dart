@@ -9,6 +9,7 @@ import 'features/export/export_screen.dart';
 import 'features/integrations/integrations_screen.dart';
 import 'features/login/login_screen.dart';
 import 'features/participant/participant_screen.dart';
+import 'features/queries/queries_screen.dart';
 import 'features/review/review_screen.dart';
 import 'shell/shell.dart';
 import 'theme/tokens.dart';
@@ -76,6 +77,7 @@ class _DemoAppState extends State<DemoApp> {
       nav = name == '/login' ? '/' : name;
       page = switch (name) {
         '/participants' => const ParticipantListScreen(),
+        '/queries' => const QueriesScreen(),
         '/review' => ReviewScreen(participantId: s.arguments as String?),
         '/audit' => const AuditScreen(),
         '/integrations' => const IntegrationsScreen(),
