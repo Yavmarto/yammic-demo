@@ -1,0 +1,228 @@
+{
+  "$schema": "https://design-tokens.org/schema.json",
+  "meta": {
+    "name": "Yammic visual direction v2",
+    "version": "2.0.0",
+    "date": "2026-11-21",
+    "owner": "Designer (W6)",
+    "register": "product",
+    "theme": "light only",
+    "base": "zeta_flutter 1.4.5 / zeta_flutter_theme 1.3.0",
+    "font": "IBM Plex Sans (Zeta), weights 300/400/500 only",
+    "note": "Semantic roles on top of Zeta. Green is reserved for human-verified clinical data; teal is system integrity. Do not use Zeta mainSecondary (olive) in product UI."
+  },
+  "color": {
+    "role": {
+      "canvas": "#F3F6FA",
+      "surface": "#FFFFFF",
+      "surfaceSunken": "#EEF2F7",
+      "surfaceHover": "#F3F6FA",
+      "surfaceSelected": "#F1F8FF",
+      "line": "#E4E9F0",
+      "lineStrong": "#CED2DB",
+      "inputLine": "#8A94A6",
+      "ink": "#1D1E23",
+      "ink2": "#545963",
+      "ink3": "#667085",
+      "accent": "#0073E6",
+      "accentInk": "#005BB8",
+      "accentSoft": "#F1F8FF",
+      "focus": "#005BB8",
+      "brandPanel": "#0E1B2C",
+      "brandPanelInk": "#FFFFFF",
+      "brandPanelMuted": "#9FB3C8"
+    },
+    "state": {
+      "ai": {
+        "surface": "#FEF2E2",
+        "border": "#B26A00",
+        "ink": "#6E4A00",
+        "evidence": "#FFE1A8",
+        "evidenceActive": "#FFD08A",
+        "evidenceUnderline": "#8A5A00",
+        "borderStyle": "dashed 2px",
+        "icon": "auto_awesome",
+        "label": "AI - Unverified"
+      },
+      "verifiedAccepted": {
+        "surface": "#ECFFF7",
+        "border": "#4EA26B",
+        "ink": "#0C5734",
+        "icon": "check_circle_outline",
+        "label": "Verified - Accepted"
+      },
+      "verifiedCorrected": {
+        "surface": "#ECFFF7",
+        "border": "#4EA26B",
+        "ink": "#0C5734",
+        "icon": "edit_note",
+        "label": "Verified - Corrected"
+      },
+      "rejected": {
+        "surface": "#FFF0F1",
+        "border": "#D70015",
+        "ink": "#8F000E",
+        "icon": "block",
+        "label": "Rejected"
+      },
+      "deferred": {
+        "surface": "#F3F6FA",
+        "border": "#8A94A6",
+        "ink": "#3F4B58",
+        "icon": "schedule",
+        "label": "Deferred"
+      },
+      "abstained": {
+        "surface": "#F3F6FA",
+        "border": "#8A94A6",
+        "ink": "#3F4B58",
+        "icon": "help_outline",
+        "label": "AI abstained",
+        "borderStyle": "dashed 2px"
+      },
+      "conflict": {
+        "surface": "#FFF0F1",
+        "border": "#D70015",
+        "ink": "#8F000E",
+        "icon": "warning_amber_rounded",
+        "label": "Conflict"
+      },
+      "systemConnected": {
+        "surface": "#E7F7F7",
+        "border": "#1A8080",
+        "ink": "#0B4F4F",
+        "icon": "link",
+        "label": "Connected"
+      },
+      "systemSyncing": {
+        "surface": "#FEF2E2",
+        "border": "#B26A00",
+        "ink": "#6E4A00",
+        "icon": "sync",
+        "label": "Syncing"
+      },
+      "systemOffline": {
+        "surface": "#F3F6FA",
+        "border": "#8A94A6",
+        "ink": "#3F4B58",
+        "icon": "cloud_off",
+        "label": "Offline snapshot"
+      },
+      "info": {
+        "surface": "#F7F0FF",
+        "border": "#9B71DF",
+        "ink": "#4B1F8A",
+        "icon": "info_outline",
+        "label": "Info"
+      }
+    },
+    "chart": {
+      "chart1": "#0073E6",
+      "chart2": "#1A8080",
+      "chart3": "#8D7400",
+      "chart4": "#D30589",
+      "chartPositive": "#00864F",
+      "chartGrid": "#E4E9F0",
+      "chartMuted": "#A7B0BE"
+    },
+    "contrast": {
+      "ink_on_white": 16.64,
+      "ink2_on_white": 7.03,
+      "ink3_on_white": 4.97,
+      "ink3_on_canvas": 4.59,
+      "accent_on_white": 4.57,
+      "accentInk_on_white": 6.59,
+      "ai_ink_on_surface": 6.77,
+      "ai_border_on_white": 4.24,
+      "verified_ink_on_surface": 8.32,
+      "verified_border_on_white": 3.13,
+      "rejected_ink_on_surface": 8.73,
+      "deferred_ink_on_surface": 8.21,
+      "focus_on_white": 6.59
+    }
+  },
+  "typography": {
+    "family": "IBM Plex Sans",
+    "familyToken": "packages/zeta_flutter_theme/IBMPlexSans",
+    "weights": {
+      "light": 300,
+      "regular": 400,
+      "medium": 500
+    },
+    "style": {
+      "display": { "size": 32, "lineHeight": 40, "weight": 500, "tracking": -0.4 },
+      "h1": { "size": 24, "lineHeight": 32, "weight": 500, "tracking": -0.2 },
+      "h2": { "size": 20, "lineHeight": 28, "weight": 500, "tracking": 0 },
+      "h3": { "size": 16, "lineHeight": 24, "weight": 500, "tracking": 0 },
+      "body": { "size": 14, "lineHeight": 21, "weight": 400, "tracking": 0 },
+      "bodyLarge": { "size": 15, "lineHeight": 26, "weight": 400, "tracking": 0, "maxMeasure": "68ch" },
+      "small": { "size": 12.5, "lineHeight": 18, "weight": 400, "tracking": 0 },
+      "label": { "size": 11, "lineHeight": 16, "weight": 500, "tracking": 0.08, "transform": "uppercase" },
+      "numeric": { "size": 14, "lineHeight": 20, "weight": 500, "tracking": 0, "tabular": true },
+      "metric": { "size": 28, "lineHeight": 34, "weight": 500, "tracking": -0.3, "tabular": true },
+      "mono": { "size": 12, "lineHeight": 18, "weight": 400, "family": "monospace" }
+    }
+  },
+  "space": {
+    "s1": 4,
+    "s2": 8,
+    "s3": 12,
+    "s4": 16,
+    "s6": 24,
+    "s8": 32,
+    "s12": 48,
+    "s16": 64,
+    "pagePadding1440": 24,
+    "pagePadding1280": 20,
+    "panelPadding": 20,
+    "panelPaddingLarge": 24,
+    "sectionGap": 32,
+    "panelGap": 16,
+    "rowGap": 8,
+    "tableRow": 44,
+    "tableRowDense": 40,
+    "topBar": 56,
+    "syntheticBanner": 28,
+    "offlineBanner": 32,
+    "sidebarExpanded": 232,
+    "sidebarCollapsed": 72,
+    "touchTarget": 40,
+    "iconButton": 32
+  },
+  "radius": {
+    "control": 8,
+    "panel": 12,
+    "dialog": 16,
+    "pill": 999,
+    "evidence": 3
+  },
+  "elevation": {
+    "panel": "none",
+    "overlay": "0 8px 24px rgba(16,24,40,0.10), 0 2px 6px rgba(16,24,40,0.06)"
+  },
+  "motion": {
+    "fast": 120,
+    "base": 180,
+    "slow": 240,
+    "scroll": 200,
+    "exit": 90,
+    "progress": 420,
+    "skeleton": 1200,
+    "curve": "easeOutCubic",
+    "exitCurve": "easeInCubic",
+    "reducedMotion": "duration 0 for transforms and scroll; keep progress and focus"
+  },
+  "breakpoints": {
+    "desktopXL": 1440,
+    "desktopL": 1280,
+    "desktop": 1024,
+    "tablet": 768,
+    "reviewPanes1440": [520, 340, 420],
+    "reviewPanes1280": [440, 320, 360]
+  },
+  "grid": {
+    "columns": 12,
+    "gutter": 16,
+    "maxContentWidth": 1440
+  }
+}
