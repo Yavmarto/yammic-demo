@@ -53,6 +53,9 @@ class _DemoAppState extends State<DemoApp> {
         state: state,
         child: ZetaProvider(
           initialThemeMode: ThemeMode.light,
+          // ponytail: fixed contrast skips Zeta's shared-preferences read at startup;
+          // if that read fails, ZetaProvider throws LateInitializationError (red screen).
+          initialContrast: ZetaContrast.aa,
           builder: (context, light, dark, themeMode) => MaterialApp(
             title: 'Yammic demo',
             debugShowCheckedModeBanner: false,
