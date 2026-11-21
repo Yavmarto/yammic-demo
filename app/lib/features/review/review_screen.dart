@@ -362,9 +362,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
               onSubmitted: (_) => _saveCorrect(),
             ),
             const SizedBox(height: 8),
-            Row(children: [
+            Wrap(spacing: 8, runSpacing: 8, children: [
               FilledButton(onPressed: _saveCorrect, child: const Text('Save correction')),
-              const SizedBox(width: 8),
               TextButton(onPressed: () => setState(() => correcting = false), child: const Text('Cancel')),
             ]),
           ])
