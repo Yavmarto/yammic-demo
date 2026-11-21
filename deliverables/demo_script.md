@@ -2,7 +2,7 @@
 
 Owner: PM (CEL-1755/CEL-1759) · Version 1.1 · Rehearsed 2026-11-21
 Demo date: **Monday 2026-11-23** · Slot: **10 minutes + Q&A**
-Build: Flutter (web + macOS) + Zeta design system, synthetic data only · **frozen commit `d807681`** · Code freeze Sun 2026-11-22 20:00 CET
+Build: Flutter (web + macOS) + Zeta design system, synthetic data only · **frozen commit `caf122c`** · Code freeze Sun 2026-11-22 20:00 CET
 
 ---
 
@@ -27,7 +27,7 @@ Build: Flutter (web + macOS) + Zeta design system, synthetic data only · **froz
 
 | # | Check | Pass condition |
 |---|---|---|
-| 0 | `git -C ~/yammic-demo rev-parse --short HEAD` | `d807681` — the rehearsed build. Do not present from a different tree. |
+| 0 | `git -C ~/yammic-demo rev-parse --short HEAD` | `caf122c` — the rehearsed build. Do not present from a different tree. |
 | 1 | `cd app && ~/flutter/bin/flutter build web --release` | Build succeeds; serve `build/web` on `127.0.0.1` |
 | 2 | Open the app in Chrome, full screen (`F11`), zoom 100% | Banner "Synthetic data — prototype, not for clinical use" visible |
 | 3 | Network off (Wi-Fi off, no hotspot) | App loads and all screens work |
@@ -146,7 +146,7 @@ Subtitle: *Synthetic data · prototype · not for clinical use.*
 >
 > This case is in the demo on purpose. A demo that only shows the model being right is not a demo of a safety mechanism."
 
-**Do not claim a reason field on Correct.** The build records a before/after pair plus the reviewer; free-text reason capture is on the Reject path only.
+**Do not claim a reason field on Correct.** The build records a before/after pair plus the reviewer; free-text reason capture is on the Reject path only. In the current build **Cancel** wraps below **Save correction**; both are visible.
 
 **(d) Defer / reject — 40 s**
 
@@ -328,7 +328,6 @@ Because a safety mechanism that is only shown working on easy cases is marketing
 | A click does nothing | Do not click twice. Say "prototype", go to the next screen from the navigation rail, keep the story. |
 | Review screen shows no proposals | Go to the dashboard, reopen the participant, then review. If still empty, use the recording for the review segment. |
 | Audit shows 46 AI events but no human events | The review actions did not persist. Say "state is in memory in this build", show the recording's audit segment, continue. |
-| Correction mode clips the Cancel control | Known 53 px overflow. Click Correct, type the value, press Enter to save. Do not tab to Cancel on stage. |
 | Projector or resolution breaks the layout | Switch to the macOS build, or use the recording at 1440×900. |
 | Question you cannot answer | "We have not verified that; it goes on the open-questions list." Write it down. |
 
@@ -338,9 +337,9 @@ Because a safety mechanism that is only shown working on easy cases is marketing
 
 ## 8. Click-path verification against the frozen build
 
-Rehearsal 2026-11-21 10:30 CET. Frozen build `d807681` on `dev` (DEMO-1/5 + DEMO-2 data + DEMO-7 Zeta). Working tree clean except other teams' untracked `deliverables/` drafts.
+Rehearsal 2026-11-21 10:30 CET. Frozen build `caf122c` on `dev` (DEMO-1/5 + DEMO-2 data + DEMO-7 Zeta, plus two hotfixes found in this rehearsal: `a5083e2` ZetaProvider startup contrast, `caf122c` correction-button Wrap). Working tree clean except other teams' untracked `deliverables/` drafts.
 
-**Checks run on `d807681`**
+**Checks run on `caf122c`**
 - `~/flutter/bin/flutter analyze` → "No issues found".
 - `~/flutter/bin/flutter test` → 8 of 8 passed (data contract, review/audit, smoke).
 - `~/flutter/bin/flutter build web --release` → success.
@@ -355,7 +354,7 @@ Rehearsal 2026-11-21 10:30 CET. Frozen build `d807681` on `dev` (DEMO-1/5 + DEMO
 | Participant | `/participant/GBM-NL-002` | "GBM-NL-002", "active", "Clinical summary", header **Open AI review** | Works; eCRF/quality sections are below the fold |
 | Review | `/review` (filtered) | "AI extraction review", "16 pending", `SOURCE · pathology report · DOC-002-PATH` | Works |
 | Accept | review | **Histology (central review)** card + **Accept** → "Verified · Accepted" | Works |
-| Correct | review | **MGMT promoter methylation** + **Correct** → **Save correction** → "Verified · Corrected" | Works; **53 px Row overflow in correction mode** (risk below) |
+| Correct | review | **MGMT promoter methylation** + **Correct** → **Save correction** → "Verified · Corrected" | Works; overflow found on `d807681`, fixed in `caf122c`; Cancel wraps below Save |
 | Defer | review | **Date of progression (RANO)** + **Defer** → "Deferred"; Accept disabled | Works |
 | Audit | `/audit` | **Human** filter → "3 events"; correction detail with before/after | Works |
 
@@ -365,21 +364,21 @@ Rehearsal 2026-11-21 10:30 CET. Frozen build `d807681` on `dev` (DEMO-1/5 + DEMO
 - Header button is **Open AI review** (002's eCRF is `in progress`, not `awaiting_review`).
 - Confidences are 0.97 (accept), 0.72 (correct), 0.00 (abstain); code is `ICD-O-3 9440/3 — Glioblastoma, NOS`.
 - Correct has no reason field; the build records a before/after pair plus the reviewer.
+- Correction-mode controls overflowed by 53 px on `d807681`; fixed in `caf122c` (`Row` → `Wrap`) and re-verified clean at 1440×900.
 - The audit is 49 events (46 AI + 3 human), not four. Click **Human** to show the three decisions, newest first: defer, correct, accept.
 - Dashboard Tasks is below the fold; the participant eCRF/quality cards are below the fold. The script now scrolls once and does not claim those cards are visible.
 - Run sheet rebalanced: the problem needs 1:05 and next steps 0:50; total spoken text is 6:38.
 
 **Open risks**
-- **Correct-mode layout overflow** (53 px, target pane, 1440×900, Zeta theme): the control Row "Save correction / Cancel" is too wide. Tracked as a child issue for the app owner; the fix is `Row` → `Wrap`. In release the `Cancel` control clips; **Save correction works and is visible**. Do not tab to Cancel on stage.
+- Two hotfixes landed during the rehearsal (`a5083e2`, `caf122c`). The app is feature-frozen, but `dev` is not commit-frozen until Sunday 20:00. If anything else lands after `caf122c`, repeat this checklist; the Zeta work changed colours only, not labels or routes.
 - The timed read used TTS at 140 wpm, not the presenter's voice. Do one human read before Monday (§9).
-- Code freeze is Sunday 20:00. If any commit lands after `d807681`, repeat this checklist; the Zeta work changed colours only, not labels or routes.
 - Data note: `GBM-NL-002` has two `EXTRES` proposals (conf 0.38 and 0.93). The script does not touch them; do not accept both on stage.
 
 ---
 
 ## 9. Rehearsal log and plan
 
-**Run 1 — scripted click run, 2026-11-21, frozen `d807681`:** one full pass through dashboard → participant → review (accept, correct, defer) → audit. Every tap resolved; banner present on all four screens; audit assertions passed. One layout exception in correction mode (see §8 risks). No dead click.
+**Run 1 — scripted click run, 2026-11-21, frozen `caf122c`:** one full pass through dashboard → participant → review (accept, correct, defer) → audit. Every tap resolved; banner present on all four screens; audit assertions passed. One layout exception in correction mode on `d807681` was fixed in `caf122c` and re-verified clean at 1440×900. No dead click.
 
 **Run 2 — timed read, 2026-11-21:** the exact spoken text was rendered at 140 words per minute with macOS `say -r 140` and measured: **6:38**. Click budget: 8 mouse actions in the review segment plus ~10 typed characters (≈23 s at 2 s/action), 7 s in audit, 9 s for dashboard/participant navigation, 6 s for slide changes = **0:48**. Planned full run: **7:30–8:10 of 10:00**, including stage pauses.
 
@@ -398,7 +397,7 @@ Rehearsal 2026-11-21 10:30 CET. Frozen build `d807681` on `dev` (DEMO-1/5 + DEMO
 
 **Remaining for a human (10 minutes)**
 1. One full dress rehearsal in the presenter's own voice with a listener; take two hostile questions from §6.
-2. Check the correction control row after the overflow fix; confirm `Save correction` and `Cancel` are both visible.
+2. Confirm `Save correction` and `Cancel` are both visible in correction mode (`Cancel` wraps below `Save`).
 3. Record the 2-minute backup (silent clicks) on the frozen build, then play it once from local disk.
 4. If the human read is slower than 140 wpm, cut in this order: audit provenance detail → dashboard alert detail → participant summary detail. Never cut the Correct step, the abstention, or the "is not" slide.
 
