@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "1.0.0",
+  "set": "baseline",
+  "synthetic": true,
+  "generatedAt": "2026-11-21T10:30:00+01:00",
+  "asOf": "2026-11-21",
+  "studyId": "GBM-NL-2026-01",
+  "source": [
+    "app/assets/data/participants.json",
+    "app/assets/data/study.json",
+    "app/assets/data/documents.json",
+    "app/assets/data/extractions.json",
+    "app/assets/data/documents/*.txt"
+  ],
+  "order": [
+    "shared/codesystems.json",
+    "baseline/organizations.json",
+    "baseline/patient-GBM-NL-001.json",
+    "baseline/patient-GBM-NL-002.json",
+    "baseline/patient-GBM-NL-003.json",
+    "baseline/patient-GBM-NL-004.json",
+    "baseline/patient-GBM-NL-005.json",
+    "baseline/patient-GBM-NL-006.json",
+    "baseline/patient-GBM-NL-007.json",
+    "baseline/patient-GBM-NL-008.json"
+  ],
+  "patients": [
+    {
+      "patientId": "GBM-NL-001",
+      "file": "baseline/patient-GBM-NL-001.json",
+      "resources": 32,
+      "documents": [
+        "DOC-001-PATH",
+        "DOC-001-MRI",
+        "DOC-001-DIS"
+      ],
+      "sha256": "a6bef921647e0da5162fd668be23877820fdf3f74a3b626a91f4de0506d78e2c"
+    },
+    {
+      "patientId": "GBM-NL-002",
+      "file": "baseline/patient-GBM-NL-002.json",
+      "resources": 34,
+      "documents": [
+        "DOC-002-SURG",
+        "DOC-002-PATH",
+        "DOC-002-DIS",
+        "DOC-002-MRI"
+      ],
+      "sha256": "591b556bba4aa4eb60913303ffdb6959740a4d7cd4ce4ccfcc3a0006d71ed2ba"
+    },
+    {
+      "patientId": "GBM-NL-003",
+      "file": "baseline/patient-GBM-NL-003.json",
+      "resources": 29,
+      "documents": [
+        "DOC-003-PATH",
+        "DOC-003-MRI",
+        "DOC-003-DIS"
+      ],
+      "sha256": "ff2f630dd305586098cc47b1b000c68c10045a0ec12464a859d9763be32147a1"
+    },
+    {
+      "patientId": "GBM-NL-004",
+      "file": "baseline/patient-GBM-NL-004.json",
+      "resources": 9,
+      "documents": [],
+      "sha256": "406521d448e5a5776c213c355855233b46f25591225b12e6635e12cecd509a55"
+    },
+    {
+      "patientId": "GBM-NL-005",
+      "file": "baseline/patient-GBM-NL-005.json",
+      "resources": 19,
+      "documents": [],
+      "sha256": "a5f17f56cf3c00e226d9e689eefd6caa6fd1b9ebf4e4be7f2665fdada6e9d148"
+    },
+    {
+      "patientId": "GBM-NL-006",
+      "file": "baseline/patient-GBM-NL-006.json",
+      "resources": 18,
+      "documents": [],
+      "sha256": "784df9666de97f2854b471d9bc225c7cd91768a494ee1f6bd33d3f010e378c36"
+    },
+    {
+      "patientId": "GBM-NL-007",
+      "file": "baseline/patient-GBM-NL-007.json",
+      "resources": 9,
+      "documents": [],
+      "sha256": "a156b70648c552dcdf5255d50ef50d44b1e9be4084c6cef35206cc98f6bf832d"
+    },
+    {
+      "patientId": "GBM-NL-008",
+      "file": "baseline/patient-GBM-NL-008.json",
+      "resources": 12,
+      "documents": [],
+      "sha256": "76ff6931afa0cf766db981d1ec4b8d53141710d5b543673e722394e571d8ce3d"
+    }
+  ],
+  "counts": {
+    "CodeSystem": 4,
+    "Condition": 8,
+    "DiagnosticReport": 6,
+    "DocumentReference": 10,
+    "Encounter": 8,
+    "MedicationAdministration": 13,
+    "MedicationRequest": 11,
+    "Observation": 90,
+    "Organization": 3,
+    "Patient": 8,
+    "Procedure": 8
+  },
+  "totalResources": 169,
+  "documentCount": 10,
+  "patientCount": 8
+}

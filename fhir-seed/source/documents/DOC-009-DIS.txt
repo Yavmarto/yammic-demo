@@ -1,0 +1,21 @@
+SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK
+Fictief Universitair Medisch Centrum Zuidhaven - Afdeling Neuro-oncologie
+
+PATIENTCODE: GBM-NL-009
+GESLACHT: vrouw
+LEEFTIJD BIJ DIAGNOSE: 58 jaar
+DATUM OPNAME: 2026-11-17
+DATUM ONTSLAG: 2026-11-21
+
+ONTSLAGBRIEF
+Patient werd opgenomen voor een rechts parietale craniotomie. Histopathologisch
+onderzoek toonde een glioblastoom, IDH-wildtype. Postoperatief beloop ongecompliceerd.
+
+FUNCTIONELE STATUS
+Karnofsky Performance Status bij ontslag: 80%.
+
+BELEID
+Adjuvante radiotherapie 60 Gy in 30 fracties met gelijktijdig temozolomide,
+gevolgd door 6 geplande cycli adjuvante temozolomide. De eerste cyclus start
+in week 5. Er zijn tot nu toe geen bijwerkingen van graad 3 of hoger opgetreden;
+maximaal graad 2 vermoeidheid.

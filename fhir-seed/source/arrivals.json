@@ -1,0 +1,219 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-11-21T10:30:00+01:00",
+  "synthetic": true,
+  "disclaimer": "Synthetic data — prototype, not for clinical use",
+  "note": "New patients and reports that the presenter 'syncs' live during the demo. These records are NOT in app/assets/data; they exist only here and in the arrivals FHIR bundle.",
+  "participants": [
+    {
+      "id": "GBM-NL-009",
+      "siteId": "SITE-01",
+      "status": "active",
+      "statusDetail": "on_treatment",
+      "sex": "F",
+      "age": 58,
+      "summary": "Fictional participant: glioblastoma, IDH-wildtype, right parietal. Gross total resection 2026-11-17. Chemoradiotherapy due to start 2026-12-01.",
+      "diagnosisDate": "2026-11-17",
+      "enrolledDate": "2026-11-22",
+      "condition": {
+        "type": "gbm_idh_wildtype",
+        "verificationStatus": "confirmed",
+        "bodySite": "Right parietal lobe",
+        "onsetDate": "2026-11-17"
+      },
+      "clinical": {
+        "kps": 80,
+        "mgmt": "unmethylated",
+        "idh": "wildtype",
+        "extentOfResection": "gross_total",
+        "maxAeGrade": 2
+      },
+      "surgery": {
+        "date": "2026-11-17",
+        "extent": "gross_total",
+        "procedure": "resection"
+      },
+      "radiotherapy": {
+        "start": "2026-12-01",
+        "end": "2027-01-12",
+        "doseGy": 60,
+        "fractions": 30
+      },
+      "temozolomide": {
+        "concurrentStart": "2026-12-01",
+        "concurrentEnd": "2027-01-12",
+        "adjuvantStart": "2027-01-19",
+        "plannedCycles": 6
+      },
+      "completedCycles": [],
+      "visits": [
+        {
+          "name": "Screening (V0)",
+          "date": "2026-11-13",
+          "status": "completed"
+        },
+        {
+          "name": "Baseline (V1)",
+          "date": "2026-11-22",
+          "status": "scheduled"
+        },
+        {
+          "name": "Radiotherapy start (V2)",
+          "date": "2026-12-01",
+          "status": "scheduled"
+        }
+      ],
+      "documents": [
+        {
+          "id": "DOC-009-PATH",
+          "type": "pathology_report",
+          "title": "Pathologieverslag — resectiepreparaat (fictief)",
+          "language": "nl",
+          "documentDate": "2026-11-20",
+          "file": "DOC-009-PATH.txt"
+        },
+        {
+          "id": "DOC-009-MRI",
+          "type": "radiology_report",
+          "title": "MRI-verslag hersenen, postoperatief (fictief)",
+          "language": "nl",
+          "documentDate": "2026-11-21",
+          "file": "DOC-009-MRI.txt"
+        },
+        {
+          "id": "DOC-009-DIS",
+          "type": "discharge_letter",
+          "title": "Ontslagbrief neuro-oncologie (fictief)",
+          "language": "nl",
+          "documentDate": "2026-11-21",
+          "file": "DOC-009-DIS.txt"
+        }
+      ]
+    },
+    {
+      "id": "GBM-NL-010",
+      "siteId": "SITE-02",
+      "status": "active",
+      "statusDetail": "on_treatment",
+      "sex": "M",
+      "age": 66,
+      "summary": "Fictional participant: glioblastoma, IDH-wildtype, left frontal. Stereotactic biopsy only 2026-11-18. Chemoradiotherapy due to start 2026-12-02.",
+      "diagnosisDate": "2026-11-18",
+      "enrolledDate": "2026-11-20",
+      "condition": {
+        "type": "gbm_idh_wildtype",
+        "verificationStatus": "confirmed",
+        "bodySite": "Left frontal lobe",
+        "onsetDate": "2026-11-18"
+      },
+      "clinical": {
+        "kps": 70,
+        "mgmt": "methylated",
+        "idh": "wildtype",
+        "extentOfResection": "biopsy",
+        "maxAeGrade": 1
+      },
+      "surgery": {
+        "date": "2026-11-18",
+        "extent": "biopsy",
+        "procedure": "biopsy"
+      },
+      "radiotherapy": {
+        "start": "2026-12-02",
+        "end": "2027-01-13",
+        "doseGy": 60,
+        "fractions": 30
+      },
+      "temozolomide": {
+        "concurrentStart": "2026-12-02",
+        "concurrentEnd": "2027-01-13",
+        "adjuvantStart": "2027-01-20",
+        "plannedCycles": 6
+      },
+      "completedCycles": [],
+      "visits": [
+        {
+          "name": "Screening (V0)",
+          "date": "2026-11-12",
+          "status": "completed"
+        },
+        {
+          "name": "Baseline (V1)",
+          "date": "2026-11-20",
+          "status": "completed"
+        }
+      ],
+      "documents": [
+        {
+          "id": "DOC-010-PATH",
+          "type": "pathology_report",
+          "title": "Pathology report — stereotactic biopsy (fictional)",
+          "language": "en",
+          "documentDate": "2026-11-19",
+          "file": "DOC-010-PATH.txt"
+        },
+        {
+          "id": "DOC-010-DIS",
+          "type": "discharge_letter",
+          "title": "Discharge letter neuro-oncology (fictional)",
+          "language": "en",
+          "documentDate": "2026-11-20",
+          "file": "DOC-010-DIS.txt"
+        }
+      ]
+    },
+    {
+      "id": "GBM-NL-011",
+      "siteId": "SITE-03",
+      "status": "screening",
+      "statusDetail": "screening",
+      "sex": "F",
+      "age": 51,
+      "summary": "Fictional participant: screening in progress. MRI on 2026-11-20 showed a suspected high-grade lesion in the right temporal lobe. Histology and biomarkers are pending.",
+      "diagnosisDate": null,
+      "enrolledDate": null,
+      "condition": {
+        "type": "suspected_lesion",
+        "verificationStatus": "provisional",
+        "bodySite": "Right temporal lobe",
+        "onsetDate": "2026-11-20"
+      },
+      "clinical": {
+        "kps": 90,
+        "mgmt": null,
+        "idh": null,
+        "extentOfResection": null,
+        "maxAeGrade": null
+      },
+      "surgery": null,
+      "radiotherapy": null,
+      "temozolomide": null,
+      "completedCycles": [],
+      "visits": [
+        {
+          "name": "Screening (V0)",
+          "date": "2026-11-21",
+          "status": "completed"
+        }
+      ],
+      "documents": [
+        {
+          "id": "DOC-011-MRI",
+          "type": "radiology_report",
+          "title": "MRI report, suspected high-grade glioma (fictional)",
+          "language": "nl",
+          "documentDate": "2026-11-20",
+          "file": "DOC-011-MRI.txt"
+        },
+        {
+          "id": "DOC-011-DIS",
+          "type": "clinic_letter",
+          "title": "Poliklinische brief neurologie (fictief)",
+          "language": "nl",
+          "documentDate": "2026-11-21",
+          "file": "DOC-011-DIS.txt"
+        }
+      ]
+    }
+  ]
+}

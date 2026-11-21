@@ -1,0 +1,2787 @@
+{
+  "resourceType": "Bundle",
+  "id": "bundle-GBM-NL-001",
+  "type": "transaction",
+  "timestamp": "2026-11-21T10:30:00+01:00",
+  "entry": [
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Patient/GBM-NL-001",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "GBM-NL-001",
+        "identifier": [
+          {
+            "use": "usual",
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                  "code": "MR",
+                  "display": "Medical record number"
+                }
+              ]
+            },
+            "system": "urn:oid:2.16.840.1.113883.4.9999",
+            "value": "MRN-01-00101",
+            "assigner": {
+              "display": "Fictief Universitair Medisch Centrum Zuidhaven"
+            }
+          },
+          {
+            "type": {
+              "text": "Study subject identifier"
+            },
+            "system": "https://yammic.example/fhir/NamingSystem/study-subject-id",
+            "value": "GBM-NL-001"
+          },
+          {
+            "type": {
+              "text": "Study identifier"
+            },
+            "system": "https://yammic.example/fhir/NamingSystem/study-number",
+            "value": "GBM-NL-2026-01"
+          }
+        ],
+        "active": true,
+        "name": [
+          {
+            "use": "official",
+            "family": "Proefpersoon",
+            "given": [
+              "Alfa"
+            ],
+            "text": "Alfa Proefpersoon (fictional)"
+          }
+        ],
+        "gender": "female",
+        "birthDate": "1969",
+        "managingOrganization": {
+          "reference": "Organization/SITE-01"
+        },
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Alfa Proefpersoon — synthetic GBM participant GBM-NL-001, 57 years, female, Fictief Universitair Medisch Centrum Zuidhaven</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Patient/GBM-NL-001"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Encounter/ENC-GBM-NL-001-EPISODE",
+      "resource": {
+        "resourceType": "Encounter",
+        "id": "ENC-GBM-NL-001-EPISODE",
+        "status": "finished",
+        "class": {
+          "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+          "code": "IMP",
+          "display": "inpatient encounter"
+        },
+        "type": [
+          {
+            "text": "Surgical admission"
+          }
+        ],
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "period": {
+          "start": "2026-06-01T08:00:00+01:00",
+          "end": "2026-06-05T18:00:00+01:00"
+        },
+        "serviceProvider": {
+          "reference": "Organization/SITE-01"
+        },
+        "diagnosis": [
+          {
+            "condition": {
+              "reference": "Condition/COND-GBM-NL-001-PRIMARY"
+            },
+            "use": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/diagnosis-role",
+                  "code": "DD",
+                  "display": "Diagnosis"
+                }
+              ]
+            },
+            "rank": 1
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Surgical admission for GBM-NL-001 (finished) — synthetic encounter</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Encounter/ENC-GBM-NL-001-EPISODE"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Condition/COND-GBM-NL-001-PRIMARY",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "COND-GBM-NL-001-PRIMARY",
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "code": "active"
+            }
+          ]
+        },
+        "verificationStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+              "code": "confirmed"
+            }
+          ]
+        },
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+                "code": "problem-list-item",
+                "display": "Problem list item"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "393563007",
+              "display": "Glioblastoma (morphologic abnormality)"
+            },
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/icd-o-3",
+              "code": "9440/3",
+              "display": "Glioblastoma, NOS"
+            }
+          ],
+          "text": "Glioblastoma, IDH-wildtype (WHO CNS5)"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "onsetDateTime": "2026-06-02",
+        "recordedDate": "2026-06-02T10:00:00+01:00",
+        "note": [
+          {
+            "text": "Synthetic diagnosis record. IDH/MGMT and resection details are in Observations."
+          }
+        ],
+        "bodySite": [
+          {
+            "text": "Right frontal lobe"
+          }
+        ],
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Glioblastoma, IDH-wildtype — Right frontal lobe (GBM-NL-001)</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Condition/COND-GBM-NL-001-PRIMARY"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Observation/OBS-GBM-NL-001-KPS",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "OBS-GBM-NL-001-KPS",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "exam",
+                "display": "Exam"
+              }
+            ],
+            "text": "Clinical assessment"
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "89261-2",
+              "display": "Karnofsky Performance Status score"
+            }
+          ],
+          "text": "Karnofsky Performance Status"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-06-02T10:00:00+01:00",
+        "valueQuantity": {
+          "value": 80,
+          "unit": "%",
+          "system": "http://unitsofmeasure.org",
+          "code": "%"
+        },
+        "note": [
+          {
+            "text": "LOINC code is a demo placeholder; see app/assets/data/study.json codeVerified=false."
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>KPS 80% for GBM-NL-001 on 2026-06-02</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/OBS-GBM-NL-001-KPS"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Observation/OBS-GBM-NL-001-MGMT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "OBS-GBM-NL-001-MGMT",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ],
+            "text": "Biomarker"
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "88199-1",
+              "display": "MGMT promoter methylation [Presence] in Tissue"
+            }
+          ],
+          "text": "MGMT promoter methylation"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-06-02T10:00:00+01:00",
+        "valueCodeableConcept": {
+          "coding": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/mgmt-promoter-status",
+              "code": "methylated",
+              "display": "Methylated"
+            }
+          ],
+          "text": "Methylated"
+        },
+        "note": [
+          {
+            "text": "LOINC code is a demo placeholder; value uses a synthetic local code system."
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>MGMT promoter methylated for GBM-NL-001</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/OBS-GBM-NL-001-MGMT"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Observation/OBS-GBM-NL-001-IDH",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "OBS-GBM-NL-001-IDH",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ],
+            "text": "Biomarker"
+          }
+        ],
+        "code": {
+          "text": "IDH1/2 mutation status"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-06-02T10:00:00+01:00",
+        "valueCodeableConcept": {
+          "text": "IDH-wildtype",
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "445048000",
+              "display": "IDH1 wild type"
+            }
+          ]
+        },
+        "note": [
+          {
+            "text": "SNOMED CT code is a demo placeholder for IDH-wildtype (study.json codeVerified=false)."
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>IDH status wildtype for GBM-NL-001</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/OBS-GBM-NL-001-IDH"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Observation/OBS-GBM-NL-001-EXTRES",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "OBS-GBM-NL-001-EXTRES",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "exam",
+                "display": "Exam"
+              }
+            ],
+            "text": "Clinical assessment"
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "262143007",
+              "display": "Extent of surgical resection"
+            }
+          ],
+          "text": "Extent of surgical resection"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-06-01T10:00:00+01:00",
+        "valueCodeableConcept": {
+          "coding": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/resection-extent",
+              "code": "gross-total",
+              "display": "Gross total resection"
+            }
+          ],
+          "text": "Gross total resection"
+        },
+        "note": [
+          {
+            "text": "SNOMED CT code is a demo placeholder (study.json codeVerified=false)."
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Gross total resection for GBM-NL-001</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/OBS-GBM-NL-001-EXTRES"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Observation/OBS-GBM-NL-001-LAB-HB-BL",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "OBS-GBM-NL-001-LAB-HB-BL",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "718-7",
+              "display": "Hemoglobin [Mass/volume] in Blood"
+            }
+          ],
+          "text": "Hemoglobin"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-06-02T10:00:00+01:00",
+        "valueQuantity": {
+          "value": 12.7,
+          "unit": "g/dL",
+          "system": "http://unitsofmeasure.org",
+          "code": "g/dL"
+        },
+        "referenceRange": [
+          {
+            "low": {
+              "value": 12.0,
+              "unit": "g/dL",
+              "system": "http://unitsofmeasure.org",
+              "code": "g/dL"
+            },
+            "high": {
+              "value": 17.5,
+              "unit": "g/dL",
+              "system": "http://unitsofmeasure.org",
+              "code": "g/dL"
+            },
+            "text": "12.0-17.5 g/dL"
+          }
+        ],
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                "code": "N"
+              }
+            ]
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>HB 12.7 g/dL (N) for GBM-NL-001 on 2026-06-02</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/OBS-GBM-NL-001-LAB-HB-BL"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Observation/OBS-GBM-NL-001-LAB-WBC-BL",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "OBS-GBM-NL-001-LAB-WBC-BL",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "6690-2",
+              "display": "Leukocytes [#/volume] in Blood by Automated count"
+            }
+          ],
+          "text": "Leukocytes"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-06-02T10:00:00+01:00",
+        "valueQuantity": {
+          "value": 8.3,
+          "unit": "10*3/uL",
+          "system": "http://unitsofmeasure.org",
+          "code": "10*3/uL"
+        },
+        "referenceRange": [
+          {
+            "low": {
+              "value": 4.0,
+              "unit": "10*3/uL",
+              "system": "http://unitsofmeasure.org",
+              "code": "10*3/uL"
+            },
+            "high": {
+              "value": 10.0,
+              "unit": "10*3/uL",
+              "system": "http://unitsofmeasure.org",
+              "code": "10*3/uL"
+            },
+            "text": "4.0-10.0 10*3/uL"
+          }
+        ],
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                "code": "N"
+              }
+            ]
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>WBC 8.3 10*3/uL (N) for GBM-NL-001 on 2026-06-02</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/OBS-GBM-NL-001-LAB-WBC-BL"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Observation/OBS-GBM-NL-001-LAB-PLT-BL",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "OBS-GBM-NL-001-LAB-PLT-BL",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "777-3",
+              "display": "Platelets [#/volume] in Blood by Automated count"
+            }
+          ],
+          "text": "Platelets"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-06-02T10:00:00+01:00",
+        "valueQuantity": {
+          "value": 201,
+          "unit": "10*3/uL",
+          "system": "http://unitsofmeasure.org",
+          "code": "10*3/uL"
+        },
+        "referenceRange": [
+          {
+            "low": {
+              "value": 150.0,
+              "unit": "10*3/uL",
+              "system": "http://unitsofmeasure.org",
+              "code": "10*3/uL"
+            },
+            "high": {
+              "value": 400.0,
+              "unit": "10*3/uL",
+              "system": "http://unitsofmeasure.org",
+              "code": "10*3/uL"
+            },
+            "text": "150.0-400.0 10*3/uL"
+          }
+        ],
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                "code": "N"
+              }
+            ]
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>PLT 201 10*3/uL (N) for GBM-NL-001 on 2026-06-02</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/OBS-GBM-NL-001-LAB-PLT-BL"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Observation/OBS-GBM-NL-001-LAB-ANC-BL",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "OBS-GBM-NL-001-LAB-ANC-BL",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "26464-8",
+              "display": "Neutrophils [#/volume] in Blood"
+            }
+          ],
+          "text": "Neutrophils"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-06-02T10:00:00+01:00",
+        "valueQuantity": {
+          "value": 6.5,
+          "unit": "10*3/uL",
+          "system": "http://unitsofmeasure.org",
+          "code": "10*3/uL"
+        },
+        "referenceRange": [
+          {
+            "low": {
+              "value": 1.8,
+              "unit": "10*3/uL",
+              "system": "http://unitsofmeasure.org",
+              "code": "10*3/uL"
+            },
+            "high": {
+              "value": 7.5,
+              "unit": "10*3/uL",
+              "system": "http://unitsofmeasure.org",
+              "code": "10*3/uL"
+            },
+            "text": "1.8-7.5 10*3/uL"
+          }
+        ],
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                "code": "N"
+              }
+            ]
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>ANC 6.5 10*3/uL (N) for GBM-NL-001 on 2026-06-02</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/OBS-GBM-NL-001-LAB-ANC-BL"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Observation/OBS-GBM-NL-001-LAB-ALT-BL",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "OBS-GBM-NL-001-LAB-ALT-BL",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "1742-6",
+              "display": "Alanine aminotransferase [Enzymatic activity/volume] in Serum or Plasma"
+            }
+          ],
+          "text": "Alanine aminotransferase"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-06-02T10:00:00+01:00",
+        "valueQuantity": {
+          "value": 58,
+          "unit": "U/L",
+          "system": "http://unitsofmeasure.org",
+          "code": "U/L"
+        },
+        "referenceRange": [
+          {
+            "low": {
+              "value": 7.0,
+              "unit": "U/L",
+              "system": "http://unitsofmeasure.org",
+              "code": "U/L"
+            },
+            "high": {
+              "value": 35.0,
+              "unit": "U/L",
+              "system": "http://unitsofmeasure.org",
+              "code": "U/L"
+            },
+            "text": "7.0-35.0 U/L"
+          }
+        ],
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                "code": "H"
+              }
+            ]
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>ALT 58 U/L (H) for GBM-NL-001 on 2026-06-02</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/OBS-GBM-NL-001-LAB-ALT-BL"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Observation/OBS-GBM-NL-001-LAB-CREA-BL",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "OBS-GBM-NL-001-LAB-CREA-BL",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "2160-0",
+              "display": "Creatinine [Mass/volume] in Serum or Plasma"
+            }
+          ],
+          "text": "Creatinine"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-06-02T10:00:00+01:00",
+        "valueQuantity": {
+          "value": 0.72,
+          "unit": "mg/dL",
+          "system": "http://unitsofmeasure.org",
+          "code": "mg/dL"
+        },
+        "referenceRange": [
+          {
+            "low": {
+              "value": 0.6,
+              "unit": "mg/dL",
+              "system": "http://unitsofmeasure.org",
+              "code": "mg/dL"
+            },
+            "high": {
+              "value": 1.3,
+              "unit": "mg/dL",
+              "system": "http://unitsofmeasure.org",
+              "code": "mg/dL"
+            },
+            "text": "0.6-1.3 mg/dL"
+          }
+        ],
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                "code": "N"
+              }
+            ]
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>CREA 0.72 mg/dL (N) for GBM-NL-001 on 2026-06-02</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/OBS-GBM-NL-001-LAB-CREA-BL"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Observation/OBS-GBM-NL-001-LAB-HB-OT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "OBS-GBM-NL-001-LAB-HB-OT",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "718-7",
+              "display": "Hemoglobin [Mass/volume] in Blood"
+            }
+          ],
+          "text": "Hemoglobin"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-07-03T10:00:00+01:00",
+        "valueQuantity": {
+          "value": 11.3,
+          "unit": "g/dL",
+          "system": "http://unitsofmeasure.org",
+          "code": "g/dL"
+        },
+        "referenceRange": [
+          {
+            "low": {
+              "value": 12.0,
+              "unit": "g/dL",
+              "system": "http://unitsofmeasure.org",
+              "code": "g/dL"
+            },
+            "high": {
+              "value": 17.5,
+              "unit": "g/dL",
+              "system": "http://unitsofmeasure.org",
+              "code": "g/dL"
+            },
+            "text": "12.0-17.5 g/dL"
+          }
+        ],
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                "code": "L"
+              }
+            ]
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>HB 11.3 g/dL (L) for GBM-NL-001 on 2026-07-03</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/OBS-GBM-NL-001-LAB-HB-OT"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Observation/OBS-GBM-NL-001-LAB-WBC-OT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "OBS-GBM-NL-001-LAB-WBC-OT",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "6690-2",
+              "display": "Leukocytes [#/volume] in Blood by Automated count"
+            }
+          ],
+          "text": "Leukocytes"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-07-03T10:00:00+01:00",
+        "valueQuantity": {
+          "value": 5.7,
+          "unit": "10*3/uL",
+          "system": "http://unitsofmeasure.org",
+          "code": "10*3/uL"
+        },
+        "referenceRange": [
+          {
+            "low": {
+              "value": 4.0,
+              "unit": "10*3/uL",
+              "system": "http://unitsofmeasure.org",
+              "code": "10*3/uL"
+            },
+            "high": {
+              "value": 10.0,
+              "unit": "10*3/uL",
+              "system": "http://unitsofmeasure.org",
+              "code": "10*3/uL"
+            },
+            "text": "4.0-10.0 10*3/uL"
+          }
+        ],
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                "code": "N"
+              }
+            ]
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>WBC 5.7 10*3/uL (N) for GBM-NL-001 on 2026-07-03</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/OBS-GBM-NL-001-LAB-WBC-OT"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Observation/OBS-GBM-NL-001-LAB-PLT-OT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "OBS-GBM-NL-001-LAB-PLT-OT",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "777-3",
+              "display": "Platelets [#/volume] in Blood by Automated count"
+            }
+          ],
+          "text": "Platelets"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-07-03T10:00:00+01:00",
+        "valueQuantity": {
+          "value": 280,
+          "unit": "10*3/uL",
+          "system": "http://unitsofmeasure.org",
+          "code": "10*3/uL"
+        },
+        "referenceRange": [
+          {
+            "low": {
+              "value": 150.0,
+              "unit": "10*3/uL",
+              "system": "http://unitsofmeasure.org",
+              "code": "10*3/uL"
+            },
+            "high": {
+              "value": 400.0,
+              "unit": "10*3/uL",
+              "system": "http://unitsofmeasure.org",
+              "code": "10*3/uL"
+            },
+            "text": "150.0-400.0 10*3/uL"
+          }
+        ],
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                "code": "N"
+              }
+            ]
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>PLT 280 10*3/uL (N) for GBM-NL-001 on 2026-07-03</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/OBS-GBM-NL-001-LAB-PLT-OT"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Observation/OBS-GBM-NL-001-LAB-ANC-OT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "OBS-GBM-NL-001-LAB-ANC-OT",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "26464-8",
+              "display": "Neutrophils [#/volume] in Blood"
+            }
+          ],
+          "text": "Neutrophils"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-07-03T10:00:00+01:00",
+        "valueQuantity": {
+          "value": 5.5,
+          "unit": "10*3/uL",
+          "system": "http://unitsofmeasure.org",
+          "code": "10*3/uL"
+        },
+        "referenceRange": [
+          {
+            "low": {
+              "value": 1.8,
+              "unit": "10*3/uL",
+              "system": "http://unitsofmeasure.org",
+              "code": "10*3/uL"
+            },
+            "high": {
+              "value": 7.5,
+              "unit": "10*3/uL",
+              "system": "http://unitsofmeasure.org",
+              "code": "10*3/uL"
+            },
+            "text": "1.8-7.5 10*3/uL"
+          }
+        ],
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                "code": "N"
+              }
+            ]
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>ANC 5.5 10*3/uL (N) for GBM-NL-001 on 2026-07-03</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/OBS-GBM-NL-001-LAB-ANC-OT"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Observation/OBS-GBM-NL-001-LAB-ALT-OT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "OBS-GBM-NL-001-LAB-ALT-OT",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "1742-6",
+              "display": "Alanine aminotransferase [Enzymatic activity/volume] in Serum or Plasma"
+            }
+          ],
+          "text": "Alanine aminotransferase"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-07-03T10:00:00+01:00",
+        "valueQuantity": {
+          "value": 25,
+          "unit": "U/L",
+          "system": "http://unitsofmeasure.org",
+          "code": "U/L"
+        },
+        "referenceRange": [
+          {
+            "low": {
+              "value": 7.0,
+              "unit": "U/L",
+              "system": "http://unitsofmeasure.org",
+              "code": "U/L"
+            },
+            "high": {
+              "value": 35.0,
+              "unit": "U/L",
+              "system": "http://unitsofmeasure.org",
+              "code": "U/L"
+            },
+            "text": "7.0-35.0 U/L"
+          }
+        ],
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                "code": "N"
+              }
+            ]
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>ALT 25 U/L (N) for GBM-NL-001 on 2026-07-03</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/OBS-GBM-NL-001-LAB-ALT-OT"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Observation/OBS-GBM-NL-001-LAB-CREA-OT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "OBS-GBM-NL-001-LAB-CREA-OT",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "2160-0",
+              "display": "Creatinine [Mass/volume] in Serum or Plasma"
+            }
+          ],
+          "text": "Creatinine"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-07-03T10:00:00+01:00",
+        "valueQuantity": {
+          "value": 0.97,
+          "unit": "mg/dL",
+          "system": "http://unitsofmeasure.org",
+          "code": "mg/dL"
+        },
+        "referenceRange": [
+          {
+            "low": {
+              "value": 0.6,
+              "unit": "mg/dL",
+              "system": "http://unitsofmeasure.org",
+              "code": "mg/dL"
+            },
+            "high": {
+              "value": 1.3,
+              "unit": "mg/dL",
+              "system": "http://unitsofmeasure.org",
+              "code": "mg/dL"
+            },
+            "text": "0.6-1.3 mg/dL"
+          }
+        ],
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                "code": "N"
+              }
+            ]
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>CREA 0.97 mg/dL (N) for GBM-NL-001 on 2026-07-03</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/OBS-GBM-NL-001-LAB-CREA-OT"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Procedure/PROC-GBM-NL-001-RESECTION",
+      "resource": {
+        "resourceType": "Procedure",
+        "id": "PROC-GBM-NL-001-RESECTION",
+        "status": "completed",
+        "category": {
+          "text": "Surgical procedure"
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/procedure-type",
+              "code": "brain-tumour-resection",
+              "display": "Resection of brain tumour"
+            }
+          ],
+          "text": "Resection of brain tumour"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "performedDateTime": "2026-06-01T08:30:00+01:00",
+        "reasonReference": [
+          {
+            "reference": "Condition/COND-GBM-NL-001-PRIMARY"
+          }
+        ],
+        "outcome": {
+          "text": "Gross total resection"
+        },
+        "note": [
+          {
+            "text": "Synthetic operative record. Extent of resection: Gross total resection."
+          }
+        ],
+        "bodySite": [
+          {
+            "text": "Right frontal lobe"
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Gross total resection for GBM-NL-001 on 2026-06-01</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Procedure/PROC-GBM-NL-001-RESECTION"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/Procedure/PROC-GBM-NL-001-RT",
+      "resource": {
+        "resourceType": "Procedure",
+        "id": "PROC-GBM-NL-001-RT",
+        "status": "completed",
+        "category": {
+          "text": "Radiotherapy"
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/procedure-type",
+              "code": "external-beam-radiotherapy",
+              "display": "External beam radiotherapy course"
+            }
+          ],
+          "text": "External beam radiotherapy, 60 Gy in 30 fractions"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "performedPeriod": {
+          "start": "2026-06-19T09:00:00+01:00",
+          "end": "2026-07-31T12:00:00+01:00"
+        },
+        "reasonReference": [
+          {
+            "reference": "Condition/COND-GBM-NL-001-PRIMARY"
+          }
+        ],
+        "bodySite": [
+          {
+            "text": "Brain"
+          }
+        ],
+        "note": [
+          {
+            "text": "Synthetic radiotherapy course: 60.0 Gy in 30 fractions."
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Radiotherapy 60 Gy / 30 fractions for GBM-NL-001 (completed)</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Procedure/PROC-GBM-NL-001-RT"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/MedicationRequest/MEDREQ-GBM-NL-001-TMZ-CONCURRENT",
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "MEDREQ-GBM-NL-001-TMZ-CONCURRENT",
+        "identifier": [
+          {
+            "system": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
+            "value": "RX-GBM-NL-001-TMZ-CONCURRENT"
+          }
+        ],
+        "status": "completed",
+        "intent": "order",
+        "category": [
+          {
+            "text": "Concurrent chemoradiotherapy"
+          }
+        ],
+        "medicationCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://www.whocc.no/atc",
+              "code": "L01AX03",
+              "display": "temozolomide"
+            }
+          ],
+          "text": "Temozolomide"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "authoredOn": "2026-06-19T10:00:00+01:00",
+        "reasonReference": [
+          {
+            "reference": "Condition/COND-GBM-NL-001-PRIMARY"
+          }
+        ],
+        "dosageInstruction": [
+          {
+            "text": "Temozolomide 75 mg/m2 orally once daily during radiotherapy",
+            "route": {
+              "coding": [
+                {
+                  "system": "http://snomed.info/sct",
+                  "code": "26643006",
+                  "display": "Oral route"
+                }
+              ]
+            },
+            "doseAndRate": [
+              {
+                "doseQuantity": {
+                  "value": 75,
+                  "unit": "mg/m2",
+                  "system": "http://unitsofmeasure.org",
+                  "code": "mg/m2"
+                }
+              }
+            ]
+          }
+        ],
+        "dispenseRequest": {
+          "validityPeriod": {
+            "start": "2026-06-19T10:00:00+01:00",
+            "end": "2026-07-31T10:00:00+01:00"
+          }
+        },
+        "note": [
+          {
+            "text": "Synthetic prescription. ATC L01AX03 is a verified code in the source dataset."
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Concurrent temozolomide prescription for GBM-NL-001 (completed)</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "MedicationRequest/MEDREQ-GBM-NL-001-TMZ-CONCURRENT"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/MedicationRequest/MEDREQ-GBM-NL-001-TMZ-ADJUVANT",
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "MEDREQ-GBM-NL-001-TMZ-ADJUVANT",
+        "identifier": [
+          {
+            "system": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
+            "value": "RX-GBM-NL-001-TMZ-ADJUVANT"
+          }
+        ],
+        "status": "active",
+        "intent": "order",
+        "category": [
+          {
+            "text": "Adjuvant chemotherapy"
+          }
+        ],
+        "medicationCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://www.whocc.no/atc",
+              "code": "L01AX03",
+              "display": "temozolomide"
+            }
+          ],
+          "text": "Temozolomide"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "authoredOn": "2026-08-07T10:00:00+01:00",
+        "reasonReference": [
+          {
+            "reference": "Condition/COND-GBM-NL-001-PRIMARY"
+          }
+        ],
+        "dosageInstruction": [
+          {
+            "text": "Temozolomide 200 mg/m2 orally on days 1-5 of a 28-day cycle",
+            "route": {
+              "coding": [
+                {
+                  "system": "http://snomed.info/sct",
+                  "code": "26643006",
+                  "display": "Oral route"
+                }
+              ]
+            },
+            "doseAndRate": [
+              {
+                "doseQuantity": {
+                  "value": 200,
+                  "unit": "mg/m2",
+                  "system": "http://unitsofmeasure.org",
+                  "code": "mg/m2"
+                }
+              }
+            ]
+          }
+        ],
+        "dispenseRequest": {
+          "numberOfRepeatsAllowed": 5,
+          "expectedSupplyDuration": {
+            "value": 28,
+            "unit": "days",
+            "system": "http://unitsofmeasure.org",
+            "code": "d"
+          }
+        },
+        "note": [
+          {
+            "text": "Synthetic adjuvant prescription. Planned cycles: 6; completed cycles in source: 4."
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Adjuvant temozolomide prescription for GBM-NL-001 (active)</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "MedicationRequest/MEDREQ-GBM-NL-001-TMZ-ADJUVANT"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/MedicationAdministration/MEDADM-GBM-NL-001-TMZ-C1",
+      "resource": {
+        "resourceType": "MedicationAdministration",
+        "id": "MEDADM-GBM-NL-001-TMZ-C1",
+        "status": "completed",
+        "category": {
+          "text": "Adjuvant chemotherapy"
+        },
+        "medicationCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://www.whocc.no/atc",
+              "code": "L01AX03",
+              "display": "temozolomide"
+            }
+          ],
+          "text": "Temozolomide"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "context": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-08-07T09:30:00+01:00",
+        "dosage": {
+          "text": "Cycle 1: temozolomide 200 mg/m2 on days 1-5",
+          "route": {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "26643006",
+                "display": "Oral route"
+              }
+            ]
+          },
+          "dose": {
+            "value": 200,
+            "unit": "mg/m2",
+            "system": "http://unitsofmeasure.org",
+            "code": "mg/m2"
+          }
+        },
+        "note": [
+          {
+            "text": "Synthetic administration record for one adjuvant cycle."
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Temozolomide cycle 1 given to GBM-NL-001 on 2026-08-07</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "MedicationAdministration/MEDADM-GBM-NL-001-TMZ-C1"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/MedicationAdministration/MEDADM-GBM-NL-001-TMZ-C2",
+      "resource": {
+        "resourceType": "MedicationAdministration",
+        "id": "MEDADM-GBM-NL-001-TMZ-C2",
+        "status": "completed",
+        "category": {
+          "text": "Adjuvant chemotherapy"
+        },
+        "medicationCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://www.whocc.no/atc",
+              "code": "L01AX03",
+              "display": "temozolomide"
+            }
+          ],
+          "text": "Temozolomide"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "context": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-09-04T09:30:00+01:00",
+        "dosage": {
+          "text": "Cycle 2: temozolomide 200 mg/m2 on days 1-5",
+          "route": {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "26643006",
+                "display": "Oral route"
+              }
+            ]
+          },
+          "dose": {
+            "value": 200,
+            "unit": "mg/m2",
+            "system": "http://unitsofmeasure.org",
+            "code": "mg/m2"
+          }
+        },
+        "note": [
+          {
+            "text": "Synthetic administration record for one adjuvant cycle."
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Temozolomide cycle 2 given to GBM-NL-001 on 2026-09-04</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "MedicationAdministration/MEDADM-GBM-NL-001-TMZ-C2"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/MedicationAdministration/MEDADM-GBM-NL-001-TMZ-C3",
+      "resource": {
+        "resourceType": "MedicationAdministration",
+        "id": "MEDADM-GBM-NL-001-TMZ-C3",
+        "status": "completed",
+        "category": {
+          "text": "Adjuvant chemotherapy"
+        },
+        "medicationCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://www.whocc.no/atc",
+              "code": "L01AX03",
+              "display": "temozolomide"
+            }
+          ],
+          "text": "Temozolomide"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "context": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-10-02T09:30:00+01:00",
+        "dosage": {
+          "text": "Cycle 3: temozolomide 200 mg/m2 on days 1-5",
+          "route": {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "26643006",
+                "display": "Oral route"
+              }
+            ]
+          },
+          "dose": {
+            "value": 200,
+            "unit": "mg/m2",
+            "system": "http://unitsofmeasure.org",
+            "code": "mg/m2"
+          }
+        },
+        "note": [
+          {
+            "text": "Synthetic administration record for one adjuvant cycle."
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Temozolomide cycle 3 given to GBM-NL-001 on 2026-10-02</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "MedicationAdministration/MEDADM-GBM-NL-001-TMZ-C3"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/MedicationAdministration/MEDADM-GBM-NL-001-TMZ-C4",
+      "resource": {
+        "resourceType": "MedicationAdministration",
+        "id": "MEDADM-GBM-NL-001-TMZ-C4",
+        "status": "completed",
+        "category": {
+          "text": "Adjuvant chemotherapy"
+        },
+        "medicationCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://www.whocc.no/atc",
+              "code": "L01AX03",
+              "display": "temozolomide"
+            }
+          ],
+          "text": "Temozolomide"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "context": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-10-30T09:30:00+01:00",
+        "dosage": {
+          "text": "Cycle 4: temozolomide 200 mg/m2 on days 1-5",
+          "route": {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "26643006",
+                "display": "Oral route"
+              }
+            ]
+          },
+          "dose": {
+            "value": 200,
+            "unit": "mg/m2",
+            "system": "http://unitsofmeasure.org",
+            "code": "mg/m2"
+          }
+        },
+        "note": [
+          {
+            "text": "Synthetic administration record for one adjuvant cycle."
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Temozolomide cycle 4 given to GBM-NL-001 on 2026-10-30</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "MedicationAdministration/MEDADM-GBM-NL-001-TMZ-C4"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/DocumentReference/DOC-001-PATH",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "id": "DOC-001-PATH",
+        "masterIdentifier": {
+          "system": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
+          "value": "DOC-001-PATH"
+        },
+        "identifier": [
+          {
+            "system": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
+            "value": "DOC-001-PATH"
+          }
+        ],
+        "status": "current",
+        "docStatus": "final",
+        "type": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "11526-1",
+              "display": "Pathology study"
+            }
+          ],
+          "text": "Pathology study"
+        },
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/us/core/CodeSystem/us-core-documentreference-category",
+                "code": "clinical-note",
+                "display": "Clinical Note"
+              }
+            ],
+            "text": "Pathology"
+          }
+        ],
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "date": "2026-06-05T09:00:00+01:00",
+        "author": [
+          {
+            "reference": "Organization/SITE-01"
+          }
+        ],
+        "description": "Pathologieverslag — stereotactisch resectiepreparaat (fictief)",
+        "content": [
+          {
+            "attachment": {
+              "contentType": "text/plain",
+              "language": "nl",
+              "data": "U1lOVEhFVElTQ0ggRE9DVU1FTlQgLSBGSUNUSUVGIC0gTklFVCBWT09SIEtMSU5JU0NIIEdFQlJVSUsKRmljdGllZiBVbml2ZXJzaXRhaXIgTWVkaXNjaCBDZW50cnVtIFp1aWRoYXZlbgpBZmRlbGluZyBQYXRob2xvZ2llClByb2YuIGRyLiBKLiBWb29yYmVlbGQgKGZpY3RpZWYpCgpQQVRJRU5UQ09ERTogR0JNLU5MLTAwMQpEQVRVTSBPTlRWQU5HU1Q6IDIwMjYtMDYtMDIKREFUVU0gVkVSU0xBRzogMjAyNi0wNi0wNQpPTkRFUlpPRUs6IFJlc2VjdGllcHJlcGFyYWF0LCByZWNodGVyIGZyb250YWFsCgpLTElOSVNDSEUgR0VHRVZFTlMKUnVpbXRlLWlubmVtZW5kZSBsYWVzaWUgcmVjaHRzIGZyb250YWFsLCB2ZXJkYWNodCB2b29yIGhvb2dncmFkaWcgZ2xpb29tLgpWZXJ3aWp6ZW5kIG5ldXJvY2hpcnVyZzogZHIuIE0uIFZvb3JiZWVsZCAoZmljdGllZikuCgpNQUNST1NDT1BJRQpNZWVyZGVyZSBmcmFnbWVudGVuIHZhbiBncmlqcy13aXQgd2VlZnNlbCwgdGVzYW1lbiAyNCBncmFtLgoKTUlDUk9TQ09QSUUKSHlwZXJjZWxsdWxhaXIgZ2xpb29tIG1ldCBkdWlkZWxpamtlIG51Y2xlYWlyZSBhdHlwaWUsIG1pdG9zZW4gZW4KbWljcm92YXNjdWxhaXJlIHByb2xpZmVyYXRpZS4gR2ViaWVkZW4gbWV0IHBzZXVkb3BhbGlzYWRlcmluZyBlbiBuZWNyb3NlLgpJbW11bm9oaXN0b2NoZW1pZTogR0ZBUCBwb3NpdGllZi4gSURIMSBSMTMySCBuZWdhdGllZi4gQVRSWCBiZWhvdWRlbi4KTUdNVC1wcm9tb3Rlcm1ldGh5bGVyaW5nOiBtZXRoeWxhdGllIGFhbmdldG9vbmQgKE1TLVBDUikuCgpDT05DTFVTSUUKMS4gR2xpb2JsYXN0b29tLCBJREgtd2lsZHR5cGUgKFdITyBDTlM1KS4gSUNELU8tMyBtb3Jmb2xvZ2llY29kZSA5NDQwLzMuCjIuIE1HTVQtcHJvbW90ZXIgaXMgZ2VtZXRoeWxlZXJkLgo=",
+              "size": 905,
+              "hash": "JikV1oKHa8dhIuM/YNXdPhLdBTI=",
+              "title": "Pathologieverslag — stereotactisch resectiepreparaat (fictief)",
+              "creation": "2026-06-05T09:00:00+01:00"
+            }
+          }
+        ],
+        "context": {
+          "encounter": [
+            {
+              "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+            }
+          ],
+          "period": {
+            "start": "2026-06-05T08:00:00+01:00",
+            "end": "2026-06-05T17:00:00+01:00"
+          },
+          "sourcePatientInfo": {
+            "reference": "Patient/GBM-NL-001"
+          },
+          "related": [
+            {
+              "reference": "DiagnosticReport/DR-DOC-001-PATH"
+            }
+          ]
+        },
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Pathologieverslag — stereotactisch resectiepreparaat (fictief) — DOC-001-PATH for GBM-NL-001 (nl, 2026-06-05)</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "DocumentReference/DOC-001-PATH"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/DiagnosticReport/DR-DOC-001-PATH",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "DR-DOC-001-PATH",
+        "identifier": [
+          {
+            "system": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
+            "value": "DR-DOC-001-PATH"
+          }
+        ],
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v2-0074",
+                "code": "PAT",
+                "display": "Pathology"
+              }
+            ],
+            "text": "Pathology"
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "11526-1",
+              "display": "Pathology study"
+            }
+          ],
+          "text": "Pathology study"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-06-05T09:00:00+01:00",
+        "issued": "2026-06-05T12:00:00+01:00",
+        "performer": [
+          {
+            "reference": "Organization/SITE-01"
+          }
+        ],
+        "presentedForm": [
+          {
+            "contentType": "text/plain",
+            "language": "nl",
+            "data": "U1lOVEhFVElTQ0ggRE9DVU1FTlQgLSBGSUNUSUVGIC0gTklFVCBWT09SIEtMSU5JU0NIIEdFQlJVSUsKRmljdGllZiBVbml2ZXJzaXRhaXIgTWVkaXNjaCBDZW50cnVtIFp1aWRoYXZlbgpBZmRlbGluZyBQYXRob2xvZ2llClByb2YuIGRyLiBKLiBWb29yYmVlbGQgKGZpY3RpZWYpCgpQQVRJRU5UQ09ERTogR0JNLU5MLTAwMQpEQVRVTSBPTlRWQU5HU1Q6IDIwMjYtMDYtMDIKREFUVU0gVkVSU0xBRzogMjAyNi0wNi0wNQpPTkRFUlpPRUs6IFJlc2VjdGllcHJlcGFyYWF0LCByZWNodGVyIGZyb250YWFsCgpLTElOSVNDSEUgR0VHRVZFTlMKUnVpbXRlLWlubmVtZW5kZSBsYWVzaWUgcmVjaHRzIGZyb250YWFsLCB2ZXJkYWNodCB2b29yIGhvb2dncmFkaWcgZ2xpb29tLgpWZXJ3aWp6ZW5kIG5ldXJvY2hpcnVyZzogZHIuIE0uIFZvb3JiZWVsZCAoZmljdGllZikuCgpNQUNST1NDT1BJRQpNZWVyZGVyZSBmcmFnbWVudGVuIHZhbiBncmlqcy13aXQgd2VlZnNlbCwgdGVzYW1lbiAyNCBncmFtLgoKTUlDUk9TQ09QSUUKSHlwZXJjZWxsdWxhaXIgZ2xpb29tIG1ldCBkdWlkZWxpamtlIG51Y2xlYWlyZSBhdHlwaWUsIG1pdG9zZW4gZW4KbWljcm92YXNjdWxhaXJlIHByb2xpZmVyYXRpZS4gR2ViaWVkZW4gbWV0IHBzZXVkb3BhbGlzYWRlcmluZyBlbiBuZWNyb3NlLgpJbW11bm9oaXN0b2NoZW1pZTogR0ZBUCBwb3NpdGllZi4gSURIMSBSMTMySCBuZWdhdGllZi4gQVRSWCBiZWhvdWRlbi4KTUdNVC1wcm9tb3Rlcm1ldGh5bGVyaW5nOiBtZXRoeWxhdGllIGFhbmdldG9vbmQgKE1TLVBDUikuCgpDT05DTFVTSUUKMS4gR2xpb2JsYXN0b29tLCBJREgtd2lsZHR5cGUgKFdITyBDTlM1KS4gSUNELU8tMyBtb3Jmb2xvZ2llY29kZSA5NDQwLzMuCjIuIE1HTVQtcHJvbW90ZXIgaXMgZ2VtZXRoeWxlZXJkLgo=",
+            "size": 905,
+            "hash": "JikV1oKHa8dhIuM/YNXdPhLdBTI=",
+            "title": "Pathologieverslag — stereotactisch resectiepreparaat (fictief)",
+            "creation": "2026-06-05T09:00:00+01:00"
+          }
+        ],
+        "conclusion": "1. Glioblastoom, IDH-wildtype (WHO CNS5). ICD-O-3 morfologiecode 9440/3. 2. MGMT-promoter is gemethyleerd.",
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Pathology study — DOC-001-PATH for GBM-NL-001 (2026-06-05)</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "DiagnosticReport/DR-DOC-001-PATH"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/DocumentReference/DOC-001-MRI",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "id": "DOC-001-MRI",
+        "masterIdentifier": {
+          "system": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
+          "value": "DOC-001-MRI"
+        },
+        "identifier": [
+          {
+            "system": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
+            "value": "DOC-001-MRI"
+          }
+        ],
+        "status": "current",
+        "docStatus": "final",
+        "type": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "18748-4",
+              "display": "Diagnostic imaging study"
+            }
+          ],
+          "text": "Diagnostic imaging study"
+        },
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/us/core/CodeSystem/us-core-documentreference-category",
+                "code": "clinical-note",
+                "display": "Clinical Note"
+              }
+            ],
+            "text": "Radiology"
+          }
+        ],
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "date": "2026-06-06T09:00:00+01:00",
+        "author": [
+          {
+            "reference": "Organization/SITE-01"
+          }
+        ],
+        "description": "MRI-verslag hersenen, postoperatief (fictief)",
+        "content": [
+          {
+            "attachment": {
+              "contentType": "text/plain",
+              "language": "nl",
+              "data": "U1lOVEhFVElTQ0ggRE9DVU1FTlQgLSBGSUNUSUVGIC0gTklFVCBWT09SIEtMSU5JU0NIIEdFQlJVSUsKRmljdGllZiBVbml2ZXJzaXRhaXIgTWVkaXNjaCBDZW50cnVtIFp1aWRoYXZlbiAtIEFmZGVsaW5nIFJhZGlvbG9naWUKClBBVElFTlRDT0RFOiBHQk0tTkwtMDAxCk9OREVSWk9FSzogTVJJIGhlcnNlbmVuIG1ldCBjb250cmFzdCAocG9zdG9wZXJhdGllZikKREFUVU06IDIwMjYtMDYtMDYKQUFOVlJBQUc6IHBvc3RvcGVyYXRpZXZlIHN0YXVkZXZhbHVhdGllCgpWRVJTTEFHClN0YXR1cyBuYSByZWNodGVyIGZyb250YWxlIGNyYW5pb3RvbWllLiBFciBpcyBlZW4gcmVzZXB0aWVjYXZpdGVpdCB6aWNodGJhYXIKem9uZGVyIGFhbnRvb25iYWFyIHJlc2lkdWVlbCBhYW5rbGV1cmVuZCB0dW1vcndlZWZzZWwuIEJlb29yZGVsaW5nOiBncm9zcyB0b3RhbApyZXNlY3RpZS4gR2VlbiBuaWV1d2UgbGFlc2llcy4gR2VlbiB0ZWtlbmVuIHZhbiBoeWRyb2NlcGhhbHVzLgoKRXIgaXMgZ2VlbiBiYXNlbGluZSBSQU5PLW1ldGluZyB2YW4gdm9vciBkZSBvcGVyYXRpZSBiZXNjaGlrYmFhci4KUHJvZ3Jlc3NpZSBrYW4gbWV0IGRpdCBvbmRlcnpvZWsgbmlldCB3b3JkZW4gdmFzdGdlc3RlbGQuCg==",
+              "size": 619,
+              "hash": "SpeHY2ueH1PsXzhJ6L5rSJwf4/w=",
+              "title": "MRI-verslag hersenen, postoperatief (fictief)",
+              "creation": "2026-06-06T09:00:00+01:00"
+            }
+          }
+        ],
+        "context": {
+          "encounter": [
+            {
+              "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+            }
+          ],
+          "period": {
+            "start": "2026-06-06T08:00:00+01:00",
+            "end": "2026-06-06T17:00:00+01:00"
+          },
+          "sourcePatientInfo": {
+            "reference": "Patient/GBM-NL-001"
+          },
+          "related": [
+            {
+              "reference": "DiagnosticReport/DR-DOC-001-MRI"
+            }
+          ]
+        },
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>MRI-verslag hersenen, postoperatief (fictief) — DOC-001-MRI for GBM-NL-001 (nl, 2026-06-06)</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "DocumentReference/DOC-001-MRI"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/DiagnosticReport/DR-DOC-001-MRI",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "DR-DOC-001-MRI",
+        "identifier": [
+          {
+            "system": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
+            "value": "DR-DOC-001-MRI"
+          }
+        ],
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v2-0074",
+                "code": "RAD",
+                "display": "Radiology"
+              }
+            ],
+            "text": "Radiology"
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "18748-4",
+              "display": "Diagnostic imaging study"
+            }
+          ],
+          "text": "Diagnostic imaging study"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+        },
+        "effectiveDateTime": "2026-06-06T09:00:00+01:00",
+        "issued": "2026-06-06T12:00:00+01:00",
+        "performer": [
+          {
+            "reference": "Organization/SITE-01"
+          }
+        ],
+        "presentedForm": [
+          {
+            "contentType": "text/plain",
+            "language": "nl",
+            "data": "U1lOVEhFVElTQ0ggRE9DVU1FTlQgLSBGSUNUSUVGIC0gTklFVCBWT09SIEtMSU5JU0NIIEdFQlJVSUsKRmljdGllZiBVbml2ZXJzaXRhaXIgTWVkaXNjaCBDZW50cnVtIFp1aWRoYXZlbiAtIEFmZGVsaW5nIFJhZGlvbG9naWUKClBBVElFTlRDT0RFOiBHQk0tTkwtMDAxCk9OREVSWk9FSzogTVJJIGhlcnNlbmVuIG1ldCBjb250cmFzdCAocG9zdG9wZXJhdGllZikKREFUVU06IDIwMjYtMDYtMDYKQUFOVlJBQUc6IHBvc3RvcGVyYXRpZXZlIHN0YXVkZXZhbHVhdGllCgpWRVJTTEFHClN0YXR1cyBuYSByZWNodGVyIGZyb250YWxlIGNyYW5pb3RvbWllLiBFciBpcyBlZW4gcmVzZXB0aWVjYXZpdGVpdCB6aWNodGJhYXIKem9uZGVyIGFhbnRvb25iYWFyIHJlc2lkdWVlbCBhYW5rbGV1cmVuZCB0dW1vcndlZWZzZWwuIEJlb29yZGVsaW5nOiBncm9zcyB0b3RhbApyZXNlY3RpZS4gR2VlbiBuaWV1d2UgbGFlc2llcy4gR2VlbiB0ZWtlbmVuIHZhbiBoeWRyb2NlcGhhbHVzLgoKRXIgaXMgZ2VlbiBiYXNlbGluZSBSQU5PLW1ldGluZyB2YW4gdm9vciBkZSBvcGVyYXRpZSBiZXNjaGlrYmFhci4KUHJvZ3Jlc3NpZSBrYW4gbWV0IGRpdCBvbmRlcnpvZWsgbmlldCB3b3JkZW4gdmFzdGdlc3RlbGQuCg==",
+            "size": 619,
+            "hash": "SpeHY2ueH1PsXzhJ6L5rSJwf4/w=",
+            "title": "MRI-verslag hersenen, postoperatief (fictief)",
+            "creation": "2026-06-06T09:00:00+01:00"
+          }
+        ],
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Diagnostic imaging study — DOC-001-MRI for GBM-NL-001 (2026-06-06)</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "DiagnosticReport/DR-DOC-001-MRI"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/DocumentReference/DOC-001-DIS",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "id": "DOC-001-DIS",
+        "masterIdentifier": {
+          "system": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
+          "value": "DOC-001-DIS"
+        },
+        "identifier": [
+          {
+            "system": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
+            "value": "DOC-001-DIS"
+          }
+        ],
+        "status": "current",
+        "docStatus": "final",
+        "type": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "34133-9",
+              "display": "Summary of episode note"
+            }
+          ],
+          "text": "Summary of episode note"
+        },
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/us/core/CodeSystem/us-core-documentreference-category",
+                "code": "clinical-note",
+                "display": "Clinical Note"
+              }
+            ],
+            "text": "General"
+          }
+        ],
+        "subject": {
+          "reference": "Patient/GBM-NL-001"
+        },
+        "date": "2026-06-08T09:00:00+01:00",
+        "author": [
+          {
+            "reference": "Organization/SITE-01"
+          }
+        ],
+        "description": "Ontslagbrief neuro-oncologie (fictief)",
+        "content": [
+          {
+            "attachment": {
+              "contentType": "text/plain",
+              "language": "nl",
+              "data": "U1lOVEhFVElTQ0ggRE9DVU1FTlQgLSBGSUNUSUVGIC0gTklFVCBWT09SIEtMSU5JU0NIIEdFQlJVSUsKRmljdGllZiBVbml2ZXJzaXRhaXIgTWVkaXNjaCBDZW50cnVtIFp1aWRoYXZlbiAtIEFmZGVsaW5nIE5ldXJvLW9uY29sb2dpZQoKUEFUSUVOVENPREU6IEdCTS1OTC0wMDEKR0VTTEFDSFQ6IHZyb3V3CkxFRUZUSUpEIEJJSiBESUFHTk9TRTogNTcgamFhcgpEQVRVTSBPUE5BTUU6IDIwMjYtMDYtMDEKREFUVU0gT05UU0xBRzogMjAyNi0wNi0wOAoKT05UU0xBR0JSSUVGClBhdGllbnQgd2VyZCBvcGdlbm9tZW4gdm9vciBlZW4gcmVjaHRlciBmcm9udGFsZSBjcmFuaW90b21pZS4gSGlzdG9wYXRob2xvZ2lzY2gKb25kZXJ6b2VrIHRvb25kZSBlZW4gZ2xpb2JsYXN0b29tLCBJREgtd2lsZHR5cGUuIFBvc3RvcGVyYXRpZWYgYmVsb29wIG9uZ2Vjb21wbGljZWVyZC4KCkZVTkNUSU9ORUxFIFNUQVRVUwpLYXJub2Zza3kgUGVyZm9ybWFuY2UgU3RhdHVzIGJpaiBvbnRzbGFnOiA4MCUuCgpCRUxFSUQKQWRqdXZhbnRlIHJhZGlvdGhlcmFwaWUgNjAgR3kgaW4gMzAgZnJhY3RpZXMgbWV0IGdlbGlqa3RpamRpZyB0ZW1vem9sb21pZGUsCmdldm9sZ2QgZG9vciA2IGdlcGxhbmRlIGN5Y2xpIGFkanV2YW50ZSB0ZW1vem9sb21pZGUuIERlIGVlcnN0ZSBjeWNsdXMgc3RhcnQKaW4gd2VlayA1LiBFciB6aWpuIHRvdCBudSB0b2UgZ2VlbiBiaWp3ZXJraW5nZW4gdmFuIGdyYWFkIDMgb2YgaG9nZXIgb3BnZXRyZWRlbjsKbWF4aW1hYWwgZ3JhYWQgMiB2ZXJtb2VpZGhlaWQuCg==",
+              "size": 778,
+              "hash": "jXq2D573eVONslkvtbDhRHnEyko=",
+              "title": "Ontslagbrief neuro-oncologie (fictief)",
+              "creation": "2026-06-08T09:00:00+01:00"
+            }
+          }
+        ],
+        "context": {
+          "encounter": [
+            {
+              "reference": "Encounter/ENC-GBM-NL-001-EPISODE"
+            }
+          ],
+          "period": {
+            "start": "2026-06-08T08:00:00+01:00",
+            "end": "2026-06-08T17:00:00+01:00"
+          },
+          "sourcePatientInfo": {
+            "reference": "Patient/GBM-NL-001"
+          }
+        },
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Ontslagbrief neuro-oncologie (fictief) — DOC-001-DIS for GBM-NL-001 (nl, 2026-06-08)</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "DocumentReference/DOC-001-DIS"
+      }
+    }
+  ]
+}
