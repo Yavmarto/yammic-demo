@@ -95,28 +95,31 @@ Subtitle: *Synthetic data · prototype · not for clinical use.*
 
 ### 3.4 Study dashboard — 2:15–3:15
 
-**Click:** app opens on `/` — "one glioblastoma study, three sites" dashboard.
+**Click:** app opens on `/` — the **Research dashboard** for one glioblastoma study across three sites.
 
-> "This screen answers one question for a coordinator: what needs my attention today? One synthetic glioblastoma study, three sites, enrolment against target, eCRF completeness, and the open review tasks. This is deliberately thin. We are not rebuilding a CTMS dashboard; mature products already do that, and we should integrate, not duplicate.
+> "This screen answers one question for a coordinator: what needs my attention today? One synthetic glioblastoma study, three sites, recruitment against target, eCRF completeness, alerts, and the task list. This is deliberately thin. We are not rebuilding a CTMS dashboard; mature products already do that, and we should integrate, not duplicate.
 >
-> The number that matters is here: [point] open AI extractions waiting for a human. That is the work this product removes from the nurse's evening."
+> The work queue is the **Tasks** card. The open AI extraction review is here. That is the work this product removes from the nurse's evening."
 
-**Expected on screen:** study title, sites with enrolled/target, completeness, milestone, alerts, task list with a participant link.
-**If a chart is missing:** do not wait. Say "the table is the source of truth" and move on.
+**Expected on screen:** "Research dashboard"; study card with "Recruitment x/y" and "eCRF completeness n%"; sections "Alerts", "Sites", "Tasks", "Milestones"; task row with assignee, due date and participant id.
+**Click next:** the task row in **Tasks** (title from `dashboard.json`, e.g. "Review AI extractions") → participant.
+**If a chart is missing:** do not wait. Say "the numbers are the source of truth" and move on. (Known build issue: the seeded placeholder study is "Synthetic Cardio Study"; the GBM study must replace it before rehearsal — §8.)
 
 ### 3.5 Participant workspace — 3:15–4:30
 
-**Click:** the open task or the participant row → `/participant/SYN-0001`.
+**Click:** the task row, or **Participants** in the navigation rail → `/participant/SYN-0001`.
 
-> "This is the site nurse's home. A pseudonymised id, status, the visit timeline, eCRF status and the open quality issues. Notice what is not here: no name, no date of birth, no hospital record number. In a real deployment, identifiers stay in the hospital node; this workspace works on the pseudonymised record.
+> "This is the site nurse's home. A pseudonymised id, status, the visit timeline, eCRF status and the quality issues. Notice what is not here: no name, no date of birth, no hospital record number. In a real deployment, identifiers stay in the hospital node; this workspace works on the pseudonymised record.
 >
-> Baseline is complete. Week four is scheduled. And the eCRF card says 'awaiting review' — that is our entry point."
+> Baseline is complete. Week four is scheduled. And the eCRF card shows "awaiting review" — that is our entry point."
 
-**Click:** "Review AI extractions" → `/review` (the app passes the participant id).
+**Expected on screen:** participant id and status chip; study · site · age · sex; "Clinical summary"; "Visit timeline"; "eCRF status" with progress bars and the raw status text; "Quality issues"; "Treatment history"; header button.
+**Click next:** **Review AI values** in the header (the build shows **Open AI review** when no eCRF is awaiting review). The app passes the participant id to `/review`.
 
 ### 3.6 AI extraction review — 4:30–7:45 (centrepiece)
 
 **Screen:** UI-005. Left: synthetic source document. Middle: proposal. Right: target eCRF field.
+*Build note: as of 2026-11-21 10:05 this screen is still the Engineer's stub ("AI review — stub"). The segment cannot be rehearsed until DEMO-5 lands. The labels below are the required minimum; final layout comes from D7.*
 
 **(a) Layout — 45 s**
 
@@ -155,7 +158,7 @@ Subtitle: *Synthetic data · prototype · not for clinical use.*
 
 ### 3.7 Audit trail — 7:45–8:45
 
-**Click:** Audit in the navigation → `/audit`.
+**Click:** **Audit** in the navigation rail → `/audit`.
 
 > "Four events, in order. The AI extraction, then accept, correct and defer. Who, what, when, before, after, and whether the source was AI or a human. The AI event carries the model and prompt version; the human events carry the reviewer.
 >
@@ -325,20 +328,28 @@ Because a safety mechanism that is only shown working on easy cases is marketing
 
 ## 8. Click-path verification against spec and build
 
-Status at 2026-11-21 10:00 CET (script v1.0).
+Status at 2026-11-21 10:05 CET (script v1.0).
+
+**Build check done now** (commit `4b817b1`, `dev` branch):
+- `~/flutter/bin/flutter analyze` → "No issues found".
+- `~/flutter/bin/flutter build web --release` → "Built build/web".
+- Shell renders the banner text "Synthetic data — prototype, not for clinical use" and the navigation rail with the exact labels **Dashboard · Participants · AI review · Audit**.
+- UI-001 dashboard and UI-002 participant workspace are implemented and clickable (task row → participant; header button → review).
+- UI-005 review and the audit view are **stubs** (`AI review — stub (Engineer)`, `Audit trail — stub (Engineer)`). The review and audit segments cannot be rehearsed until DEMO-5 lands.
 
 | Step | Route | Contract source | Status |
 |---|---|---|---|
-| Dashboard | `/` | `demo_tech_spec.md` routes; plan screen table (UI-001) | Route fixed; screen in build |
-| Participant | `/participant/<id>` | `demo_tech_spec.md`; `main.dart` router | Route fixed; screen in build |
-| AI review | `/review` (optional participant argument) | `demo_tech_spec.md`; `05` §3 UI-005; journey 1 in `05` §4 | Route fixed; **UI details pending D7 spec, screen pending DEMO-5** |
-| Audit | `/audit` | `demo_tech_spec.md`; `04` FR-038 | Route fixed; **screen pending DEMO-5** |
+| Dashboard | `/` | `demo_tech_spec.md` routes; plan screen table (UI-001) | **Built and clickable** |
+| Participant | `/participant/<id>` | `demo_tech_spec.md`; `main.dart` router | **Built and clickable** |
+| AI review | `/review` (optional participant argument) | `demo_tech_spec.md`; `05` §3 UI-005; journey 1 in `05` §4 | Route fixed; **stub — UI details pending D7 spec and DEMO-5** |
+| Audit | `/audit` | `demo_tech_spec.md`; `04` FR-038 | Route fixed; **stub — pending DEMO-5** |
 
 **Checked now**
 - Sequence matches journey 1 exactly (dashboard → participant → review → accept/correct/reject → audit).
 - Actions match `05` §3 (Accept / Correct / Reject / Defer, evidence highlighted, confidence shown, provenance retained).
 - Field names match the planned eCRF set (histology, MGMT promoter methylation, RANO progression date) and the `AiExtraction` model fields (`value`, `sourceText`, `spanStart`, `spanEnd`, `confidence`, `model`, `promptVersion`).
 - Banner, no-network and pre-computed-AI rules match the plan's stability rules.
+- On-screen labels in §3 match build commit `4b817b1` (navigation rail labels; participant header button; dashboard section headings).
 
 **Pending (owner + date)**
 - D7 screen spec (Designer, due Sat 18:00): confirm layout order, colour/icon of "AI proposal — not verified", keyboard shortcuts; adjust the click wording, not the sequence.
