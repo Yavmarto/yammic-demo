@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zeta_flutter/zeta_flutter.dart';
+import 'api/api.dart';
 import 'data/session.dart';
 import 'features/ai_quality/ai_quality_screen.dart';
 import 'features/audit/audit_screen.dart';
@@ -11,8 +12,13 @@ import 'features/participant/participant_screen.dart';
 import 'features/review/review_screen.dart';
 import 'shell/shell.dart';
 import 'theme/tokens.dart';
+import 'ui/env.dart';
+import 'ui/shot.dart';
 
-void main() => runApp(DemoApp(session: Session()));
+void main() {
+  final api = envVar('YAMMIC_API');
+  runApp(DemoApp(session: Session(http: api.isEmpty ? null : HttpApi(baseUrl: api))));
+}
 
 class DemoApp extends StatefulWidget {
   final Session session;
@@ -23,13 +29,21 @@ class DemoApp extends StatefulWidget {
 
 class _DemoAppState extends State<DemoApp> {
   final nav = GlobalKey<NavigatorState>();
+  final _shotKey = GlobalKey();
   Session get session => widget.session;
   String? _who;
+
+  // Demo/CI helpers: --dart-define=AUTO_LOGIN=pi --dart-define=START_ROUTE=/review
+  static final _autoLogin = envVar('YAMMIC_ROLE').isNotEmpty ? envVar('YAMMIC_ROLE') : const String.fromEnvironment('AUTO_LOGIN');
+  static final _startRoute = envVar('YAMMIC_ROUTE').isNotEmpty ? envVar('YAMMIC_ROUTE') : const String.fromEnvironment('START_ROUTE', defaultValue: '/');
+  bool _first = true;
 
   @override
   void initState() {
     super.initState();
     session.addListener(_onSession);
+    maybeShoot(_shotKey);
+    if (_autoLogin.isNotEmpty) session.login(_autoLogin, 'demo', roleHint: _autoLogin);
   }
 
   @override
@@ -43,7 +57,8 @@ class _DemoAppState extends State<DemoApp> {
     final who = session.user?['username'] as String?;
     if (who != _who) {
       _who = who;
-      nav.currentState?.pushNamedAndRemoveUntil('/', (_) => false);
+      nav.currentState?.pushNamedAndRemoveUntil(who != null && _first ? _startRoute : '/', (_) => false);
+      if (who != null) _first = false;
     }
   }
 
@@ -95,6 +110,7 @@ class _DemoAppState extends State<DemoApp> {
             themeMode: ThemeMode.light,
             navigatorKey: nav,
             onGenerateRoute: _route,
+            builder: (context, child) => RepaintBoundary(key: _shotKey, child: shotFrame(child!)),
           ),
         ),
       );

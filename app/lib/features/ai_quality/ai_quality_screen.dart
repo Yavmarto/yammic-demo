@@ -64,7 +64,7 @@ class _AiQualityState extends State<AiQualityScreen> {
               ),
               const SizedBox(height: K.s16),
               if (cur == null)
-                const Panel(child: SizedBox(height: 160, child: EmptyState(icon: Icons.insights_outlined, title: 'No evaluation results yet', hint: 'Run `make eval` in the backend, then refresh this page.')))
+                const Panel(child: SizedBox(height: 200, child: EmptyState(icon: Icons.insights_outlined, title: 'No evaluation results yet', hint: 'Run `make eval` in the backend, then refresh this page.')))
               else ...[
                 _summary(cur),
                 const SizedBox(height: K.s16),
@@ -112,7 +112,7 @@ class _AiQualityState extends State<AiQualityScreen> {
               cell(f['recall']),
               cell(f['f1']),
               Text('${f['abstentions']}', textAlign: TextAlign.right, style: K.mono),
-              Text('${f['meanConfidence'] ?? '—'}', textAlign: TextAlign.right, style: K.mono),
+              Text(f['meanConfidence'] == null ? '—' : (f['meanConfidence'] as num).toStringAsFixed(2), textAlign: TextAlign.right, style: K.mono),
             ],
           ),
       ]),

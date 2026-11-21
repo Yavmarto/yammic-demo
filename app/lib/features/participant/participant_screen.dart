@@ -35,7 +35,7 @@ class _ListState extends State<ParticipantListScreen> {
               Panel(
                 padding: EdgeInsets.zero,
                 child: rows.isEmpty
-                    ? const SizedBox(height: 160, child: EmptyState(icon: Icons.search_off, title: 'No participants match', hint: 'Clear the filter to see all participants.'))
+                    ? const SizedBox(height: 200, child: EmptyState(icon: Icons.search_off, title: 'No participants match', hint: 'Clear the filter to see all participants.'))
                     : Column(children: [
                         const TableHead([('Participant', 3, false), ('Site', 2, false), ('Status', 3, false), ('Age / sex', 2, false), ('eCRF verified', 3, false), ('AI pending', 2, true), ('Queries', 2, true)]),
                         for (final p in rows)

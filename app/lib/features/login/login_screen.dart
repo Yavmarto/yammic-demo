@@ -5,7 +5,7 @@ import '../../shell/shell.dart';
 import '../../theme/tokens.dart';
 
 const _roles = [
-  ('nurse', 'Research nurse', 'eCRF + review'),
+  ('nurse', 'Nurse', 'eCRF + review'),
   ('monitor', 'Monitor', 'Read-only SDV'),
   ('pi', 'PI', 'Study + export'),
 ];

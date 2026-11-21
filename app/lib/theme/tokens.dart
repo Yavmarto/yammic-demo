@@ -47,7 +47,28 @@ ThemeData applyLook(ThemeData z) => z.copyWith(
       dividerColor: K.line,
       dividerTheme: const DividerThemeData(color: K.line, thickness: 1, space: 1),
       colorScheme: z.colorScheme.copyWith(primary: K.accent, surface: K.surface),
-      textTheme: z.textTheme.apply(bodyColor: K.ink, displayColor: K.ink),
+      textTheme: z.textTheme.apply(bodyColor: K.ink, displayColor: K.ink).copyWith(
+        // text fields read their style from these: keep inputs at body size, not Zeta's 16
+        bodyLarge: z.textTheme.bodyLarge?.copyWith(fontSize: 14, color: K.ink),
+        titleMedium: z.textTheme.titleMedium?.copyWith(fontSize: 14, color: K.ink),
+      ),
+      chipTheme: ChipThemeData(
+        selectedColor: K.accentSoft,
+        backgroundColor: K.surface,
+        checkmarkColor: K.infoInk,
+        side: const BorderSide(color: K.lineStrong),
+        labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: K.ink),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+      ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          // accent, never Zeta's olive secondary (D7b §3.1)
+          backgroundColor: WidgetStateProperty.resolveWith((st) => st.contains(WidgetState.selected) ? K.accentSoft : K.surface),
+          foregroundColor: WidgetStateProperty.resolveWith((st) => st.contains(WidgetState.selected) ? K.infoInk : K.ink2),
+          side: const WidgetStatePropertyAll(BorderSide(color: K.lineStrong)),
+          textStyle: const WidgetStatePropertyAll(TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+        ),
+      ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: K.accent,

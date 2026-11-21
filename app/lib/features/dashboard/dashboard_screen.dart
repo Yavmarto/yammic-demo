@@ -22,7 +22,11 @@ Future<_Data> _load(Session s) => s.run((a) async {
           if (e['reviewState'] == 'pending') top.add(e);
         }
       }
-      top.sort((x, y) => (x['confidence'] as num).compareTo(y['confidence'] as num));
+      // proposals first (lowest confidence first), abstentions after: those cannot be accepted anyway
+      top.sort((x, y) {
+        final a = x['status'] == 'abstained' ? 1 : 0, b = y['status'] == 'abstained' ? 1 : 0;
+        return a != b ? a - b : (x['confidence'] as num).compareTo(y['confidence'] as num);
+      });
       final act = await a.get('/audit', query: {'limit': '4'});
       s.setPending((dash['kpis'] as Map)['extractionsPending'] as int);
       return _Data(dash, parts, top, (act['items'] as List));
@@ -62,7 +66,7 @@ class _Body extends StatelessWidget {
           const SizedBox(height: K.s16),
           MetricStrip([
             Metric('Enrolled', '$enrolled/$target', sub: 'of target', progress: enrolled / target),
-            Metric('eCRF verified', pct(k['ecrfCompleteness']), sub: '${k['ecrfFieldsVerified']} of ${k['ecrfFieldsTotal']} fields · verified only'),
+            Metric('eCRF verified', pct(k['ecrfCompleteness']), sub: (k['ecrfFieldsTotal'] as int) == 0 ? 'verified values only' : '${k['ecrfFieldsVerified']} of ${k['ecrfFieldsTotal']} fields · verified only'),
             Metric('Open queries', '${k['openQueries']}', sub: '${k['sdvDone']} SDV done · ${k['sdvPending']} pending'),
             Metric('AI queue', '$pending', dot: K.aiLine, sub: '${k['needsAttention']} need attention', onTap: () => go(context, '/review')),
             Metric('AI acceptance', k['aiAcceptanceRate'] == null ? '—' : pct(k['aiAcceptanceRate']), sub: '${k['extractionsReviewed']} of ${k['extractionsTotal']} reviewed'),
@@ -124,7 +128,7 @@ class _Body extends StatelessWidget {
         _legend(K.chart3, 'Target $target'),
       ]),
       child: months.isEmpty
-          ? const SizedBox(height: 140, child: EmptyState(icon: Icons.show_chart, title: 'No recruitment data yet', hint: 'Sync the FHIR connection to load participants.'))
+          ? const SizedBox(height: 200, child: EmptyState(icon: Icons.show_chart, title: 'No recruitment data yet', hint: 'Sync the FHIR connection to load participants.'))
           : SizedBox(
               height: 200,
               child: Semantics(
@@ -155,7 +159,7 @@ class _Body extends StatelessWidget {
             cells: [
               Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
                 Text('${s['shortName'] ?? s['name']}', style: K.body.copyWith(fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
-                Text('${s['city'] ?? ''} · ${s['id']}', style: K.small.copyWith(fontSize: 11.5, color: K.ink3)),
+                Text('${s['city'] != null ? '${s['city']} · ' : ''}${s['id']}', style: K.small.copyWith(fontSize: 11.5, color: K.ink3)),
               ]),
               Text('${s['enrolled']}/${s['targetEnrolment'] ?? '—'}', textAlign: TextAlign.right, style: numStyle),
               Text('${s['openQueries']}', textAlign: TextAlign.right, style: numStyle),

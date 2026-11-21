@@ -14,6 +14,7 @@ class AuditScreen extends StatefulWidget {
 
 class _AuditState extends State<AuditScreen> {
   String source = 'all', participant = '';
+  bool hideSignIns = true; // sign-ins bury the AI/human story; one tap shows them
   final actionCtl = TextEditingController();
   final partCtl = TextEditingController();
   Map? page;
@@ -65,7 +66,8 @@ class _AuditState extends State<AuditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final items = (page?['items'] as List?) ?? [];
+    final all = (page?['items'] as List?) ?? [];
+    final items = hideSignIns ? all.where((e) => e['action'] != 'auth.login').toList() : all;
     return Padding(
       padding: const EdgeInsets.all(K.s24),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -80,7 +82,7 @@ class _AuditState extends State<AuditScreen> {
         ),
         if (verify != null) _verifyBanner(),
         const SizedBox(height: K.s16),
-        _filters(),
+        _filters(items),
         const SizedBox(height: K.s12),
         Expanded(
           child: loading
@@ -120,7 +122,7 @@ class _AuditState extends State<AuditScreen> {
     );
   }
 
-  Widget _filters() => Wrap(spacing: 12, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
+  Widget _filters(List items) => Wrap(spacing: 12, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
         SegmentedButton<String>(
           showSelectedIcon: false,
           style: SegmentedButton.styleFrom(visualDensity: VisualDensity.compact),
@@ -128,16 +130,17 @@ class _AuditState extends State<AuditScreen> {
           selected: {source},
           onSelectionChanged: (v) { source = v.first; _load(); },
         ),
-        SizedBox(width: 200, child: TextField(controller: actionCtl, onSubmitted: (_) => _load(), decoration: const InputDecoration(hintText: 'Action prefix (e.g. extraction)', prefixIcon: Icon(Icons.filter_alt_outlined, size: 18)))),
+        SizedBox(width: 260, child: TextField(controller: actionCtl, onSubmitted: (_) => _load(), decoration: const InputDecoration(hintText: 'Action prefix (e.g. extraction)', prefixIcon: Icon(Icons.filter_alt_outlined, size: 18)))),
         SizedBox(
-          width: 170,
+          width: 200,
           child: TextField(
             controller: partCtl,
             onSubmitted: (v) { participant = v.trim(); _load(); },
             decoration: const InputDecoration(hintText: 'Participant ID', prefixIcon: Icon(Icons.person_search_outlined, size: 18)),
           ),
         ),
-        if (page != null) Text('${(page!['items'] as List).length} of ${page!['total']} events', style: K.small),
+        FilterChip(label: const Text('Hide sign-ins'), selected: hideSignIns, onSelected: (v) => setState(() { hideSignIns = v; selected = null; })),
+        if (page != null) Text('${items.length} shown · ${page!['total']} in chain', style: K.small),
       ]);
 
   Widget _table(List items) => Panel(

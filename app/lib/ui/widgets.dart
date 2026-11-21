@@ -271,8 +271,15 @@ class TableHead extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: K.s16),
         decoration: const BoxDecoration(color: K.sidebar, border: Border(bottom: BorderSide(color: K.line))),
         child: Row(children: [
-          for (final c in cols)
-            Expanded(flex: c.$2, child: Text(c.$1.toUpperCase(), textAlign: c.$3 ? TextAlign.right : TextAlign.left, overflow: TextOverflow.ellipsis, style: K.label)),
+          for (var i = 0; i < cols.length; i++)
+            Expanded(
+              flex: cols[i].$2,
+              child: Padding(
+                // keep a gutter between a right-aligned column and the left-aligned label that follows it
+                padding: EdgeInsets.only(left: i > 0 && cols[i - 1].$3 && !cols[i].$3 ? K.s16 : 0),
+                child: Text(cols[i].$1.toUpperCase(), textAlign: cols[i].$3 ? TextAlign.right : TextAlign.left, overflow: TextOverflow.ellipsis, style: K.label),
+              ),
+            ),
         ]),
       );
 }

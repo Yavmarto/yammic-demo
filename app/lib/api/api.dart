@@ -46,10 +46,15 @@ class HttpApi implements Api {
     } catch (_) {
       throw Unreachable('Cannot reach the local backend at $baseUrl');
     }
-    final body = r.body.isEmpty ? null : jsonDecode(utf8.decode(r.bodyBytes));
+    Object? body;
+    try {
+      body = r.body.isEmpty ? null : jsonDecode(utf8.decode(r.bodyBytes));
+    } on FormatException {
+      if (r.statusCode < 400) throw ApiException(r.statusCode, 'Unexpected response from the backend');
+    }
     if (r.statusCode >= 400) {
       final d = body is Map ? body['detail'] : null;
-      throw ApiException(r.statusCode, d is String ? d : 'Request failed (${r.statusCode})');
+      throw ApiException(r.statusCode, d is String ? d : r.statusCode >= 500 ? 'The backend failed to process the request (${r.statusCode}). Try again.' : 'Request failed (${r.statusCode})');
     }
     return body;
   }
@@ -61,6 +66,21 @@ class HttpApi implements Api {
   @override
   Future<dynamic> post(String path, [Object? body]) =>
       _send(() => _c.post(Uri.parse('$baseUrl$path'), headers: _h, body: jsonEncode(body ?? {})));
+
+  /// GET a non-JSON body (ODM XML, FHIR bundle text).
+  Future<String> getText(String path) async {
+    final http.Response r;
+    try {
+      r = await _c.get(Uri.parse('$baseUrl$path'), headers: _h).timeout(const Duration(seconds: 20));
+    } catch (_) {
+      throw Unreachable('Cannot reach the local backend at $baseUrl');
+    }
+    if (r.statusCode >= 400) {
+      final b = jsonDecode(utf8.decode(r.bodyBytes));
+      throw ApiException(r.statusCode, b is Map && b['detail'] is String ? b['detail'] : 'Request failed (${r.statusCode})');
+    }
+    return utf8.decode(r.bodyBytes);
+  }
 }
 
 /// Read-only snapshot served from bundled synthetic JSON when the backend is down.
@@ -80,9 +100,11 @@ class OfflineApi implements Api {
     if (p.length == 3 && p[0] == 'studies') return _dashboard();
     if (p.isNotEmpty && p[0] == 'participants') {
       final parts = (await _json('participants.json'))['participants'] as List;
-      if (p.length == 1) return [for (final x in parts) _summary(x)];
+      final ex = (await _json('extractions.json'))['extractions'] as List;
+      int pend(Object? id) => ex.where((e) => e['participantId'] == id).length;
+      if (p.length == 1) return [for (final x in parts) {..._summary(x), 'extractionsPending': pend(x['id'])}];
       final one = parts.cast<Map>().firstWhere((x) => x['id'] == p[1], orElse: () => throw ApiException(404, 'Participant not found'));
-      if (p.length == 2) return {..._summary(one), ...one};
+      if (p.length == 2) return {..._summary(one), 'extractionsPending': pend(one['id']), ...one};
       if (p[2] == 'extractions') return _extractions(p[1]);
       if (p[2] == 'documents') return _documents(p[1]);
       if (p[2] == 'ecrf') return {'participantId': p[1], 'formId': 'ECRF-GBM-BASELINE', 'verified': 0, 'total': 0, 'completePct': 0, 'fields': []};
@@ -123,7 +145,7 @@ class OfflineApi implements Api {
       'kpis': {
         'enrolled': s['enrolled'], 'target': s['target'], 'ecrfCompleteness': s['completeness'], 'extractionsTotal': ex.length,
         'extractionsPending': ex.length, 'extractionsReviewed': 0, 'extractionsAccepted': 0, 'extractionsCorrected': 0, 'extractionsRejected': 0,
-        'extractionsDeferred': 0, 'needsAttention': ex.where((e) => e['status'] == 'abstained' || (e['confidence'] as num) < .6).length,
+        'extractionsDeferred': 0, 'ecrfFieldsTotal': 0, 'ecrfFieldsVerified': 0, 'needsAttention': ex.where((e) => e['status'] == 'abstained' || (e['confidence'] as num) < .6).length,
         'openQueries': (d['sites'] as List).fold<int>(0, (a, x) => a + (x['openQueries'] as int)), 'auditEvents': 0, 'sdvDone': 0, 'sdvPending': 0,
       },
       'sites': [for (final x in d['sites'] as List) {'id': x['id'], 'name': x['name'], 'shortName': x['name'], 'city': null, 'targetEnrolment': x['target'], 'enrolled': x['enrolled'], 'openQueries': x['openQueries']}],
