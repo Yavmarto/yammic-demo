@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Yammic v4 screen references — five new features</title>
+<title>Yamicc v4 screen references — five new features</title>
 <style>
 :root{
   --canvas:#F3F6FA; --surface:#FFFFFF; --sunken:#EEF2F7; --hover:#F3F6FA; --selected:#F1F8FF;
@@ -363,7 +363,7 @@ body.single .frame{border:0;border-radius:0;transform:none}
 <div class="doc">
   <header class="doc-head">
     <div>
-      <h1>Yammic v4 — five new screens</h1>
+      <h1>Yamicc v4 — five new screens</h1>
       <p>Visual reference for the v4 features, using the frozen v3 visual language: one accent, amber for AI proposals, green for human-verified data, teal for system integrity, 1 px borders, no shadows on panels. The contract is <span class="mono">deliverables/D7c_v4_screens.md</span>.</p>
     </div>
     <div class="meta">2026-11-21 · Designer<br>1440 × 900 frames</div>
@@ -413,7 +413,7 @@ function badge(v){
 }
 function sidebar(active){
   return `<aside class="side">
-    <div class="brand"><div class="mark">Y</div><b>Yammic</b></div>
+    <div class="brand"><div class="mark">Y</div><b>Yamicc</b></div>
     ${nav.map(([g,items])=>`<div class="nav-group"><div class="gl">${g}</div>
       ${items.map(([r,l,ic,b])=>`<div class="nav-item ${active===r?'active':''}">${I(ic)} ${l} ${badge(b)}</div>`).join('')}
     </div>`).join('')}
@@ -429,7 +429,7 @@ function shell(active, crumb, content, opts={}){
   return `<div class="banner">${I('info')} Synthetic data · Prototype, not for clinical use <span class="demo">DEMO</span></div>
   <div class="shell">
     <aside class="side">
-      <div class="brand"><div class="mark">Y</div><b>Yammic</b></div>
+      <div class="brand"><div class="mark">Y</div><b>Yamicc</b></div>
       ${nav.map(([g,items])=>`<div class="nav-group"><div class="gl">${g}</div>
         ${items.map(([r,l,ic,b])=>`<div class="nav-item ${active===r?'active':''}">${I(ic)} ${l} ${badge(b)}</div>`).join('')}
       </div>`).join('')}

@@ -7,7 +7,7 @@ from .ingest.routes import r as ingest_r
 from .routes import r
 
 app = FastAPI(
-    title="Yammic demo backend",
+    title="Yamicc demo backend",
     version="0.1.0",
     description="Local demo platform slice. All data is synthetic — prototype, not for clinical use. "
                 "Auth: POST /auth/login, then `Authorization: Bearer <token>`. JSON is camelCase.")

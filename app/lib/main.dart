@@ -20,7 +20,7 @@ import 'ui/env.dart';
 import 'ui/shot.dart';
 
 void main() {
-  final api = envVar('YAMMIC_API');
+  final api = envVar('YAMICC_API');
   runApp(DemoApp(session: Session(http: api.isEmpty ? null : HttpApi(baseUrl: api))));
 }
 
@@ -38,8 +38,8 @@ class _DemoAppState extends State<DemoApp> {
   String? _who;
 
   // Demo/CI helpers: --dart-define=AUTO_LOGIN=pi --dart-define=START_ROUTE=/review
-  static final _autoLogin = envVar('YAMMIC_ROLE').isNotEmpty ? envVar('YAMMIC_ROLE') : const String.fromEnvironment('AUTO_LOGIN');
-  static final _startRoute = envVar('YAMMIC_ROUTE').isNotEmpty ? envVar('YAMMIC_ROUTE') : const String.fromEnvironment('START_ROUTE', defaultValue: '/');
+  static final _autoLogin = envVar('YAMICC_ROLE').isNotEmpty ? envVar('YAMICC_ROLE') : const String.fromEnvironment('AUTO_LOGIN');
+  static final _startRoute = envVar('YAMICC_ROUTE').isNotEmpty ? envVar('YAMICC_ROUTE') : const String.fromEnvironment('START_ROUTE', defaultValue: '/');
   bool _first = true;
 
   @override
@@ -111,7 +111,7 @@ class _DemoAppState extends State<DemoApp> {
           // if that read fails, ZetaProvider throws LateInitializationError (red screen).
           initialContrast: ZetaContrast.aa,
           builder: (context, light, dark, themeMode) => MaterialApp(
-            title: 'Yammic demo',
+            title: 'Yamicc demo',
             debugShowCheckedModeBanner: false,
             theme: applyLook(light),
             darkTheme: applyLook(light), // light-only product look

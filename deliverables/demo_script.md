@@ -47,7 +47,7 @@ The v2 rule "no backend, no network" is **withdrawn**. The rule now: everything 
 Run this once, 30 minutes before. **Do not do any of it on stage.** `make reset` deletes the local volumes; it is safe because the data is synthetic and reseeded.
 
 ```bash
-cd ~/yammic-demo
+# Run from the v4 checkout root.
 
 # 1. Clean slate: Postgres + HAPI FHIR, backend seed, baseline FHIR set.
 #    Expect: 8 participants, 46 pre-computed fixture proposals (not live model output), 7 open queries, HAPI 8 patients.
@@ -346,7 +346,7 @@ Stop talking. Leave the last slide up. Invite questions.
 ### 5.2 Slide 2 — The connected slice (one diagram, no bullets)
 
 ```
- Synthetic hospital EHR            Yammic platform (this laptop)                 Experience
+ Synthetic hospital EHR            Yamicc platform (this laptop)                 Experience
  ┌────────────────────┐  FHIR   ┌──────────────────────────────────────┐   REST   ┌───────────────────┐
  │ HAPI FHIR R4       │ ──────▶ │ FastAPI · PostgreSQL 16              │ ◀──────▶ │ Flutter web/macOS │
  │ 11 synthetic GBM   │  pull   │ ingest · pseudonymise · eCRF · review│          │ nurse · PI ·      │
@@ -515,7 +515,7 @@ I will not invent a number. Phase 3 is a controlled single-hospital pilot; cost 
 
 ## 9. Rehearsal log (against the real build)
 
-Rehearsed **2026-11-21 14:00–14:40 CET** on `dev` at `a8e397f` (W7 connected app, after the W7 screenshots). The shared stack was being exercised by QA at the same time, so the timed flow was re-run against a **private scratch database** on port `8011` seeded with the same migrations and seed (`yammic_rehearsal`), with the shared HAPI FHIR server (11 patients after loading `--set arrivals`). This avoids stealing or corrupting another agent's run. The scratch database and backend were removed afterwards.
+Rehearsed **2026-11-21 14:00–14:40 CET** on `dev` at `a8e397f` (W7 connected app, after the W7 screenshots). The shared stack was being exercised by QA at the same time, so the timed flow was re-run against a **private scratch database** on port `8011` seeded with the same migrations and seed (`yamicc_rehearsal`), with the shared HAPI FHIR server (11 patients after loading `--set arrivals`). This avoids stealing or corrupting another agent's run. The scratch database and backend were removed afterwards.
 
 **Update 2026-11-21 15:20 — CEO cold-start verification.** The CEO verified Demo v3 from a cold start on the running stack. Three claims were tightened in this revision (CEL-1786): the audit wording (§4.10, §6.2, Q9), the fixture-versus-live provenance split (§1, 4.3, 4.6, Q2/Q2b, Q10), and the model-queue timing (run sheet, 4.4b, 4.6). **Measured on that machine: a sync queues 7 runs and the local model needs about 3 minutes to finish all 7; the first proposals arrive sooner (45–70 s).** This script now schedules a 4.4b talk-through so the presenter never waits in silence.
 

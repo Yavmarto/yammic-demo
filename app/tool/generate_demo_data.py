@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the synthetic Yammic demo dataset.
+"""Generate the synthetic Yamicc demo dataset.
 
 Everything produced by this script is fictional. No real patients, no real
 names, no real institutions, no live model calls. The "AI extractions" are

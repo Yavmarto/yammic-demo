@@ -11,11 +11,11 @@
 # races on the same run and double-posts proposals. `make demo` uses this list to
 # detect a worker that a human already started by hand.
 #
-# Override the filter with AI_API_URL (default: YAMMIC_API_URL, else v4 :8001).
+# Override the filter with AI_API_URL (default: YAMICC_API_URL, else v4 :8001).
 # Prints nothing when no matching worker runs. Exit code is 0 either way.
 set -uo pipefail
 
-api="${AI_API_URL:-${YAMMIC_API_URL:-http://127.0.0.1:8001}}"
+api="${AI_API_URL:-${YAMICC_API_URL:-http://127.0.0.1:8001}}"
 
 # -ww: do not truncate the command line to the terminal width (the URL is at the end).
 ps -ww -Ao pid=,command= | awk -v api="$api" '

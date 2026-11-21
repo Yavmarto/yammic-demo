@@ -1,4 +1,4 @@
-# yammic_demo
+# yamicc_demo
 
 A new Flutter project.
 

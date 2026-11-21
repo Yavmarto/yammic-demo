@@ -31,14 +31,14 @@
             "type": {
               "text": "Study subject identifier"
             },
-            "system": "https://yammic.example/fhir/NamingSystem/study-subject-id",
+            "system": "https://yamicc.example/fhir/NamingSystem/study-subject-id",
             "value": "GBM-NL-204"
           },
           {
             "type": {
               "text": "Study identifier"
             },
-            "system": "https://yammic.example/fhir/NamingSystem/study-number",
+            "system": "https://yamicc.example/fhir/NamingSystem/study-number",
             "value": "GBM-NL-2026-01"
           }
         ],
@@ -61,7 +61,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -130,7 +130,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -221,7 +221,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -293,7 +293,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -362,7 +362,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -423,7 +423,7 @@
         "valueCodeableConcept": {
           "coding": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/resection-extent",
+              "system": "https://yamicc.example/fhir/CodeSystem/resection-extent",
               "code": "gross-total",
               "display": "Gross total resection"
             }
@@ -438,7 +438,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -531,7 +531,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -624,7 +624,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -717,7 +717,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -810,7 +810,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -903,7 +903,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -996,7 +996,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -1031,7 +1031,7 @@
         "code": {
           "coding": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/procedure-type",
+              "system": "https://yamicc.example/fhir/CodeSystem/procedure-type",
               "code": "brain-tumour-resection",
               "display": "Resection of brain tumour"
             }
@@ -1066,7 +1066,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -1095,12 +1095,12 @@
         "resourceType": "DocumentReference",
         "id": "DOC-204-PATH",
         "masterIdentifier": {
-          "system": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
+          "system": "https://yamicc.example/fhir/NamingSystem/hospital-document-id",
           "value": "DOC-204-PATH"
         },
         "identifier": [
           {
-            "system": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
+            "system": "https://yamicc.example/fhir/NamingSystem/hospital-document-id",
             "value": "DOC-204-PATH"
           }
         ],
@@ -1173,7 +1173,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -1203,7 +1203,7 @@
         "id": "DR-DOC-204-PATH",
         "identifier": [
           {
-            "system": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
+            "system": "https://yamicc.example/fhir/NamingSystem/hospital-document-id",
             "value": "DR-DOC-204-PATH"
           }
         ],
@@ -1258,7 +1258,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -1287,12 +1287,12 @@
         "resourceType": "DocumentReference",
         "id": "DOC-204-MRI",
         "masterIdentifier": {
-          "system": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
+          "system": "https://yamicc.example/fhir/NamingSystem/hospital-document-id",
           "value": "DOC-204-MRI"
         },
         "identifier": [
           {
-            "system": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
+            "system": "https://yamicc.example/fhir/NamingSystem/hospital-document-id",
             "value": "DOC-204-MRI"
           }
         ],
@@ -1365,7 +1365,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -1395,7 +1395,7 @@
         "id": "DR-DOC-204-MRI",
         "identifier": [
           {
-            "system": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
+            "system": "https://yamicc.example/fhir/NamingSystem/hospital-document-id",
             "value": "DR-DOC-204-MRI"
           }
         ],
@@ -1449,7 +1449,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -1478,12 +1478,12 @@
         "resourceType": "DocumentReference",
         "id": "DOC-204-DIS",
         "masterIdentifier": {
-          "system": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
+          "system": "https://yamicc.example/fhir/NamingSystem/hospital-document-id",
           "value": "DOC-204-DIS"
         },
         "identifier": [
           {
-            "system": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
+            "system": "https://yamicc.example/fhir/NamingSystem/hospital-document-id",
             "value": "DOC-204-DIS"
           }
         ],
@@ -1551,7 +1551,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }

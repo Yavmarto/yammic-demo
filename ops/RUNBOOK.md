@@ -1,4 +1,4 @@
-# Yammic demo — local platform runbook (v4)
+# Yamicc demo — local platform runbook (v4)
 
 Owner: DevOps (CEL-1801). Scope: the local v4 demo stack for Monday 2026-11-23.
 Everything runs on this machine. **Synthetic data only. No hosting, no outreach, no paid APIs (Gate 3).**
@@ -11,16 +11,16 @@ v4 must never touch v3.
 
 | Component | v3 (frozen checkpoint) | v4 (this checkout) |
 |---|---|---|
-| Worktree | `~/yammic-demo-v3` | `~/yammic-v4` (branch `v4`) |
-| Compose project | `yammic-demo` | `yammic-v4` |
-| PostgreSQL 16 | `127.0.0.1:5433` · db `yammic`, `hapi` | `127.0.0.1:5434` · db `yammic`, `hapi`, `hapi2` |
+| Worktree | v3 checkout (frozen) | this v4 checkout (branch `v4`) |
+| Compose project | v3 project (frozen) | `yamicc-v4` |
+| PostgreSQL 16 | `127.0.0.1:5433` · its own db and roles (frozen) | `127.0.0.1:5434` · db `yamicc`, `hapi`, `hapi2` |
 | Hospital 1 FHIR (HAPI R4) | `http://127.0.0.1:8090/fhir` | `http://127.0.0.1:8091/fhir` · db `hapi` |
 | Hospital 2 FHIR (HAPI R4) | — | `http://127.0.0.1:8092/fhir` · db `hapi2` |
 | FastAPI backend | `http://127.0.0.1:8000` | `http://127.0.0.1:8001` |
 | AI extraction worker | polls `:8000` | polls `:8001` (`--api`), one per stack |
 | Flutter web app | `http://127.0.0.1:8080` | `http://127.0.0.1:8081` |
-| Data volume | `yammic-postgres-data` | `yammic-v4-postgres-data` |
-| Container names | fixed (`yammic-postgres`, `yammic-hapi`) | auto (`yammic-v4-postgres-1`, `yammic-v4-hapi-1`, `yammic-v4-hapi2-1`) |
+| Data volume | v3 volume (frozen) | `yamicc-v4-postgres-data` |
+| Container names | fixed v3 names (frozen) | auto (`yamicc-v4-postgres-1`, `yamicc-v4-hapi-1`, `yamicc-v4-hapi2-1`) |
 
 Ports are bound to `127.0.0.1` on purpose. Other machines cannot reach them.
 
@@ -28,7 +28,7 @@ v4 services (compose file `docker-compose.yml`):
 
 | Service | Image | Host port | Database | DB role |
 |---|---|---|---|---|
-| `postgres` | `postgres:16` (pinned digest) | `PG_PORT` (5434) | `yammic` | owner `yammic`; app `yammic_app` |
+| `postgres` | `postgres:16` (pinned digest) | `PG_PORT` (5434) | `yamicc` | owner `yamicc`; app `yamicc_app` |
 | `hapi` | `hapiproject/hapi` (pinned digest) | `FHIR_PORT` (8091) | `hapi` | `hapi` |
 | `hapi2` | `hapiproject/hapi` (same digest) | `FHIR2_PORT` (8092) | `hapi2` | `hapi2` |
 
@@ -50,13 +50,13 @@ All ports come from the environment. The defaults are the v4 values above; overr
 ## 3. Cold start (v4)
 
 ```bash
-cd ~/yammic-v4
+# Run from the v4 checkout root.
 make reset          # remove the v4 volume, start Postgres + both HAPI servers, seed
 make demo           # start backend :8001 + one AI worker + web :8081, health-check all
 open http://127.0.0.1:8081
 ```
 
-`make reset` only affects compose project `yammic-v4`. The v3 stack on 5433/8090/8000/8080
+`make reset` only affects compose project `yamicc-v4`. The v3 stack on 5433/8090/8000/8080
 keeps running.
 
 `make seed` loads hospital 1 with
@@ -80,10 +80,10 @@ Seed sets per hospital (override from the environment):
 
 | Variable | Value |
 |---|---|
-| `DATABASE_URL` | `postgresql+psycopg://yammic_app:<secret>@127.0.0.1:5434/yammic` |
+| `DATABASE_URL` | `postgresql+psycopg://yamicc_app:<secret>@127.0.0.1:5434/yamicc` |
 | `FHIR_BASE_URL` | `http://127.0.0.1:8091/fhir` (hospital 1; backward-compatible single source) |
 | `FHIR_SOURCES` | JSON array: `[{"id":"hospital-1","name":"Hospital 1","url":"http://127.0.0.1:8091/fhir"},{"id":"hospital-2","name":"Hospital 2","url":"http://127.0.0.1:8092/fhir"}]` |
-| `YAMMIC_API_URL` | `http://127.0.0.1:8001` (the AI worker uses this backend, never v3's :8000) |
+| `YAMICC_API_URL` | `http://127.0.0.1:8001` (the AI worker uses this backend, never v3's :8000) |
 
 `FHIR_SOURCES` is the multi-site contract for the backend (task D): one object per hospital with
 `id`, display `name` and FHIR base `url`. It is a JSON array on a single line.
@@ -112,7 +112,7 @@ data set exists), without changing the platform data. Use it to make the pre-dem
 
 ## 6. Stop and clean
 
-| Command (run in `~/yammic-v4`) | Effect |
+| Command (run in the v4 checkout root) | Effect |
 |---|---|
 | `make stop` | Stop this stack's backend, AI worker and web, then the v4 containers. Data is kept. |
 | `make down` | Stop v4 containers only. Data is kept. |
@@ -125,7 +125,7 @@ The v4 `ops/ai-workers.sh` only reports workers whose command line contains this
 (`--api http://127.0.0.1:8001`), so `make stop` and `make demo` do not stop or reuse v3's worker.
 The reverse is not true: v3's older `ops/ai-workers.sh` matches every `python -m app.ai` process.
 **While a v4 worker runs, do not run v3's `make stop` (it kills both) or v3's `make demo` (it may
-reuse the v4 worker).** Stop v4 first: `cd ~/yammic-v4 && make stop`.
+reuse the v4 worker).** Stop v4 first: run `make stop` in the v4 checkout root.
 
 ## 7. Recovery
 
@@ -203,18 +203,18 @@ Docker memory (two HAPI JVMs at 1.5 GB each).
 make reset
 ```
 
-This removes `yammic-v4-postgres-data`, recreates it, and re-seeds **only the v4 stack**. Use it when
+This removes `yamicc-v4-postgres-data`, recreates it, and re-seeds **only the v4 stack**. Use it when
 v4 data is inconsistent, after a schema change, or before a demo.
 
 Nuclear option for v4 only:
 
 ```bash
 docker compose down -v --remove-orphans
-docker volume rm yammic-v4-postgres-data 2>/dev/null || true
+docker volume rm yamicc-v4-postgres-data 2>/dev/null || true
 make reset
 ```
 
-Never run `docker compose down -v` in `~/yammic-demo-v3`.
+Never run `docker compose down -v` in the v3 checkout.
 
 ### 7.5 Backend cannot reach PostgreSQL
 
@@ -222,7 +222,7 @@ Symptom: `make health` shows `backend ... degraded`, or `backend.log` has `conne
 
 - The Makefile exports `DATABASE_URL` on port **5434**. The code default is still 5433 (v3);
   always start the backend through `make backend` or `make demo` so it gets the v4 URL.
-- Check: `docker compose exec postgres pg_isready -U yammic -d yammic`.
+- Check: `docker compose exec postgres pg_isready -U yamicc -d yamicc`.
 - If you changed the host port, export `DATABASE_URL` before `make backend`.
 - `make up` must be running first.
 
@@ -277,9 +277,9 @@ A worker that cannot log in exits at once with a traceback in `ops/logs/ai.log`;
 ## 8. Pre-demo checklist (T-15 minutes)
 
 - [ ] Docker Desktop is running: `docker info` prints a server version.
-- [ ] `docker ps` shows both stacks: v3 (`yammic-postgres`, `yammic-hapi`) and v4
-      (`yammic-v4-postgres-1`, `yammic-v4-hapi-1`, `yammic-v4-hapi2-1`), all healthy.
-- [ ] `make reset && make demo` completes in `~/yammic-v4`, final line
+- [ ] `docker ps` shows both stacks: v3 (frozen, own containers) and v4
+      (`yamicc-v4-postgres-1`, `yamicc-v4-hapi-1`, `yamicc-v4-hapi2-1`), all healthy.
+- [ ] `make reset && make demo` completes in the v4 checkout root, final line
       `Result: OK — full v4 demo stack is healthy (both hospitals).`
 - [ ] `ops/ai-workers.sh` prints exactly one PID, and `make demo` shows the AI worker line.
 - [ ] `tail -n 20 ops/logs/ai.log` has no `ai.poll_error` or `ai.run_error` lines.
@@ -306,7 +306,7 @@ A worker that cannot log in exits at once with a traceback in `ops/logs/ai.log`;
   `HAPI2_DB_PASSWORD`. The backend refuses to start without them (no committed default). The file is
   per checkout: v4's secrets cannot open v3's database. Deleting it means a new `make reset`.
 - **DB roles** (made by `ops/postgres-init.sh`, only on a fresh v4 volume):
-  `yammic` = owner/superuser for migrations and seed; `yammic_app` = the running backend;
+  `yamicc` = owner/superuser for migrations and seed; `yamicc_app` = the running backend;
   `hapi` = hospital 1, can only connect to database `hapi`; `hapi2` = hospital 2, only `hapi2`.
 - **Audit chain.** Hashes are HMAC-SHA256 with `AUDIT_KEY`. Each committed write appends
   `time count headHash` to `ops/audit-anchor.log`. `/audit/verify` fails on edits, mid-chain

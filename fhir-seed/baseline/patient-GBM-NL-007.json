@@ -31,14 +31,14 @@
             "type": {
               "text": "Study subject identifier"
             },
-            "system": "https://yammic.example/fhir/NamingSystem/study-subject-id",
+            "system": "https://yamicc.example/fhir/NamingSystem/study-subject-id",
             "value": "GBM-NL-007"
           },
           {
             "type": {
               "text": "Study identifier"
             },
-            "system": "https://yammic.example/fhir/NamingSystem/study-number",
+            "system": "https://yamicc.example/fhir/NamingSystem/study-number",
             "value": "GBM-NL-2026-01"
           }
         ],
@@ -61,7 +61,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -130,7 +130,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -204,7 +204,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -297,7 +297,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -390,7 +390,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -483,7 +483,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -576,7 +576,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -669,7 +669,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -762,7 +762,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }

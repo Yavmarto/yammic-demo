@@ -1,4 +1,4 @@
-"""Yammic AI extraction service (providers, prompt registry, eval hooks).
+"""Yamicc AI extraction service (providers, prompt registry, eval hooks).
 
 Run it as a separate process: ``uv run python -m app.ai --provider auto``.
 """

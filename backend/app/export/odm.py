@@ -38,8 +38,8 @@ def build_odm(c, study_id: str) -> bytes | None:
     now = datetime.now(UTC)
     root = ET.Element(f"{{{NS}}}ODM", {
         "FileType": "Snapshot", "FileOID": f"ODM.{study_id}.{now:%Y%m%d%H%M%S}", "CreationDateTime": _iso(now),
-        "ODMVersion": "1.3.2", "Granularity": "All", "Originator": "Yammic demo platform (synthetic data)",
-        "SourceSystem": "Yammic demo backend", "SourceSystemVersion": "0.1.0",
+        "ODMVersion": "1.3.2", "Granularity": "All", "Originator": "Yamicc demo platform (synthetic data)",
+        "SourceSystem": "Yamicc demo backend", "SourceSystemVersion": "0.1.0",
         "Description": f"Verified eCRF data for {st['short_name']}. Synthetic data, not for clinical use."})
     # --- metadata ---
     s = _e(root, "Study", OID=study_id)

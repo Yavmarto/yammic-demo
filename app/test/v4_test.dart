@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:yammic_demo/api/api.dart';
-import 'package:yammic_demo/data/session.dart';
-import 'package:yammic_demo/main.dart';
+import 'package:yamicc_demo/api/api.dart';
+import 'package:yamicc_demo/data/session.dart';
+import 'package:yamicc_demo/main.dart';
 import 'package:flutter/material.dart';
 import 'smoke_test.dart' as base;
 

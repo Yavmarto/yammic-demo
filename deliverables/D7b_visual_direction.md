@@ -336,7 +336,7 @@ Rules:
 ├──────────────┬────────────────────────────────────────────────────────────────┤
 │ Sidebar 232  │ Top context bar 56: breadcrumb · study · sync · role · user     │
 │              ├────────────────────────────────────────────────────────────────┤
-│ Yammic       │ Screen content (page padding 24, max 1440)                      │
+│ Yamicc       │ Screen content (page padding 24, max 1440)                      │
 │ Study        │                                                                │
 │  Dashboard   │                                                                │
 │  Participants│                                                                │
@@ -353,7 +353,7 @@ Rules:
 ```
 
 - Sidebar: 232 expanded, 72 collapsed. UI-005 always uses the 72 px focus rail so the three panes fit at 1440. Background `surfaceSunken`, 1 px right border `line`. No shadow.
-- Wordmark: "Yammic" in `h2` 20/500, with a 24 px square mark (ink background, white "Y" or a simple 3-node graph). Do not use a hospital cross.
+- Wordmark: "Yamicc" in `h2` 20/500, with a 24 px square mark (ink background, white "Y" or a simple 3-node graph). Do not use a hospital cross.
 - Nav sections with 11 px uppercase `label` headings: `STUDY` and `PLATFORM`.
 - Nav item: 40 px high, 8 px radius, 12 px icon, 8 px gap, 14 px label. Selected: `surfaceSelected` background, 1 px `borderPrimary`? No, use background + accent icon + 500 weight. No side stripe.
 - Badges: AI review shows the pending count in a neutral `ZetaTag`; if >0, amber dot + number. Audit has no badge.
@@ -408,10 +408,10 @@ Each spec names the exact widgets and token values. Wireframes are structure, no
 ┌───────────────────────────────┬──────────────────────────────────────────────┐
 │ BRAND PANEL #0E1B2C           │  Sign in                                     │
 │                               │  Local demo · synthetic data                 │
-│ Yammic                        │                                              │
+│ Yamicc                        │                                              │
 │ Clinical research,            │  [ Research nurse ] [ Monitor ] [ PI ]       │
 │ connected.                    │                                              │
-│                               │  Email        [ nurse@demo.yammic         ]  │
+│                               │  Email        [ nurse@demo.yamicc         ]  │
 │ One connected record from     │  Password     [ ••••••••              ] [e]  │
 │ hospital to regulator-ready   │  [ ] Remember me on this machine            │
 │ evidence.                     │                                              │
@@ -882,7 +882,7 @@ Each spec names the exact widgets and token values. Wireframes are structure, no
 
 **Generate:**
 - Primary `Generate export` 44 px. On press, the button becomes disabled + 16 px spinner, and a 4-step `StepTrail` appears below: Collect (0.2s), Transform (0.4s), Validate (0.3s), Package (0.2s). Each step: 20 px circle (pending grey, active accent spinner, done check), label, right-aligned count/elapsed. 180 ms step transitions.
-- Result card: file name `yammic_export_GBM-NL-2026-01_2026-11-21T1042Z.zip`, size `1.8 MB`, SHA-256 mono truncated with copy, `Download` primary, `Push to FHIR` outline, `Open history` text. A `Validated` teal pill. The download is a local file; no network.
+- Result card: file name `yamicc_export_GBM-NL-2026-01_2026-11-21T1042Z.zip`, size `1.8 MB`, SHA-256 mono truncated with copy, `Download` primary, `Push to FHIR` outline, `Open history` text. A `Validated` teal pill. The download is a local file; no network.
 - Push to FHIR: separate 600 ms step, then "Bundle accepted (201). Provenance written." toast; on 422, "FHIR server rejected the bundle" + `View response` dialog with the OperationOutcome. Push is idempotent; disable after success and show `Pushed 14:04`.
 
 **Preview (right 5 col):**
@@ -1012,7 +1012,7 @@ The copy-ready extension is in `deliverables/design/tokens/zeta_theme_extension.
 - `AppColors` (`ThemeExtension<AppColors>`) with all roles above.
 - `AppType` with the type scale (IBM Plex Sans, weights 300/400/500).
 - `AppSpace`, `AppRadii`, `AppMotion`.
-- `buildYammicTheme(ThemeData zetaBase)`.
+- `buildYamiccTheme(ThemeData zetaBase)`.
 - `StatusColors.of(context)` and `StatusPill` helpers.
 
 Do not fork Zeta's `ZetaColors`. Use `Zeta.of(context).colors` for Zeta components, and `AppColors.of(context)` for product roles. They must agree on neutral surfaces; the accent is Zeta `mainPrimary`.

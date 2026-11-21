@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Load the synthetic Yammic FHIR R4 bundles into a local HAPI FHIR server.
+"""Load the synthetic Yamicc FHIR R4 bundles into a local HAPI FHIR server.
 
 Stdlib only (no third-party packages). Every bundle entry is a transaction PUT
 with a client-assigned id, so running the loader again updates the same

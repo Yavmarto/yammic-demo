@@ -9,7 +9,7 @@ def _docker_pg():
     for port in (5434, 5433):
         try:
             socket.create_connection(("localhost", port), timeout=1).close()
-            return port, f"postgresql+psycopg://yammic:yammic@localhost:{port}/yammic_v4_test"
+            return port, f"postgresql+psycopg://yamicc:yamicc@localhost:{port}/yamicc_v4_test"
         except OSError:
             continue
     return None
@@ -21,16 +21,16 @@ def _make_url():
     import psycopg
     if pg := _docker_pg():
         port, url = pg
-        admin = f"postgresql://yammic:yammic@localhost:{port}/postgres"
+        admin = f"postgresql://yamicc:yamicc@localhost:{port}/postgres"
     else:  # no Docker: embedded Postgres (pgserver dev dependency) on a unix socket
         import pgserver
-        d = str(Path.home() / ".yammic-pg")
+        d = str(Path.home() / ".yamicc-pg")
         pgserver.get_server(d, cleanup_mode=None)
         admin = f"postgresql://postgres:@/postgres?host={d}"
-        url = f"postgresql+psycopg://postgres:@/yammic_v4_test?host={d}"
+        url = f"postgresql+psycopg://postgres:@/yamicc_v4_test?host={d}"
     with psycopg.connect(admin, autocommit=True) as c:
-        if not c.execute("SELECT 1 FROM pg_database WHERE datname='yammic_v4_test'").fetchone():
-            c.execute("CREATE DATABASE yammic_v4_test")
+        if not c.execute("SELECT 1 FROM pg_database WHERE datname='yamicc_v4_test'").fetchone():
+            c.execute("CREATE DATABASE yamicc_v4_test")
     return url
 
 

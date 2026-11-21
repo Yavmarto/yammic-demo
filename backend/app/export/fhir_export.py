@@ -5,10 +5,10 @@ from sqlalchemy import text
 
 SYS = {"ICD-O-3": "http://terminology.hl7.org/CodeSystem/icd-o-3", "SNOMED CT": "http://snomed.info/sct",
        "LOINC": "http://loinc.org", "ATC": "http://www.whocc.no/atc", "UCUM": "http://unitsofmeasure.org"}
-DOC_SYS = "https://yammic.example/fhir/NamingSystem/hospital-document-id"
+DOC_SYS = "https://yamicc.example/fhir/NamingSystem/hospital-document-id"
 PTYPE = "http://terminology.hl7.org/CodeSystem/provenance-participant-type"
-Q_URL = "https://yammic.example/fhir/Questionnaire/"
-TAG = {"system": "https://yammic.example/fhir/CodeSystem/data-provenance", "code": "SYNTHETIC",
+Q_URL = "https://yamicc.example/fhir/Questionnaire/"
+TAG = {"system": "https://yamicc.example/fhir/CodeSystem/data-provenance", "code": "SYNTHETIC",
        "display": "Synthetic demo data"}
 
 
@@ -29,7 +29,7 @@ def _answer(f: dict, v: dict) -> dict:
         return {"valueDate": val}
     if t == "coded" and v["code"]:
         c = v["code"]
-        return {"valueCoding": {"system": SYS.get(c.get("system"), f"urn:yammic:codesystem:{c.get('system')}"),
+        return {"valueCoding": {"system": SYS.get(c.get("system"), f"urn:yamicc:codesystem:{c.get('system')}"),
                                 "code": c["code"], "display": c.get("display") or val}}
     return {"valueString": val}
 
@@ -90,10 +90,10 @@ def build_bundle(c, pid: str) -> dict | None:
         aes.append({"resourceType": "AuditEvent", "id": f"ae-{pid}-{e['seq']}", "meta": {"tag": [TAG]},
                     "type": {"system": "http://terminology.hl7.org/CodeSystem/audit-event-type", "code": "rest",
                              "display": "RESTful Operation"},
-                    "subtype": [{"system": "https://yammic.example/fhir/CodeSystem/audit-action", "code": e["action"]}],
+                    "subtype": [{"system": "https://yamicc.example/fhir/CodeSystem/audit-action", "code": e["action"]}],
                     "action": _action(e["action"]), "recorded": _instant(e["ts"]), "outcome": "0",
-                    "agent": agent, "source": {"observer": {"display": "Yammic demo platform"}},
-                    "entity": [{"what": {"identifier": {"system": "https://yammic.example/fhir/NamingSystem/yammic-entity",
+                    "agent": agent, "source": {"observer": {"display": "Yamicc demo platform"}},
+                    "entity": [{"what": {"identifier": {"system": "https://yamicc.example/fhir/NamingSystem/yamicc-entity",
                                                          "value": f"{e['entity_type']}/{e['entity_id']}"}},
                                 "detail": [{"type": "audit-hash", "valueString": e["hash"]}]}]})
     res = [qr, prov, *aes]

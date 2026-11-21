@@ -1,6 +1,6 @@
 {
-    "name": "yammic_demo",
-    "short_name": "yammic_demo",
+    "name": "Yamicc Demo",
+    "short_name": "Yamicc",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

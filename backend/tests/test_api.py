@@ -215,7 +215,7 @@ def test_old_default_jwt_secret_rejected(client):
 
     import jwt
     forged = jwt.encode({"sub": "x", "role": "pi", "name": "x", "exp": int(time.time()) + 600},
-                        "yammic-demo-secret-not-for-production-use-1234", algorithm="HS256")
+                        "yamicc-demo-secret-not-for-production-use-1234", algorithm="HS256")
     assert client.get("/me", headers={"Authorization": f"Bearer {forged}"}).status_code == 401
 
 

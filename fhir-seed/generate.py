@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build synthetic FHIR R4 transaction bundles for the Yammic demo.
+"""Build synthetic FHIR R4 transaction bundles for the Yamicc demo.
 
 Inputs (read-only, owned by other workstreams):
     app/assets/data/participants.json
@@ -56,14 +56,14 @@ SERVER_BASE = "http://127.0.0.1:8090/fhir"
 TZ = "+01:00"
 
 CS = {
-    "provenance": "https://yammic.example/fhir/CodeSystem/data-provenance",
-    "mgmt": "https://yammic.example/fhir/CodeSystem/mgmt-promoter-status",
-    "procedure": "https://yammic.example/fhir/CodeSystem/procedure-type",
-    "extent": "https://yammic.example/fhir/CodeSystem/resection-extent",
-    "doc_id": "https://yammic.example/fhir/NamingSystem/hospital-document-id",
-    "subject_id": "https://yammic.example/fhir/NamingSystem/study-subject-id",
-    "study_no": "https://yammic.example/fhir/NamingSystem/study-number",
-    "site_id": "https://yammic.example/fhir/NamingSystem/trial-site-id",
+    "provenance": "https://yamicc.example/fhir/CodeSystem/data-provenance",
+    "mgmt": "https://yamicc.example/fhir/CodeSystem/mgmt-promoter-status",
+    "procedure": "https://yamicc.example/fhir/CodeSystem/procedure-type",
+    "extent": "https://yamicc.example/fhir/CodeSystem/resection-extent",
+    "doc_id": "https://yamicc.example/fhir/NamingSystem/hospital-document-id",
+    "subject_id": "https://yamicc.example/fhir/NamingSystem/study-subject-id",
+    "study_no": "https://yamicc.example/fhir/NamingSystem/study-number",
+    "site_id": "https://yamicc.example/fhir/NamingSystem/trial-site-id",
     "mrn": "urn:oid:2.16.840.1.113883.4.9999",
     "snomed": "http://snomed.info/sct",
     "loinc": "http://loinc.org",
@@ -523,9 +523,9 @@ def organizations(study: dict[str, Any]) -> list[dict[str, Any]]:
 def code_systems() -> list[dict[str, Any]]:
     specs = [
         (
-            "yammic-data-provenance",
-            "Yammic data provenance",
-            "Provenance markers used by the Yammic demo platform.",
+            "yamicc-data-provenance",
+            "Yamicc data provenance",
+            "Provenance markers used by the Yamicc demo platform.",
             [("SYNTHETIC", "Synthetic demo data")],
         ),
         (
@@ -540,7 +540,7 @@ def code_systems() -> list[dict[str, Any]]:
         ),
         (
             "procedure-type",
-            "Yammic demo procedure type",
+            "Yamicc demo procedure type",
             "Demo procedure categories used where no verified SNOMED CT code is available in the source dataset.",
             [
                 ("brain-tumour-resection", "Resection of brain tumour"),
@@ -565,14 +565,14 @@ def code_systems() -> list[dict[str, Any]]:
         resource = {
             "resourceType": "CodeSystem",
             "id": code,
-            "url": f"https://yammic.example/fhir/CodeSystem/{code}",
-            "identifier": [{"system": "urn:ietf:rfc:3986", "value": f"https://yammic.example/fhir/CodeSystem/{code}"}],
+            "url": f"https://yamicc.example/fhir/CodeSystem/{code}",
+            "identifier": [{"system": "urn:ietf:rfc:3986", "value": f"https://yamicc.example/fhir/CodeSystem/{code}"}],
             "version": "1.0.0",
             "name": "".join(part.capitalize() for part in re.split(r"[^A-Za-z0-9]+", name)),
             "title": name,
             "status": "active",
             "experimental": True,
-            "publisher": "Yammic demo (synthetic)",
+            "publisher": "Yamicc demo (synthetic)",
             "description": description,
             "caseSensitive": True,
             "content": "fragment",
@@ -1498,7 +1498,7 @@ def write_outputs(outputs: dict[str, str], *, check: bool) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Generate synthetic FHIR R4 bundles for the Yammic demo.")
+    parser = argparse.ArgumentParser(description="Generate synthetic FHIR R4 bundles for the Yamicc demo.")
     parser.add_argument(
         "--check",
         action="store_true",

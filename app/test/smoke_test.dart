@@ -4,9 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:yammic_demo/api/api.dart';
-import 'package:yammic_demo/data/session.dart';
-import 'package:yammic_demo/main.dart';
+import 'package:yamicc_demo/api/api.dart';
+import 'package:yamicc_demo/data/session.dart';
+import 'package:yamicc_demo/main.dart';
 
 const _text = 'KPS 90 at baseline. MGMT promoter is methylated.';
 Map<String, dynamic> _ext(String id, String state, {double conf = .9}) => {

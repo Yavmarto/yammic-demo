@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Health check for the local Yammic v4 demo stack (parallel with the frozen v3 stack).
+# Health check for the local Yamicc v4 demo stack (parallel with the frozen v3 stack).
 #
 #   ops/health.sh            infrastructure must be up; app checks are reported as SKIP when down
 #   ops/health.sh --strict   every component must be up, including the AI worker and both hospitals
@@ -56,7 +56,7 @@ fhir_metadata() { # $1 = base URL, $2 = label, $3 = compose service name
   fi
 }
 
-say "Yammic v4 demo health — $(date '+%Y-%m-%d %H:%M:%S %Z')"
+say "Yamicc v4 demo health — $(date '+%Y-%m-%d %H:%M:%S %Z')"
 say ""
 
 # ---------- Docker daemon ----------
@@ -64,13 +64,13 @@ if ! timeout 10 docker info >/dev/null 2>&1; then
   bad docker "Docker daemon is not reachable. Start Docker Desktop (see ops/RUNBOOK.md)."
 else
   # ---------- PostgreSQL (backend db + both HAPI dbs) ----------
-  if timeout 15 docker compose exec -T postgres pg_isready -U yammic -d yammic >/dev/null 2>&1; then
-    version="$(timeout 15 docker compose exec -T postgres psql -U yammic -d yammic -tAc 'SHOW server_version' 2>/dev/null | tr -d '[:space:]')"
-    ok postgres "127.0.0.1:${PG_PORT}  PostgreSQL ${version:-16}  db yammic"
-    if ! timeout 15 docker compose exec -T postgres psql -U yammic -d hapi -tAc 'SELECT 1' >/dev/null 2>&1; then
+  if timeout 15 docker compose exec -T postgres pg_isready -U yamicc -d yamicc >/dev/null 2>&1; then
+    version="$(timeout 15 docker compose exec -T postgres psql -U yamicc -d yamicc -tAc 'SHOW server_version' 2>/dev/null | tr -d '[:space:]')"
+    ok postgres "127.0.0.1:${PG_PORT}  PostgreSQL ${version:-16}  db yamicc"
+    if ! timeout 15 docker compose exec -T postgres psql -U yamicc -d hapi -tAc 'SELECT 1' >/dev/null 2>&1; then
       bad postgres "database 'hapi' (hospital 1) is not reachable (HAPI schema not initialised yet?)"
     fi
-    if ! timeout 15 docker compose exec -T postgres psql -U yammic -d hapi2 -tAc 'SELECT 1' >/dev/null 2>&1; then
+    if ! timeout 15 docker compose exec -T postgres psql -U yamicc -d hapi2 -tAc 'SELECT 1' >/dev/null 2>&1; then
       bad postgres "database 'hapi2' (hospital 2) is not reachable (HAPI schema not initialised yet?)"
     fi
   else
@@ -96,7 +96,7 @@ else
 fi
 
 # ---------- AI extraction worker (outside Docker, this stack only) ----------
-ai_pids="$(YAMMIC_API_URL="$BACKEND_BASE" ops/ai-workers.sh 2>/dev/null | tr '\n' ' ' | sed 's/ $//')"
+ai_pids="$(YAMICC_API_URL="$BACKEND_BASE" ops/ai-workers.sh 2>/dev/null | tr '\n' ' ' | sed 's/ $//')"
 if [ -n "$ai_pids" ]; then
   ai_n="$(printf '%s\n' "$ai_pids" | wc -w | tr -d '[:space:]')"
   if [ "$ai_n" -gt 1 ]; then

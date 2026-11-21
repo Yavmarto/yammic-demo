@@ -77,11 +77,11 @@ CREATE TABLE ecrf_form_version (
 );
 
 DO $$ BEGIN
-  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'yammic_app') THEN
-    GRANT USAGE ON SCHEMA public TO yammic_app;
-    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO yammic_app;
-    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO yammic_app;
-    REVOKE ALL ON audit_event FROM yammic_app;
-    GRANT SELECT, INSERT ON audit_event TO yammic_app;
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'yamicc_app') THEN
+    GRANT USAGE ON SCHEMA public TO yamicc_app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO yamicc_app;
+    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO yamicc_app;
+    REVOKE ALL ON audit_event FROM yamicc_app;
+    GRANT SELECT, INSERT ON audit_event TO yamicc_app;
   END IF;
 END $$;

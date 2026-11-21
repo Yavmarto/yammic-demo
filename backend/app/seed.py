@@ -111,10 +111,10 @@ if __name__ == "__main__":
             c.execute(text("DROP SCHEMA public CASCADE"))
             c.execute(text("CREATE SCHEMA public"))
             c.execute(text("""DO $$ BEGIN
-              IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'yammic_app') THEN
-                GRANT USAGE ON SCHEMA public TO yammic_app;
-                ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO yammic_app;
-                ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO yammic_app;
+              IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'yamicc_app') THEN
+                GRANT USAGE ON SCHEMA public TO yamicc_app;
+                ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO yamicc_app;
+                ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO yamicc_app;
               END IF;
             END $$"""))
     migrate()

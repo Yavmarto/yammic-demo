@@ -230,7 +230,7 @@ class _Sidebar extends StatelessWidget {
               ),
               if (wide) ...[
                 const SizedBox(width: 10),
-                const Text('Yammic', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, letterSpacing: -.2, color: K.ink)),
+                const Text('Yamicc', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, letterSpacing: -.2, color: K.ink)),
               ],
             ]),
           ),

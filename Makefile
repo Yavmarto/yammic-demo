@@ -1,4 +1,4 @@
-# Yammic local demo platform — one-command stack.
+# Yamicc local demo platform — one-command stack.
 # Owner: DevOps (CEL-1773). See ops/RUNBOOK.md.
 #
 #   make reset   drop volumes, start Postgres + HAPI FHIR, seed
@@ -49,8 +49,8 @@ FHIR_H1_ARRIVALS ?= arrivals
 FHIR_H2_ARRIVALS ?= arrivals
 
 # Backend runs as the least-privilege role; seed/migrations run as the owner.
-ADMIN_URL := postgresql+psycopg://yammic:yammic@localhost:$(PG_PORT)/yammic
-export DATABASE_URL ?= postgresql+psycopg://yammic_app:$(APP_DB_PASSWORD)@localhost:$(PG_PORT)/yammic
+ADMIN_URL := postgresql+psycopg://yamicc:yamicc@localhost:$(PG_PORT)/yamicc
+export DATABASE_URL ?= postgresql+psycopg://yamicc_app:$(APP_DB_PASSWORD)@localhost:$(PG_PORT)/yamicc
 
 FHIR_LOCAL := http://127.0.0.1:$(FHIR_PORT)
 FHIR2_LOCAL := http://127.0.0.1:$(FHIR2_PORT)
@@ -64,7 +64,7 @@ FHIR_BASE := $(FHIR_LOCAL)/fhir
 export FHIR_BASE_URL ?= $(FHIR_BASE)
 export FHIR_SOURCES ?= [{"id":"hospital-1","name":"Hospital 1","url":"$(FHIR_LOCAL)/fhir"},{"id":"hospital-2","name":"Hospital 2","url":"$(FHIR2_LOCAL)/fhir"}]
 # The AI worker talks to this stack's backend, never to v3's :8000.
-export YAMMIC_API_URL ?= $(BACKEND_LOCAL)
+export YAMICC_API_URL ?= $(BACKEND_LOCAL)
 
 LOG_DIR := ops/logs
 RUN_DIR := ops/run
@@ -74,7 +74,7 @@ BUILD_DIR := app/build/web
         _seed-fhir-h1 _seed-fhir-h2 _seed-fhir-arrivals
 
 help:
-	@echo "Yammic v4 demo platform (local only) — v3 stays on 5433/8090/8000/8080"
+	@echo "Yamicc v4 demo platform (local only) — v3 stays on 5433/8090/8000/8080"
 	@echo ""
 	@echo "  make up        start Postgres 16 (:$(PG_PORT)) and HAPI FHIR R4 (:$(FHIR_PORT) + :$(FHIR2_PORT)); wait for healthy"
 	@echo "  make down      stop containers, keep the data volume"
@@ -87,7 +87,7 @@ help:
 	@echo "  make demo      up + seed if empty + backend + AI worker + web in the background, then health --strict"
 	@echo "  make health    check Postgres, both FHIR servers, backend /health, AI worker, web (STRICT=1 to require all)"
 	@echo "  make stop      stop this stack's backend + AI worker + web processes and containers"
-	@echo "  make psql      open psql on the yammic database"
+	@echo "  make psql      open psql on the yamicc database"
 	@echo ""
 	@echo "Logs: $(LOG_DIR)/  PIDs: $(RUN_DIR)/"
 	@echo "Hospital 2 seed: fhir-seed/hospital2/<set>/ (FHIR_H2_SET, default baseline); skipped when absent."
@@ -102,14 +102,14 @@ up:
 
 down:
 	@$(COMPOSE) down --remove-orphans
-	@echo "== down: containers removed; data volume yammic-v4-postgres-data kept (v3 volume untouched)"
+	@echo "== down: containers removed; data volume yamicc-v4-postgres-data kept (v3 volume untouched)"
 
 seed:
 	@mkdir -p $(LOG_DIR)
 	@$(MAKE) --no-print-directory _seed-fhir-h1
 	@$(MAKE) --no-print-directory _seed-fhir-h2
 	@if [ -f backend/app/seed.py ]; then \
-		n=$$($(COMPOSE) exec -T postgres psql -U yammic -d yammic -tAc "SELECT count(*) FROM study" 2>/dev/null | tr -d '[:space:]'); \
+		n=$$($(COMPOSE) exec -T postgres psql -U yamicc -d yamicc -tAc "SELECT count(*) FROM study" 2>/dev/null | tr -d '[:space:]'); \
 		if [ -n "$$n" ] && [ "$$n" != "0" ]; then \
 			echo "== seed: skip backend — database already has $$n study row(s) (use make reset for a clean slate)"; \
 		else \
@@ -202,7 +202,7 @@ demo: up
 	@echo "Logs: $(LOG_DIR)/backend.log $(LOG_DIR)/ai.log $(LOG_DIR)/web.log (web build: $(LOG_DIR)/web-build.log)"
 
 _seed-if-empty:
-	@backend_n=$$($(COMPOSE) exec -T postgres psql -U yammic -d yammic -tAc "SELECT count(*) FROM study" 2>/dev/null | tr -d '[:space:]'); \
+	@backend_n=$$($(COMPOSE) exec -T postgres psql -U yamicc -d yamicc -tAc "SELECT count(*) FROM study" 2>/dev/null | tr -d '[:space:]'); \
 	fhir_n=$$(timeout 10 curl -fsS "$(FHIR_LOCAL)/Patient?_summary=count" 2>/dev/null | $(PY) -c "import sys,json;print(json.load(sys.stdin).get('total',0))" 2>/dev/null); \
 	fhir2_n=$$(timeout 10 curl -fsS "$(FHIR2_LOCAL)/Patient?_summary=count" 2>/dev/null | $(PY) -c "import sys,json;print(json.load(sys.stdin).get('total',0))" 2>/dev/null); \
 	backend_n=$${backend_n:-0}; fhir_n=$${fhir_n:-0}; fhir2_n=$${fhir2_n:-0}; \
@@ -328,7 +328,7 @@ stage-arrivals:
 	@echo "== stage-arrivals: done — press Sync now in the app to pull the new patients"
 
 psql:
-	@$(COMPOSE) exec postgres psql -U yammic -d yammic
+	@$(COMPOSE) exec postgres psql -U yamicc -d yamicc
 
 fhir:
 	@for u in $(FHIR_LOCAL) $(FHIR2_LOCAL); do echo "== $$u/fhir/metadata"; curl -fsS "$$u/fhir/metadata" | $(PY) -m json.tool | head -20; done

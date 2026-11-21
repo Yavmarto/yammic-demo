@@ -4015,7 +4015,7 @@
   },
   "info": {
     "description": "Local demo platform slice. All data is synthetic — prototype, not for clinical use. Auth: POST /auth/login, then `Authorization: Bearer <token>`. JSON is camelCase.",
-    "title": "Yammic demo backend",
+    "title": "Yamicc demo backend",
     "version": "0.1.0"
   },
   "openapi": "3.1.0",

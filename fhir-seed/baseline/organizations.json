@@ -11,7 +11,7 @@
         "id": "SITE-01",
         "identifier": [
           {
-            "system": "https://yammic.example/fhir/NamingSystem/trial-site-id",
+            "system": "https://yamicc.example/fhir/NamingSystem/trial-site-id",
             "value": "SITE-01",
             "type": {
               "text": "Trial site identifier"
@@ -37,7 +37,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -67,7 +67,7 @@
         "id": "SITE-02",
         "identifier": [
           {
-            "system": "https://yammic.example/fhir/NamingSystem/trial-site-id",
+            "system": "https://yamicc.example/fhir/NamingSystem/trial-site-id",
             "value": "SITE-02",
             "type": {
               "text": "Trial site identifier"
@@ -93,7 +93,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -123,7 +123,7 @@
         "id": "SITE-03",
         "identifier": [
           {
-            "system": "https://yammic.example/fhir/NamingSystem/trial-site-id",
+            "system": "https://yamicc.example/fhir/NamingSystem/trial-site-id",
             "value": "SITE-03",
             "type": {
               "text": "Trial site identifier"
@@ -149,7 +149,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }

@@ -4,7 +4,7 @@ from pathlib import Path
 from sqlalchemy import create_engine, text
 
 DATABASE_URL = os.environ.get(
-    "DATABASE_URL", "postgresql+psycopg://yammic:yammic@localhost:5433/yammic")
+    "DATABASE_URL", "postgresql+psycopg://yamicc:yamicc@localhost:5433/yamicc")
 engine = create_engine(DATABASE_URL, pool_pre_ping=True, future=True)
 
 MIGRATIONS = Path(__file__).resolve().parent.parent / "migrations"

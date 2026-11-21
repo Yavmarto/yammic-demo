@@ -19,7 +19,7 @@ from . import harness, screening_eval
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="Yammic extraction eval harness")
+    ap = argparse.ArgumentParser(description="Yamicc extraction eval harness")
     ap.add_argument("--provider", action="append", choices=["rules", "ollama"],
                     help="repeatable; default rules")
     ap.add_argument("--dataset", default="all", choices=["all", "gold", "arrivals"])

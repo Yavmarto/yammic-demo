@@ -1,4 +1,4 @@
-# Security review — Yammic demo v3 backend (pre-Board)
+# Security review — Yamicc demo v3 backend (pre-Board)
 
 **Issue:** CEL-1780 · **Reviewer:** Security Engineer · **Date:** 2026-11-21
 **Scope:** `backend/` at `dev`, commit `4810f1f` (W1 + W5; no backend files were modified in the working tree)
@@ -15,7 +15,7 @@
 | SEC-01 | **High** | JWT signing secret has a committed default and the app does not fail closed. A token for any user/role can be forged with a value in the repo. | `backend/app/security.py:9`, `:25-39` | Full authentication and role-model bypass. Demonstrated: a forged `role=pi` token accepted a review decision; a forged `role=service` token was accepted by `/me`. |
 | SEC-02 | **High** | The hash chain is unkeyed and has no external head anchor. A DB writer can delete the newest events undetected, or rewrite the whole chain so `/audit/verify` returns `ok:true`. | `backend/app/audit.py:18-19`, `:44-56`; `backend/migrations/001_init.sql:92-98` | The audit trail is not tamper-evident against the DB role the app uses (which is a Postgres superuser). Demonstrated all three cases against a live DB. |
 | SEC-03 | **High** | HAPI FHIR 8.12.0 image has 3 Critical Java CVEs (Spring RCE) + 4 Critical total, is unauthenticated, has CORS enabled, and shares the same Postgres **superuser** as the app. It serves the raw MRN and patient name. | `docker-compose.yml:38,45-51,56-57` | A local browser page or any local process can read raw identifiers and may reach a known RCE; that DB account can then rewrite the audit chain (SEC-02). |
-| SEC-04 | **Medium** | Pseudonymisation key has a committed default (`yammic-demo-pseudonym-key-not-for-production`). The stored HMACs are reversible by dictionary attack with that key. | `backend/app/ingest/pseudo.py:13`, `:16-22`; `sync.py:216-217` | Demonstrated: recomputing HMACs for the seed MRNs reproduced `pseudonym_map` rows exactly (e.g. `MRN-01-00101 → PSN-DD7C3EAA310D`). |
+| SEC-04 | **Medium** | Pseudonymisation key has a committed default (`yamicc-demo-pseudonym-key-not-for-production`). The stored HMACs are reversible by dictionary attack with that key. | `backend/app/ingest/pseudo.py:13`, `:16-22`; `sync.py:216-217` | Demonstrated: recomputing HMACs for the seed MRNs reproduced `pseudonym_map` rows exactly (e.g. `MRN-01-00101 → PSN-DD7C3EAA310D`). |
 | SEC-05 | **Medium** | JWTs are accepted from `?access_token=` on **every** endpoint, not only SSE, and uvicorn logs the full query string. | `backend/app/security.py:30-32`; `backend/app/routes.py:362-383` | Credential exposure in access logs and proxy/browser history. Demonstrated full JWT in `ops/logs`-style access log. |
 | SEC-06 | **Medium** | Read access to PHI-bearing resources is not audited. Only login, decisions, sync and exports write audit events. | `backend/app/routes.py:160-170,188-196,249-262`; `audit.py` | No non-repudiation for who viewed a document/eCRF/audit page. GCP/Annex 11 expect access logging. |
 | SEC-07 | **Medium** | Authorisation is global, not site/study scoped. `service` can read everything and export ODM/FHIR; `monitor` can push data back to the hospital FHIR server. | `backend/app/routes.py:18` (ANY), `export/routes.py:15,52-53` | No tenant/institution isolation (07 §4); least privilege is coarse. |
@@ -44,7 +44,7 @@ curl -s -X POST :8011/participants/GBM-NL-001/extraction-runs -H ... $MON       
 # forged token with the repo default secret
 # (HS256 over {"sub":"ghost","role":"service"}) -> GET /me 200, role=service
 # audit
-docker exec -i yammic-postgres psql -U yammic -d sec_probe -c "ALTER TABLE audit_event DISABLE TRIGGER USER; DELETE FROM audit_event WHERE seq=(SELECT max(seq) ...); ALTER TABLE audit_event ENABLE TRIGGER USER;"
+docker exec -i yamicc-postgres psql -U yamicc -d sec_probe -c "ALTER TABLE audit_event DISABLE TRIGGER USER; DELETE FROM audit_event WHERE seq=(SELECT max(seq) ...); ALTER TABLE audit_event ENABLE TRIGGER USER;"
 curl -s :8011/audit/verify                                                           # {"ok":true,...} after tail delete
 # pseudonymisation
 # recomputed HMAC-SHA256(default key, "mrn:"+MRN) -> matched pseudonym_map rows exactly
@@ -63,7 +63,7 @@ cd backend && uv run --with pip-audit pip-audit                                 
 ### SEC-01 — High — Forgeable JWTs from the committed default secret
 
 **Evidence**
-- `backend/app/security.py:9` — `SECRET = os.environ.get("JWT_SECRET", "yammic-demo-secret-not-for-production-use-1234")`.
+- `backend/app/security.py:9` — `SECRET = os.environ.get("JWT_SECRET", "yamicc-demo-secret-not-for-production-use-1234")`.
 - `backend/app/security.py:25-27` — token payload is `{sub, role, name, exp}`, signed HS256; the role in the token is trusted verbatim by `current_user()` at `:30-39`.
 - `Makefile:96,137` starts the backend without `JWT_SECRET`; `ops/RUNBOOK.md` documents no secret provisioning. The running demo on `:8000` had no `JWT_SECRET` in its environment.
 - `deliverables/backend_architecture.md:74` acknowledges the default.
@@ -88,7 +88,7 @@ cd backend && uv run --with pip-audit pip-audit                                 
 **Evidence**
 - `backend/app/audit.py:18-19` — `hash = SHA-256(prev_hash + canonical_json(event))`; no key, no signature.
 - `backend/app/audit.py:44-56` — `verify()` walks rows and only checks `prev_hash` links and per-row hashes. It has no expected head/count to compare against.
-- `backend/migrations/001_init.sql:92-98` — trigger blocks UPDATE/DELETE/TRUNCATE, but the table and trigger are owned by the app role `yammic`, which is a **Postgres superuser** (`docker-compose.yml:17-20,45-47`; `ops/RUNBOOK.md:10`). A superuser can `ALTER TABLE ... DISABLE TRIGGER`, then modify/delete/recompute at will.
+- `backend/migrations/001_init.sql:92-98` — trigger blocks UPDATE/DELETE/TRUNCATE, but the table and trigger are owned by the app role `yamicc`, which is a **Postgres superuser** (`docker-compose.yml:17-20,45-47`; `ops/RUNBOOK.md:10`). A superuser can `ALTER TABLE ... DISABLE TRIGGER`, then modify/delete/recompute at will.
 - `deliverables/backend_architecture.md:67` correctly notes that a removed last event is only visible if an earlier `headHash` is kept. No code stores or compares one.
 
 **Exploit path (all three demonstrated on a live DB)**
@@ -100,7 +100,7 @@ cd backend && uv run --with pip-audit pip-audit                                 
 
 **Proposed fix (CTO)** — defence in depth, all three:
 1. **Anchor the head externally.** Persist `(count, headHash, lastSeq)` after each write/at least after each run to a store the app DB role cannot rewrite (separate DB/schema with a different owner, a signed append-only file, or the ops log with a rotating MAC). `/audit/verify` must compare the DB head to the anchor and return `ok:false` with `reason:"head mismatch"` on a tail truncation. Alert on mismatch.
-2. **Least privilege.** Create a non-superuser app role in a migration: `SELECT, INSERT` on `audit_event`; no `UPDATE/DELETE/TRUNCATE/ALTER`; trigger owned by a separate owner role. Use a different role for HAPI. Revoke the shared `yammic` superuser from services.
+2. **Least privilege.** Create a non-superuser app role in a migration: `SELECT, INSERT` on `audit_event`; no `UPDATE/DELETE/TRUNCATE/ALTER`; trigger owned by a separate owner role. Use a different role for HAPI. Revoke the shared `yamicc` superuser from services.
 3. **Key the chain.** Use `HMAC-SHA256(AUDIT_KEY, …)` (key outside the repo) or sign the head, so a DB writer cannot recompute hashes. Add regression tests for tail deletion and full-chain rewrite (the current test at `tests/test_api.py:136-160` covers only modification and middle deletion).
 
 ---
@@ -110,7 +110,7 @@ cd backend && uv run --with pip-audit pip-audit                                 
 **Evidence**
 - `docker-compose.yml:38` — `hapiproject/hapi:latest@sha256:0ff8…`; HAPI reports software version **8.12.0** (`GET /integrations`).
 - `docker-compose.yml:51` — `hapi.fhir.cors.enabled: "true"`; no authentication is configured. `:56-57` publishes `127.0.0.1:8090`.
-- `docker-compose.yml:45-47` — HAPI connects to Postgres with the same `yammic`/`yammic` **superuser** as the app.
+- `docker-compose.yml:45-47` — HAPI connects to Postgres with the same `yamicc`/`yamicc` **superuser** as the app.
 - Live: `curl http://127.0.0.1:8090/fhir/Patient?_count=1` returns **200** with `MRN-01-00101` and `"Alfa Proefpersoon"`. This bypasses the pseudonymisation layer entirely.
 - Trivy (2026-11-21) on the pinned HAPI digest: **4 Critical, 25 High**. Criticals include:
   - `CVE-2026-47884` / `CVE-2026-47890` — Spring `spring-webmvc 6.2.19`, RCE via XsltView / SSE view fragments; fixed in 7.0.9.
@@ -133,7 +133,7 @@ cd backend && uv run --with pip-audit pip-audit                                 
 ## 4. Findings (Medium)
 
 ### SEC-04 — Medium — Default pseudonym key makes HMACs reversible
-`backend/app/ingest/pseudo.py:13` falls back to `yammic-demo-pseudonym-key-not-for-production`. `mrn_hmac()` (`:16-17`) is HMAC-SHA256 over `"mrn:"+MRN`, and `pseudonym_map` stores it (`sync.py:216-217`). With the key from the repo, an offline dictionary of plausible MRNs reproduces the stored values. **Demonstrated:** `MRN-01-00101 → PSN-DD7C3EAA310D`, `MRN-02-00102 → PSN-086F9D8BC62F`, etc., exactly matched `pseudonym_map`. **Fix:** require `PSEUDONYM_KEY` (≥32 bytes) at startup, fail closed, keep it outside the repo, and rotate it if it has ever been shared. Document that pseudonymised ≠ anonymous (07 §1). Consider per-study key versions to limit cross-study linkage (SEC-16).
+`backend/app/ingest/pseudo.py:13` falls back to `yamicc-demo-pseudonym-key-not-for-production`. `mrn_hmac()` (`:16-17`) is HMAC-SHA256 over `"mrn:"+MRN`, and `pseudonym_map` stores it (`sync.py:216-217`). With the key from the repo, an offline dictionary of plausible MRNs reproduces the stored values. **Demonstrated:** `MRN-01-00101 → PSN-DD7C3EAA310D`, `MRN-02-00102 → PSN-086F9D8BC62F`, etc., exactly matched `pseudonym_map`. **Fix:** require `PSEUDONYM_KEY` (≥32 bytes) at startup, fail closed, keep it outside the repo, and rotate it if it has ever been shared. Document that pseudonymised ≠ anonymous (07 §1). Consider per-study key versions to limit cross-study linkage (SEC-16).
 
 ### SEC-05 — Medium — JWT accepted in the query string on all endpoints; logged
 `backend/app/security.py:30-32` accepts `?access_token=`; `routes.py:362-383` only needs it for SSE, but the dependency applies everywhere. Live: `GET /participants?access_token=<jwt>` returned **200**, and uvicorn logged the full token in the request line (reproduced: `GET /runs/1/events?access_token=eyJhbGciOi…`). Tokens end up in terminal scrollback, log files, proxies and browser history. **Fix:** accept the query token only on the SSE route, make it short-lived (60 s) and single-use, or switch to a cookie/fetch-based SSE that can send headers; redact query strings in access logs (`--no-access-log` for the demo or a logging filter). Never log `authorization`.
@@ -165,7 +165,7 @@ Trivy on the pinned images at review time:
 | SEC-11 | JWT has no `aud`, `iss`, `iat`, `jti`; 8 h TTL; no logout/revocation; role/name are trusted from the token and never re-read from `app_user`. | `security.py:10,25-39` | Add `aud`/`iss`/`iat`/`jti`; shorten to 30–60 min with refresh; re-load the user/role on each request or use a denylist for logout. |
 | SEC-12 | Unbounded inputs: login/decision/query text, `confidence`, evidence indices, client-supplied extraction `id`; `action` LIKE wildcards not escaped. | `schemas.py:18-20,197-200,281-285,319-334`; `routes.py:313-321,418-433` | `max_length` on strings; `ge/le` on confidence; validate `0 <= start < end <= len(text)`; server-generate IDs; escape `%`/`_` in LIKE. |
 | SEC-13 | HTTP only (localhost), no HSTS/security headers. | `Makefile:96,137`; `main.py` | Fine for localhost; add TLS + headers before any non-local use. |
-| SEC-14 | Static DB password `yammic`/`yammic`, app role is superuser, HAPI shares it. | `docker-compose.yml:17-20,45-47`; `db.py:6-8` | Dedicated least-privilege roles per service; secrets from env; rotate. (Also required for SEC-02.) |
+| SEC-14 | Static DB password `yamicc`/`yamicc`, app role is superuser, HAPI shares it. | `docker-compose.yml:17-20,45-47`; `db.py:6-8` | Dedicated least-privilege roles per service; secrets from env; rotate. (Also required for SEC-02.) |
 | SEC-15 | Verbose error detail returned to clients (`/integrations`, `/ai/providers`). | `ingest/routes.py:47-48`; `ai/providers/ollama.py:133-138` | Return a generic message; log detail server-side only. |
 | SEC-16 | Pseudonyms are stable across studies (one global key/map); no key version/rotation; map is global. | `pseudo.py:13-22`; `migrations/002_ingest.sql:10-13` | Per-study key/namespace, key-version column, documented rotation and linkage risk. |
 | SEC-17 | `/audit` (ANY user, including `service`) returns `before`/`after` that can contain clinical values. | `routes.py:308-322` | Restrict audit to PI/monitor; minimise clinical values in `after` or mask them. |
