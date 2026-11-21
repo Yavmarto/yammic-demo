@@ -15,7 +15,7 @@ import json
 import sys
 from pathlib import Path
 
-from . import harness
+from . import harness, screening_eval
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -29,6 +29,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--json", action="store_true", help="print the full result JSON")
     ap.add_argument("--no-latest", action="store_true",
                     help="do not make this run the default latest.json (keep per-provider latest)")
+    ap.add_argument("--screening", action="store_true",
+                    help="also run the screening checker eval against seeded truth")
     args = ap.parse_args(argv)
     names = args.provider or ["rules"]
 
@@ -51,6 +53,14 @@ def main(argv: list[str] | None = None) -> int:
             failed += 1
         if result["summary"]["f1"] is not None and result["summary"]["f1"] < 0.9:
             print(f"[{name}] WARNING: F1 below 0.9", file=sys.stderr)
+        if args.screening:
+            s_res = screening_eval.evaluate_screening(name)
+            s_path = screening_eval.save_screening_eval(s_res, args.out)
+            print(f"[{name}] screening eval: criterionAccuracy={s_res['summary']['criterionAccuracy']} "
+                  f"overallAccuracy={s_res['summary']['overallAccuracy']} "
+                  f"spanErrors={s_res['summary']['spanErrors']} -> {s_path}")
+            if s_res["summary"]["spanErrors"] or (s_res["summary"]["criterionAccuracy"] or 0) < 0.9:
+                failed += 1
     return 1 if failed else 0
 
 

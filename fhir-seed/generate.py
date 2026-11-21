@@ -239,6 +239,11 @@ def load_arrivals() -> list[dict[str, Any]]:
     return load_json(SOURCE / "arrivals.json")["participants"]
 
 
+def load_hospital2() -> dict[str, Any]:
+    return load_json(SOURCE / "hospital2.json")
+
+
+
 def extraction_values() -> dict[str, dict[str, Any]]:
     data = load_json(DATA / "extractions.json")
     values: dict[str, dict[str, Any]] = {}
@@ -1358,13 +1363,67 @@ def build() -> dict[str, str]:
             )
         )
 
+    h2_source = load_hospital2()
+    h2_baseline_records = []
+    for participant in h2_source["baseline"]:
+        docs = [
+            dict(doc, assetPath=f"source/documents/{doc['file']}")
+            for doc in participant.get("documents", [])
+        ]
+        h2_baseline_records.append(
+            build_record(
+                participant,
+                extractions={},
+                site=sites[participant["siteId"]],
+                documents=docs,
+                arrivals=True,
+            )
+        )
+    h2_arrivals_records = []
+    for participant in h2_source["arrivals"]:
+        docs = [
+            dict(doc, assetPath=f"source/documents/{doc['file']}")
+            for doc in participant.get("documents", [])
+        ]
+        h2_arrivals_records.append(
+            build_record(
+                participant,
+                extractions={},
+                site=sites[participant["siteId"]],
+                documents=docs,
+                arrivals=True,
+            )
+        )
+
     organizations_bundle = transaction_bundle(organizations(study), "bundle-organizations")
     code_systems_bundle = transaction_bundle(code_systems(), "bundle-codesystems")
 
     outputs: dict[str, str] = {}
     outputs["shared/codesystems.json"] = serialise(code_systems_bundle)
 
-    for name, records in (("baseline", baseline_records), ("arrivals", arrivals_records)):
+    set_specs = (
+        ("baseline", baseline_records, 1, [
+            "app/assets/data/participants.json",
+            "app/assets/data/study.json",
+            "app/assets/data/documents.json",
+            "app/assets/data/extractions.json",
+            "app/assets/data/documents/*.txt",
+        ]),
+        ("arrivals", arrivals_records, 1, [
+            "fhir-seed/source/arrivals.json",
+            "fhir-seed/source/documents/*.txt",
+        ]),
+        ("hospital2/baseline", h2_baseline_records, 2, [
+            "fhir-seed/source/hospital2.json",
+            "fhir-seed/source/documents/DOC-20*.txt",
+        ]),
+        ("hospital2/arrivals", h2_arrivals_records, 2, [
+            "fhir-seed/source/hospital2.json",
+            "fhir-seed/source/documents/DOC-20*.txt",
+        ]),
+    )
+
+    for name, records, hospital_num, source_paths in set_specs:
         files: dict[str, dict[str, Any]] = {
             "shared/codesystems.json": code_systems_bundle,
             "organizations.json": organizations_bundle,
@@ -1388,24 +1447,14 @@ def build() -> dict[str, str]:
                 }
             )
         counts = count_resources(files)
-        manifest = {
+        manifest: dict[str, Any] = {
             "schemaVersion": "1.0.0",
-            "set": name,
+            "set": name.split("/")[-1],
             "synthetic": True,
             "generatedAt": GENERATED_AT,
             "asOf": AS_OF,
             "studyId": STUDY_ID,
-            "source": (
-                [
-                    "app/assets/data/participants.json",
-                    "app/assets/data/study.json",
-                    "app/assets/data/documents.json",
-                    "app/assets/data/extractions.json",
-                    "app/assets/data/documents/*.txt",
-                ]
-                if name == "baseline"
-                else ["fhir-seed/source/arrivals.json", "fhir-seed/source/documents/*.txt"]
-            ),
+            "source": source_paths,
             "order": paths,
             "patients": patient_files,
             "counts": counts,
@@ -1413,6 +1462,8 @@ def build() -> dict[str, str]:
             "documentCount": counts.get("DocumentReference", 0),
             "patientCount": len(records),
         }
+        if hospital_num != 1:
+            manifest["hospital"] = hospital_num
         outputs[f"{name}/manifest.json"] = serialise(manifest)
     return outputs
 
@@ -1437,10 +1488,10 @@ def write_outputs(outputs: dict[str, str], *, check: bool) -> int:
         print(f"fhir-seed: {len(outputs)} generated files are up to date")
         return 0
     print(f"fhir-seed: wrote {len(outputs)} files under {SEED_DIR}")
-    for name in ("baseline", "arrivals"):
+    for name in ("baseline", "arrivals", "hospital2/baseline", "hospital2/arrivals"):
         manifest = json.loads(outputs[f"{name}/manifest.json"])
         print(
-            f"  {name:9s} patients={manifest['patientCount']:2d} "
+            f"  {name:18s} patients={manifest['patientCount']:2d} "
             f"documents={manifest['documentCount']:2d} resources={manifest['totalResources']:3d}"
         )
     return 0

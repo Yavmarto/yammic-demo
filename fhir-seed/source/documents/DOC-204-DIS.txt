@@ -1,0 +1,30 @@
+SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK
+Fictief Universitair Medisch Centrum Noordhaven - Afdeling Neuro-oncologie
+
+PATIENTCODE: GBM-NL-204
+GESLACHT: vrouw
+LEEFTIJD BIJ DIAGNOSE: 59 jaar
+DATUM OPNAME: 2026-11-08
+DATUM POLIKLINIEK: 2026-11-20
+
+POLIKLINISCHE BRIEF
+Patient onderging een links frontale craniotomie. Histologie bevestigde een
+glioblastoom, IDH-wildtype. Moleculaire MGMT-bepaling is nog in afwachting.
+Patient is goed hersteld van de operatie (meer dan 2 weken na craniotomie).
+
+VOORGESCHIEDENIS EN MEDICATIE
+Geen eerdere radiotherapie op de hersenen.
+Geen eerdere systemische anti-glioomtherapie.
+
+FUNCTIONELE STATUS
+Karnofsky Performance Status: 80%.
+
+LABORATORIUM (2026-11-20)
+Beenmergfunctie adequaat: ANC 3.6 x10^9/L, trombocyten 220 x10^9/L, hemoglobine 13.1 g/dL.
+Leverfunctie adequaat: ALT 21 U/L (<=3 xULN), totaal bilirubine 0.6 mg/dL (<=1.5 xULN).
+Nierfunctie adequaat: serumcreatinine 0.81 mg/dL (<=1.5 xULN), eGFR 88 mL/min/1.73 m2.
+Geen zwangerschap of borstvoeding; negatieve zwangerschapstest bevestigd op 2026-11-20.
+
+TOESTEMMING EN BELEID
+Schriftelijk informed consent is getekend; patient is in staat het bezoekschema te volgen.
+Screening in afwachting van moleculaire MGMT-uitslag. Maximaal graad 1 vermoeidheid.

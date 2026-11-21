@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "1.0.0",
+  "set": "baseline",
+  "synthetic": true,
+  "generatedAt": "2026-11-21T10:30:00+01:00",
+  "asOf": "2026-11-21",
+  "studyId": "GBM-NL-2026-01",
+  "source": [
+    "fhir-seed/source/hospital2.json",
+    "fhir-seed/source/documents/DOC-20*.txt"
+  ],
+  "order": [
+    "shared/codesystems.json",
+    "hospital2/baseline/organizations.json",
+    "hospital2/baseline/patient-GBM-NL-201.json",
+    "hospital2/baseline/patient-GBM-NL-202.json",
+    "hospital2/baseline/patient-GBM-NL-203.json",
+    "hospital2/baseline/patient-GBM-NL-204.json",
+    "hospital2/baseline/patient-GBM-NL-205.json"
+  ],
+  "patients": [
+    {
+      "patientId": "GBM-NL-201",
+      "file": "hospital2/baseline/patient-GBM-NL-201.json",
+      "resources": 28,
+      "documents": [
+        "DOC-201-PATH",
+        "DOC-201-MRI",
+        "DOC-201-DIS"
+      ],
+      "sha256": "9a29a3d7b4f5522ec73ffeee22dbd17ad855b74ef073ce1ae173c8ab04bb7822"
+    },
+    {
+      "patientId": "GBM-NL-202",
+      "file": "hospital2/baseline/patient-GBM-NL-202.json",
+      "resources": 28,
+      "documents": [
+        "DOC-202-PATH",
+        "DOC-202-MRI",
+        "DOC-202-DIS"
+      ],
+      "sha256": "47f31d73623b26771fb68fa9ea8b2b578cca980db842d98da7fcd51e71d26c31"
+    },
+    {
+      "patientId": "GBM-NL-203",
+      "file": "hospital2/baseline/patient-GBM-NL-203.json",
+      "resources": 17,
+      "documents": [
+        "DOC-203-PATH",
+        "DOC-203-DIS"
+      ],
+      "sha256": "cc5b59988b7ebb2364fa80af8a525f8b1ae6a1625efb6c10cad6be7a77ad5b8b"
+    },
+    {
+      "patientId": "GBM-NL-204",
+      "file": "hospital2/baseline/patient-GBM-NL-204.json",
+      "resources": 18,
+      "documents": [
+        "DOC-204-PATH",
+        "DOC-204-MRI",
+        "DOC-204-DIS"
+      ],
+      "sha256": "4f6c4c2666d2f181d07300dcbd29a47ba7af243373ebdba0491027c85cfda468"
+    },
+    {
+      "patientId": "GBM-NL-205",
+      "file": "hospital2/baseline/patient-GBM-NL-205.json",
+      "resources": 17,
+      "documents": [
+        "DOC-205-PATH",
+        "DOC-205-DIS"
+      ],
+      "sha256": "41b77c5fe8e28ea929d1386c6df60a3faa70679e654432f5056d7c59e564c557"
+    }
+  ],
+  "counts": {
+    "CodeSystem": 4,
+    "Condition": 5,
+    "DiagnosticReport": 8,
+    "DocumentReference": 13,
+    "Encounter": 5,
+    "MedicationRequest": 4,
+    "Observation": 61,
+    "Organization": 3,
+    "Patient": 5,
+    "Procedure": 7
+  },
+  "totalResources": 115,
+  "documentCount": 13,
+  "patientCount": 5,
+  "hospital": 2
+}

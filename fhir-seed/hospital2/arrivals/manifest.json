@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0.0",
+  "set": "arrivals",
+  "synthetic": true,
+  "generatedAt": "2026-11-21T10:30:00+01:00",
+  "asOf": "2026-11-21",
+  "studyId": "GBM-NL-2026-01",
+  "source": [
+    "fhir-seed/source/hospital2.json",
+    "fhir-seed/source/documents/DOC-20*.txt"
+  ],
+  "order": [
+    "shared/codesystems.json",
+    "hospital2/arrivals/organizations.json",
+    "hospital2/arrivals/patient-GBM-NL-206.json",
+    "hospital2/arrivals/patient-GBM-NL-207.json"
+  ],
+  "patients": [
+    {
+      "patientId": "GBM-NL-206",
+      "file": "hospital2/arrivals/patient-GBM-NL-206.json",
+      "resources": 28,
+      "documents": [
+        "DOC-206-PATH",
+        "DOC-206-MRI",
+        "DOC-206-DIS"
+      ],
+      "sha256": "f5a8283e883e5a9f10f88e97cd24ce80c3969bd18377291aae03ffc210c87e5d"
+    },
+    {
+      "patientId": "GBM-NL-207",
+      "file": "hospital2/arrivals/patient-GBM-NL-207.json",
+      "resources": 13,
+      "documents": [
+        "DOC-207-MRI",
+        "DOC-207-DIS"
+      ],
+      "sha256": "5d2aaec31a4fb320a28bd9531cd4e3c9b273399a006f01776b490200fbadf4e6"
+    }
+  ],
+  "counts": {
+    "CodeSystem": 4,
+    "Condition": 2,
+    "DiagnosticReport": 3,
+    "DocumentReference": 5,
+    "Encounter": 2,
+    "MedicationRequest": 2,
+    "Observation": 23,
+    "Organization": 3,
+    "Patient": 2,
+    "Procedure": 2
+  },
+  "totalResources": 48,
+  "documentCount": 5,
+  "patientCount": 2,
+  "hospital": 2
+}

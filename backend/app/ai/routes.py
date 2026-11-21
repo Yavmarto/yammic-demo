@@ -13,13 +13,16 @@ import json
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
 from sqlalchemy import text
 
 from .. import schemas as S
 from ..audit import record as audit_record
 from ..db import engine
 from ..security import current_user, require
-from . import providers, registry
+from . import protocol, providers, registry, screening
+from .types import CriterionDef
 
 r = APIRouter()
 RESULTS = Path(__file__).resolve().parents[2] / "eval" / "results"
@@ -118,3 +121,158 @@ def queue_provider_run(pid: str, body: S.RunIn | None = None,
         audit_record(c, user, "run.created", "extraction_run", run["id"], participant_id=pid,
                      after={"documentId": document_id, "provider": provider})
     return run
+
+
+class _AiBody(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+
+class ScreeningIn(_AiBody):
+    criteria: list[dict] | None = None
+    documents: list[dict] | None = None
+
+
+class ProtocolProposalsIn(_AiBody):
+    synopsis_text: str | None = None
+    study_id: str = "GBM-NL-2026-01"
+    form_id: str = "ECRF-GBM-BASELINE"
+    proposed_version: str = "1.1"
+
+
+@r.get("/ai/criteria", tags=["ai"])
+def ai_criteria(user=Depends(current_user)):
+    """Return the protocol entry criteria from deliverables/protocol_criteria.json."""
+    return {"criteria": [c.as_api() for c in screening.load_criteria()]}
+
+
+@r.get("/ai/screening/eval", tags=["ai"])
+def ai_screening_eval(provider: str = Query(default="rules"), user=Depends(current_user)):
+    """Run or return the screening checker evaluation against seeded truth."""
+    provider = provider.lower()
+    if provider not in {"rules", "ollama"}:
+        raise HTTPException(422, "provider must be 'rules' or 'ollama'")
+    from eval import screening_eval
+
+    try:
+        res = screening_eval.evaluate_screening(provider)
+    except Exception as exc:
+        raise HTTPException(503, f"Screening eval unavailable for {provider}: {exc}") from exc
+    return res
+
+
+@r.post("/ai/participants/{pid}/screen", tags=["ai"])
+@r.post("/ai/participants/{pid}/screening/check", tags=["ai"])
+def screen_participant(pid: str, body: ScreeningIn | None = None,
+                       provider: str = Query(default="auto"),
+                       user=Depends(require("nurse", "pi", "service"))):
+    """Check a participant against protocol entry criteria (`met | not_met | unknown` with evidence spans)."""
+    provider = provider.lower()
+    if provider not in PROVIDER_CHOICES:
+        raise HTTPException(422, f"provider must be one of {sorted(PROVIDER_CHOICES)}")
+
+    crit_list = (
+        [CriterionDef.from_api(c) for c in body.criteria]
+        if body and body.criteria
+        else screening.load_criteria()
+    )
+
+    with engine.begin() as c:
+        if body and body.documents is not None:
+            docs = body.documents
+        else:
+            _must(_one(c, "SELECT 1 FROM participant WHERE id=:i", i=pid), "Participant")
+            rows = c.execute(
+                text("SELECT id, participant_id, doc_type AS type, title, language, document_date, text "
+                     "FROM source_document WHERE participant_id=:p ORDER BY id"),
+                {"p": pid},
+            ).mappings().all()
+            docs = [dict(r) for r in rows]
+
+        result = screening.check_participant(
+            pid, docs, criteria=crit_list, provider=provider, allow_fallback=True
+        )
+        payload = result.as_api()
+        audit_record(
+            c,
+            user,
+            "screening.checked",
+            "participant",
+            pid,
+            participant_id=pid,
+            after={
+                "overall": result.overall,
+                "counts": payload["counts"],
+                "provider": result.metadata.provider,
+                "fallbackFrom": result.metadata.fallback_from,
+            },
+            source="ai",
+            model=result.metadata.model,
+            prompt_version=result.metadata.prompt_version,
+        )
+    return payload
+
+
+@r.get("/ai/protocol/proposals", tags=["ai"])
+def get_protocol_proposals(provider: str = Query(default="auto"),
+                           study_id: str = Query(default="GBM-NL-2026-01"),
+                           form_id: str = Query(default="ECRF-GBM-BASELINE"),
+                           proposed_version: str = Query(default="1.1"),
+                           user=Depends(current_user)):
+    """Propose eCRF fields and entry criteria from the default protocol synopsis."""
+    provider = provider.lower()
+    if provider not in PROVIDER_CHOICES:
+        raise HTTPException(422, f"provider must be one of {sorted(PROVIDER_CHOICES)}")
+    result = protocol.propose_from_synopsis(
+        None,
+        provider=provider,
+        allow_fallback=True,
+        study_id=study_id,
+        form_id=form_id,
+        proposed_version=proposed_version,
+    )
+    return {**result.as_api(), "synopsisText": protocol.load_synopsis()}
+
+
+@r.post("/ai/protocol/proposals", tags=["ai"])
+@r.post("/ai/protocol-to-form", tags=["ai"])
+def post_protocol_proposals(body: ProtocolProposalsIn | None = None,
+                            provider: str = Query(default="auto"),
+                            user=Depends(require("nurse", "pi", "service"))):
+    """Propose eCRF fields and entry criteria from supplied or default protocol synopsis text."""
+    provider = provider.lower()
+    if provider not in PROVIDER_CHOICES:
+        raise HTTPException(422, f"provider must be one of {sorted(PROVIDER_CHOICES)}")
+    synopsis_text = body.synopsis_text if body and body.synopsis_text else protocol.load_synopsis()
+    study_id = body.study_id if body else "GBM-NL-2026-01"
+    form_id = body.form_id if body else "ECRF-GBM-BASELINE"
+    proposed_version = body.proposed_version if body else "1.1"
+
+    result = protocol.propose_from_synopsis(
+        synopsis_text,
+        provider=provider,
+        allow_fallback=True,
+        study_id=study_id,
+        form_id=form_id,
+        proposed_version=proposed_version,
+    )
+    payload = result.as_api()
+    with engine.begin() as c:
+        audit_record(
+            c,
+            user,
+            "protocol.form_proposed",
+            "study",
+            study_id,
+            after={
+                "formId": form_id,
+                "proposedVersion": proposed_version,
+                "fieldCount": len(result.fields),
+                "criteriaCount": len(result.criteria),
+                "provider": result.metadata.provider,
+                "fallbackFrom": result.metadata.fallback_from,
+            },
+            source="ai",
+            model=result.metadata.model,
+            prompt_version=result.metadata.prompt_version,
+        )
+    return {**payload, "synopsisText": synopsis_text}

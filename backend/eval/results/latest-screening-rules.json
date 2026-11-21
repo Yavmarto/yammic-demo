@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-21T19:29:58.451567+00:00",
+  "provider": "rules",
+  "summary": {
+    "patients": 8,
+    "criteriaPerPatient": 13,
+    "totalChecks": 104,
+    "correctChecks": 104,
+    "criterionAccuracy": 1.0,
+    "overallAccuracy": 1.0,
+    "spanErrors": 0,
+    "durationMs": 49
+  },
+  "patients": [
+    {
+      "participantId": "GBM-NL-201",
+      "expectedOverall": "eligible",
+      "predictedOverall": "eligible",
+      "overallMatch": true,
+      "criteriaCorrect": 13,
+      "criteriaTotal": 13,
+      "spanErrors": 0
+    },
+    {
+      "participantId": "GBM-NL-202",
+      "expectedOverall": "eligible",
+      "predictedOverall": "eligible",
+      "overallMatch": true,
+      "criteriaCorrect": 13,
+      "criteriaTotal": 13,
+      "spanErrors": 0
+    },
+    {
+      "participantId": "GBM-NL-203",
+      "expectedOverall": "screen_fail",
+      "predictedOverall": "screen_fail",
+      "overallMatch": true,
+      "criteriaCorrect": 13,
+      "criteriaTotal": 13,
+      "spanErrors": 0
+    },
+    {
+      "participantId": "GBM-NL-204",
+      "expectedOverall": "unknown",
+      "predictedOverall": "unknown",
+      "overallMatch": true,
+      "criteriaCorrect": 13,
+      "criteriaTotal": 13,
+      "spanErrors": 0
+    },
+    {
+      "participantId": "GBM-NL-205",
+      "expectedOverall": "screen_fail",
+      "predictedOverall": "screen_fail",
+      "overallMatch": true,
+      "criteriaCorrect": 13,
+      "criteriaTotal": 13,
+      "spanErrors": 0
+    },
+    {
+      "participantId": "GBM-NL-206",
+      "expectedOverall": "eligible",
+      "predictedOverall": "eligible",
+      "overallMatch": true,
+      "criteriaCorrect": 13,
+      "criteriaTotal": 13,
+      "spanErrors": 0
+    },
+    {
+      "participantId": "GBM-NL-207",
+      "expectedOverall": "unknown",
+      "predictedOverall": "unknown",
+      "overallMatch": true,
+      "criteriaCorrect": 13,
+      "criteriaTotal": 13,
+      "spanErrors": 0
+    },
+    {
+      "participantId": "GBM-NL-011",
+      "expectedOverall": "unknown",
+      "predictedOverall": "unknown",
+      "overallMatch": true,
+      "criteriaCorrect": 13,
+      "criteriaTotal": 13,
+      "spanErrors": 0
+    }
+  ],
+  "criteria": [
+    {
+      "id": "INC-01",
+      "type": "inclusion",
+      "support": 8,
+      "correct": 8,
+      "spanErrors": 0,
+      "accuracy": 1.0
+    },
+    {
+      "id": "INC-02",
+      "type": "inclusion",
+      "support": 8,
+      "correct": 8,
+      "spanErrors": 0,
+      "accuracy": 1.0
+    },
+    {
+      "id": "INC-03",
+      "type": "inclusion",
+      "support": 8,
+      "correct": 8,
+      "spanErrors": 0,
+      "accuracy": 1.0
+    },
+    {
+      "id": "INC-04",
+      "type": "inclusion",
+      "support": 8,
+      "correct": 8,
+      "spanErrors": 0,
+      "accuracy": 1.0
+    },
+    {
+      "id": "INC-05",
+      "type": "inclusion",
+      "support": 8,
+      "correct": 8,
+      "spanErrors": 0,
+      "accuracy": 1.0
+    },
+    {
+      "id": "INC-06",
+      "type": "inclusion",
+      "support": 8,
+      "correct": 8,
+      "spanErrors": 0,
+      "accuracy": 1.0
+    },
+    {
+      "id": "INC-07",
+      "type": "inclusion",
+      "support": 8,
+      "correct": 8,
+      "spanErrors": 0,
+      "accuracy": 1.0
+    },
+    {
+      "id": "INC-08",
+      "type": "inclusion",
+      "support": 8,
+      "correct": 8,
+      "spanErrors": 0,
+      "accuracy": 1.0
+    },
+    {
+      "id": "INC-09",
+      "type": "inclusion",
+      "support": 8,
+      "correct": 8,
+      "spanErrors": 0,
+      "accuracy": 1.0
+    },
+    {
+      "id": "EXC-01",
+      "type": "exclusion",
+      "support": 8,
+      "correct": 8,
+      "spanErrors": 0,
+      "accuracy": 1.0
+    },
+    {
+      "id": "EXC-02",
+      "type": "exclusion",
+      "support": 8,
+      "correct": 8,
+      "spanErrors": 0,
+      "accuracy": 1.0
+    },
+    {
+      "id": "EXC-03",
+      "type": "exclusion",
+      "support": 8,
+      "correct": 8,
+      "spanErrors": 0,
+      "accuracy": 1.0
+    },
+    {
+      "id": "EXC-04",
+      "type": "exclusion",
+      "support": 8,
+      "correct": 8,
+      "spanErrors": 0,
+      "accuracy": 1.0
+    }
+  ],
+  "mismatches": []
+}

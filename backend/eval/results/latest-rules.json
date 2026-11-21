@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-21T11:20:45.262582+00:00",
+  "generatedAt": "2026-11-21T19:29:58.391344+00:00",
   "provider": {
     "name": "rules",
     "model": "rules-regex-v1",
     "paid": false
   },
   "prompt": {
-    "version": "rules_v1@31d138e3eea9",
-    "sha256": "31d138e3eea9e0f1e6aeaf20b31e9ef89cbe29d07a21646dff86cde03948d323"
+    "version": "rules_v1@83a90473b9fb",
+    "sha256": "83a90473b9fb02176a900f98df96dcab56b5d64aaabe6ac996e526c1843d2f96"
   },
   "dataset": {
     "name": "all",
@@ -40,7 +40,7 @@
   },
   "summary": {
     "documents": 13,
-    "durationMs": 17,
+    "durationMs": 15,
     "goldProposals": 57,
     "goldAbstentions": 4,
     "truePositives": 57,
@@ -377,7 +377,7 @@
       "documentId": "DOC-001-DIS",
       "participantId": "GBM-NL-001",
       "type": "discharge_letter",
-      "durationMs": 1,
+      "durationMs": 0,
       "proposals": 10,
       "abstained": 5,
       "lowConfidence": 0,
@@ -392,7 +392,7 @@
       "documentId": "DOC-002-PATH",
       "participantId": "GBM-NL-002",
       "type": "pathology_report",
-      "durationMs": 1,
+      "durationMs": 0,
       "proposals": 6,
       "abstained": 9,
       "lowConfidence": 0,
@@ -437,7 +437,7 @@
       "documentId": "DOC-002-DIS",
       "participantId": "GBM-NL-002",
       "type": "discharge_letter",
-      "durationMs": 1,
+      "durationMs": 0,
       "proposals": 11,
       "abstained": 4,
       "lowConfidence": 0,
@@ -497,7 +497,7 @@
       "documentId": "DOC-005-PATH",
       "participantId": "GBM-NL-005",
       "type": "pathology_report",
-      "durationMs": 1,
+      "durationMs": 0,
       "proposals": 6,
       "abstained": 9,
       "lowConfidence": 0,
@@ -527,7 +527,7 @@
       "documentId": "DOC-005-DIS",
       "participantId": "GBM-NL-005",
       "type": "discharge_letter",
-      "durationMs": 1,
+      "durationMs": 0,
       "proposals": 11,
       "abstained": 4,
       "lowConfidence": 0,

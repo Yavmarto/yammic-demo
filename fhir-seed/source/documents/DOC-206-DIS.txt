@@ -1,0 +1,31 @@
+SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK
+Fictief Universitair Medisch Centrum Noordhaven - Afdeling Neuro-oncologie
+
+PATIENTCODE: GBM-NL-206
+GESLACHT: vrouw
+LEEFTIJD BIJ DIAGNOSE: 56 jaar
+DATUM OPNAME: 2026-11-06
+DATUM ONTSLAG: 2026-11-20
+
+ONTSLAGBRIEF
+Patient werd opgenomen voor een rechts occipitale craniotomie. Histopathologisch
+onderzoek toonde een glioblastoom, IDH-wildtype. Postoperatief beloop ongecompliceerd;
+patient is goed hersteld van de operatie (meer dan 2 weken na craniotomie).
+
+VOORGESCHIEDENIS EN MEDICATIE
+Geen eerdere radiotherapie op de hersenen.
+Geen eerdere systemische anti-glioomtherapie.
+
+FUNCTIONELE STATUS
+Karnofsky Performance Status bij ontslag: 80%.
+
+LABORATORIUM (2026-11-20)
+Beenmergfunctie adequaat: ANC 3.8 x10^9/L, trombocyten 235 x10^9/L, hemoglobine 13.4 g/dL.
+Leverfunctie adequaat: ALT 20 U/L (<=3 xULN), totaal bilirubine 0.6 mg/dL (<=1.5 xULN).
+Nierfunctie adequaat: serumcreatinine 0.79 mg/dL (<=1.5 xULN), eGFR 89 mL/min/1.73 m2.
+Geen zwangerschap of borstvoeding; negatieve zwangerschapstest bevestigd op 2026-11-20.
+
+TOESTEMMING EN BELEID
+Schriftelijk informed consent is getekend; patient is in staat het bezoekschema te volgen.
+Adjuvante radiotherapie 60 Gy in 30 fracties met gelijktijdig temozolomide,
+gevolgd door 6 geplande cycli adjuvante temozolomide. Maximaal graad 1 vermoeidheid.

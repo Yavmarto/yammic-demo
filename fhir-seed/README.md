@@ -19,6 +19,10 @@ make up
 # 2. Load the 8 baseline participants (this is what `make seed` runs)
 python3 fhir-seed/load.py --set baseline
 
+# 2b. Load hospital 2 (FUMC Noordhaven, 5 baseline GBM patients + 2 arrivals)
+python3 fhir-seed/load.py --hospital 2 --set baseline
+python3 fhir-seed/load.py --hospital 2 --set arrivals
+
 # 3. During the demo: sync the 3 new arrivals
 python3 fhir-seed/load.py --set arrivals
 ```

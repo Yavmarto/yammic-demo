@@ -26,7 +26,7 @@ sys.path.insert(0, str(SEED_DIR))
 
 import generate  # noqa: E402
 
-SETS = ("baseline", "arrivals")
+SETS = ("baseline", "arrivals", "hospital2/baseline", "hospital2/arrivals")
 ID_PATTERN = re.compile(r"^[A-Za-z0-9\-\.]{1,64}$")
 
 
@@ -86,10 +86,16 @@ class ManifestTests(unittest.TestCase):
     def test_patient_counts_and_document_counts(self):
         baseline = load_manifest("baseline")
         arrivals = load_manifest("arrivals")
+        h2_baseline = load_manifest("hospital2/baseline")
+        h2_arrivals = load_manifest("hospital2/arrivals")
         self.assertEqual(baseline["patientCount"], 8)
         self.assertEqual(baseline["documentCount"], 10)
         self.assertEqual(arrivals["patientCount"], 3)
         self.assertEqual(arrivals["documentCount"], 7)
+        self.assertEqual(h2_baseline["patientCount"], 5)
+        self.assertEqual(h2_baseline["documentCount"], 13)
+        self.assertEqual(h2_arrivals["patientCount"], 2)
+        self.assertEqual(h2_arrivals["documentCount"], 5)
 
     def test_patient_files_match_manifest_hashes(self):
         for name in SETS:
@@ -240,8 +246,24 @@ class DocumentTests(unittest.TestCase):
     def test_arrival_patients_are_new(self):
         baseline = {rid for rtype, rid in set_resources("baseline") if rtype == "Patient"}
         arrivals = {rid for rtype, rid in set_resources("arrivals") if rtype == "Patient"}
+        h2_baseline = {rid for rtype, rid in set_resources("hospital2/baseline") if rtype == "Patient"}
+        h2_arrivals = {rid for rtype, rid in set_resources("hospital2/arrivals") if rtype == "Patient"}
         self.assertEqual(len(arrivals), 3)
         self.assertTrue(arrivals.isdisjoint(baseline))
+        self.assertEqual(len(h2_baseline), 5)
+        self.assertEqual(len(h2_arrivals), 2)
+        self.assertTrue(h2_baseline.isdisjoint(baseline | arrivals))
+        self.assertTrue(h2_arrivals.isdisjoint(baseline | arrivals | h2_baseline))
+
+    def test_hospital2_documents_are_dutch(self):
+        for name in ("hospital2/baseline", "hospital2/arrivals"):
+            for (rtype, rid), resource in set_resources(name).items():
+                if rtype != "DocumentReference":
+                    continue
+                attachment = resource["content"][0]["attachment"]
+                self.assertEqual(attachment["language"], "nl", rid)
+                text = base64.b64decode(attachment["data"]).decode("utf-8")
+                self.assertIn("SYNTHETISCH DOCUMENT", text, rid)
 
 
 class GeneratorTests(unittest.TestCase):
