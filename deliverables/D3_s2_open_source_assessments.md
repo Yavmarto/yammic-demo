@@ -257,6 +257,8 @@ This table lets a reader re-verify every GitHub-hosted component. Non-GitHub com
 
 This log maps each QA item from CEL-1761 (T21 review of CEL-1732) to the change made in this revision and in `license_register.md`.
 
+**Version used.** We started from the repo file `deliverables/D3_s2_open_source_assessments.md`, which was byte-identical to the CEL-1732 document `d3-s2-open-source-assessments` (revision 1, 2026-11-21T09:07:47Z). The finished file is identical to the updated CEL-1732 document (revision 2).
+
 | QA item | Change made |
 |---|---|
 | **C1 (medium)** — no `owner/repo` per row; impossible to re-verify | Added **§9.1** with `owner/repo` and URL for every GitHub-hosted component. Corrected the two problematic identifiers: LibreClinica → `reliatec-gmbh/LibreClinica`; CIViC → `griffithlab/civic-server`. Updated the §2 method note to point to §9.1. |

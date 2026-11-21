@@ -191,6 +191,8 @@ This table lets a reader re-verify each row. Non-GitHub components are marked.
 
 This log maps each QA item from CEL-1761 (T21 review of CEL-1732) to the change made in this register and in `D3_s2_open_source_assessments.md`.
 
+**Version used.** We started from the repo file `deliverables/license_register.md`, which was byte-identical to the CEL-1732 document `license-register` (revision 1, 2026-11-21T09:07:48Z). The finished file is identical to the updated CEL-1732 document (revision 2).
+
 | QA item | Change made |
 |---|---|
 | **C1 (medium)** — no `owner/repo` per row; impossible to re-verify | Added **§7** with `owner/repo` for all 41 rows (non-GitHub rows marked). Corrected LibreClinica → `reliatec-gmbh/LibreClinica` and CIViC → `griffithlab/civic-server`. |
