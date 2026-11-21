@@ -11,6 +11,7 @@ from pathlib import Path
 from sqlalchemy import text
 
 from . import audit as A
+from . import workflows as W
 from .db import engine, migrate
 from .security import hash_password
 
@@ -24,7 +25,8 @@ def J(name):
     return json.loads((DATA / name).read_text())
 
 
-JSONB = {"meta", "treatments", "terminology", "cdisc", "normalized_value", "proposed_code", "evidence", "seeded_issue"}
+JSONB = {"meta", "treatments", "terminology", "cdisc", "normalized_value", "proposed_code", "evidence", "seeded_issue",
+         "allowed_values", "fields", "criteria"}
 
 
 def ins(c, table, **row):
@@ -51,8 +53,17 @@ def load(eng=None):
         for i, f in enumerate(study_j["ecrf"]["fields"]):
             ins(c, "ecrf_field", id=f["id"], study_id=st["id"], form_id=form, ord=i, label=f["label"],
                 section=f["section"], value_type=f["valueType"], required=f["required"], unit=f["unit"],
-                terminology=f["terminology"], help=f["help"],
+                terminology=f["terminology"], help=f["help"], min_val=f.get("min"), max_val=f.get("max"),
+                allowed_values=f.get("allowedValues"), form_version=1,
                 cdisc={k: f[k] for k in ("cdiscDomain", "cdiscVariable", "cdiscVerified")})
+        criteria = W.default_criteria()
+        for i, cr in enumerate(criteria):
+            ins(c, "screening_criterion", study_id=st["id"], id=cr["id"], ord=i, type=cr["type"],
+                text=cr["text"], data_needed=cr.get("dataNeeded"), version=1)
+        ins(c, "ecrf_form_version", study_id=st["id"], form_id=form, version=1, status="approved",
+            fields=study_j["ecrf"]["fields"], criteria=criteria, protocol_text=W.default_synopsis(),
+            proposed_by="system", provider="fixture", model="protocol-v1", prompt_version="v1.0",
+            approved_by="pi", approved_at="2026-06-01T09:00:00Z", note="Baseline approved eCRF v1")
         for u, name, role in USERS:
             ins(c, "app_user", username=u, display_name=name, role=role, password_hash=hash_password("demo"))
         for p in parts_j["participants"]:
@@ -91,6 +102,7 @@ def load(eng=None):
                          after={"field": e["field"], "status": e["status"], "value": e["value"], "confidence": e["confidence"]},
                          source="ai", model=e["model"], prompt_version=e["promptVersion"], actor=f"fixture/{e['model']}")
         c.execute(text("SELECT setval(pg_get_serial_sequence('extraction_run','id'), (SELECT max(id) FROM extraction_run))"))
+        c.execute(text("SELECT setval(pg_get_serial_sequence('ecrf_form_version','id'), (SELECT max(id) FROM ecrf_form_version))"))
 
 
 if __name__ == "__main__":

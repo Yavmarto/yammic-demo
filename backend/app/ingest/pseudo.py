@@ -15,12 +15,18 @@ if len(os.environ.get("PSEUDONYM_KEY", "")) < 32:  # fail closed, no committed d
 KEY = os.environ["PSEUDONYM_KEY"].encode()
 
 
-def mrn_hmac(mrn: str) -> str:
-    return hmac.new(KEY, b"mrn:" + mrn.strip().encode(), hashlib.sha256).hexdigest()
+def _site_key(site_id: str | None = None) -> bytes:
+    if not site_id:
+        return KEY
+    return hmac.new(KEY, f"site:{site_id}".encode(), hashlib.sha256).digest()
 
 
-def pseudonym(mrn: str) -> str:
-    return "PSN-" + mrn_hmac(mrn)[:12].upper()
+def mrn_hmac(mrn: str, site_id: str | None = None) -> str:
+    return hmac.new(_site_key(site_id), b"mrn:" + mrn.strip().encode(), hashlib.sha256).hexdigest()
+
+
+def pseudonym(mrn: str, site_id: str | None = None) -> str:
+    return "PSN-" + mrn_hmac(mrn, site_id)[:12].upper()
 
 
 def patient_terms(p: dict) -> tuple[str | None, set[str]]:

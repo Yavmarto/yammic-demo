@@ -48,6 +48,15 @@ class Site(M):
     target_enrolment: int | None
     enrolled: int
     open_queries: int
+    screening: int = 0
+    eligible: int = 0
+    consented: int = 0
+    screen_fail: int = 0
+    ecrf_completeness: float = 0.0
+    ai_acceptance_rate: float | None = None
+    sdv_done: int = 0
+    sdv_pending: int = 0
+    kpis: "Kpis | None" = None
 
 
 class Milestone(M):
@@ -97,8 +106,10 @@ class Dashboard(M):
     status: str | None
     synthetic: bool = True
     disclaimer: str
+    site_id: str | None = None
     kpis: Kpis
     sites: list[Site]
+    site_comparison: list[Site] = []
     milestones: list[Milestone]
     alerts: list[Alert]
     tasks: list[Task]
@@ -126,6 +137,12 @@ class ParticipantSummary(M):
     ecrf_total: int
     ecrf_complete_pct: int
     open_queries: int
+    screen_fail_reason: str | None = None
+    coordinator_signed_by: str | None = None
+    coordinator_signed_at: datetime | None = None
+    consented_date: date | None = None
+    enrolled_by: str | None = None
+    enrolled_at: datetime | None = None
 
 
 class ParticipantDetail(ParticipantSummary):
@@ -209,6 +226,7 @@ class EcrfValue(M):
     verified_at: datetime
     sdv_by: str | None
     sdv_at: datetime | None
+    form_version: int = 1
 
 
 class EcrfField(M):
@@ -220,6 +238,10 @@ class EcrfField(M):
     unit: str | None
     terminology: dict[str, Any] | None
     help: str | None
+    min: float | None = None
+    max: float | None = None
+    allowed_values: list[dict[str, Any]] | None = None
+    form_version: int = 1
     value: EcrfValue | None
     pending_extraction_id: str | None  # latest pending proposal for this field, if any
 
@@ -227,6 +249,7 @@ class EcrfField(M):
 class Ecrf(M):
     participant_id: str
     form_id: str
+    form_version: int = 1
     verified: int
     total: int
     complete_pct: int
@@ -269,11 +292,15 @@ class DataQuery(M):
     participant_id: str
     site_id: str
     field_id: str | None
-    status: Literal["open", "closed"]
+    status: Literal["open", "answered", "closed"]
     severity: str
     text: str
     opened_by: str
     created_at: datetime
+    rule_id: str | None = None
+    answer: str | None = None
+    answered_by: str | None = None
+    answered_at: datetime | None = None
     closed_by: str | None
     closed_at: datetime | None
 
@@ -283,6 +310,30 @@ class QueryIn(M):
     field_id: str | None = None
     severity: Literal["low", "medium", "high"] = "low"
     text: str
+    rule_id: str | None = None
+
+
+class QueryAnswerIn(M):
+    answer: str | None = None
+    text: str | None = None
+
+
+class SdvIn(M):
+    sdv: bool | None = None
+
+
+class DataQualityRule(M):
+    id: str
+    name: str
+    severity: Literal["low", "medium", "high"]
+    field_id: str | None
+    description: str
+
+
+class DataQualityResult(M):
+    participant_id: str
+    checked: int
+    opened: list[DataQuery]
 
 
 class Run(M):
@@ -337,3 +388,167 @@ class ExtractionIn(M):
 class DecisionResult(M):
     extraction: Extraction
     ecrf_value: EcrfValue | None
+
+
+CriterionStatus = Literal["met", "not_met", "unknown"]
+
+
+class ScreeningCriterionCheck(M):
+    id: str
+    criterion_id: str
+    ord: int
+    type: Literal["inclusion", "exclusion"]
+    text: str
+    data_needed: str | None = None
+    ai_status: CriterionStatus = "unknown"
+    confidence: float = 0.0
+    rationale: str | None = None
+    document_id: str | None = None
+    span_start: int | None = None
+    span_end: int | None = None
+    evidence: list[Evidence] = []
+    provider: str | None = None
+    model: str | None = None
+    prompt_version: str | None = None
+    coordinator_status: CriterionStatus | None = None
+    effective_status: CriterionStatus = "unknown"
+    confirmed_by: str | None = None
+    confirmed_at: datetime | None = None
+    note: str | None = None
+
+
+class Screening(M):
+    participant_id: str
+    study_id: str
+    site_id: str
+    status: str
+    status_detail: str | None
+    screen_fail_reason: str | None = None
+    coordinator_signed_by: str | None = None
+    coordinator_signed_at: datetime | None = None
+    consented_date: date | None = None
+    enrolled_date: date | None = None
+    enrolled_by: str | None = None
+    enrolled_at: datetime | None = None
+    met_count: int
+    not_met_count: int
+    unknown_count: int
+    confirmed_count: int
+    total_count: int
+    criteria: list[ScreeningCriterionCheck]
+
+
+class ScreeningCriterionConfirmIn(M):
+    status: CriterionStatus | None = None
+    state: CriterionStatus | None = None
+    note: str | None = None
+
+
+class ScreeningChecksIn(M):
+    criterion_id: str
+    status: CriterionStatus = "unknown"
+    confidence: float = 0.0
+    rationale: str | None = None
+    document_id: str | None = None
+    evidence: list[Evidence] = []
+    provider: str = "rules"
+    model: str = "rules-v4"
+    prompt_version: str = "screen_v1"
+
+
+class ScreeningSignOffIn(M):
+    outcome: Literal["eligible", "screen_fail"] | None = None
+    decision: Literal["eligible", "screen_fail"] | None = None
+    reason: str | None = None
+
+
+class ScreeningConsentIn(M):
+    consented_date: date | None = None
+    note: str | None = None
+
+
+class ScreeningEnrolIn(M):
+    enrolled_date: date | None = None
+    note: str | None = None
+
+
+class ScreenFailIn(M):
+    reason: str
+
+
+class TimelineEvent(M):
+    id: str
+    category: Literal["surgery", "radiotherapy", "chemotherapy", "scan", "visit", "diagnosis", "lab"]
+    title: str
+    date: str
+    end_date: str | None = None
+    status: str | None = None
+    detail: str | None = None
+    document_id: str | None = None
+    document_title: str | None = None
+    resource_type: str | None = None
+    resource_id: str | None = None
+
+
+class Timeline(M):
+    participant_id: str
+    events: list[TimelineEvent]
+
+
+class FormFieldProposal(M):
+    id: str
+    label: str
+    section: str | None = "clinical_status"
+    value_type: str | None = "string"
+    required: bool = True
+    unit: str | None = None
+    terminology: dict[str, Any] | None = None
+    cdisc: dict[str, Any] | None = None
+    min: float | None = None
+    max: float | None = None
+    allowed_values: list[dict[str, Any]] | None = None
+    help: str | None = None
+    source_sentence: str | None = None
+
+
+class CriterionProposal(M):
+    id: str
+    type: Literal["inclusion", "exclusion"] = "inclusion"
+    text: str
+    data_needed: str | None = None
+    source_sentence: str | None = None
+
+
+class FormVersionIn(M):
+    form_id: str = "ECRF-GBM-BASELINE"
+    protocol_text: str | None = None
+    fields: list[FormFieldProposal] = []
+    criteria: list[CriterionProposal] = []
+    provider: str | None = None
+    model: str | None = None
+    prompt_version: str | None = None
+    note: str | None = None
+
+
+class FormApproveIn(M):
+    note: str | None = None
+
+
+class FormVersion(M):
+    id: int
+    study_id: str
+    form_id: str
+    version: int
+    status: Literal["proposed", "approved", "rejected"]
+    fields: list[dict[str, Any]]
+    criteria: list[dict[str, Any]]
+    protocol_text: str | None = None
+    proposed_by: str
+    proposed_at: datetime
+    provider: str | None = None
+    model: str | None = None
+    prompt_version: str | None = None
+    approved_by: str | None = None
+    approved_at: datetime | None = None
+    note: str | None = None
+

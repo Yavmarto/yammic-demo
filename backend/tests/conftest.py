@@ -6,28 +6,31 @@ import pytest
 
 
 def _docker_pg():
-    try:
-        socket.create_connection(("localhost", 5433), timeout=1).close()
-        return "postgresql+psycopg://yammic:yammic@localhost:5433/yammic_test"
-    except OSError:
-        return None
+    for port in (5434, 5433):
+        try:
+            socket.create_connection(("localhost", port), timeout=1).close()
+            return port, f"postgresql+psycopg://yammic:yammic@localhost:{port}/yammic_v4_test"
+        except OSError:
+            continue
+    return None
 
 
 def _make_url():
     if os.environ.get("TEST_DATABASE_URL"):
         return os.environ["TEST_DATABASE_URL"]
     import psycopg
-    if url := _docker_pg():
-        admin = "postgresql://yammic:yammic@localhost:5433/postgres"
+    if pg := _docker_pg():
+        port, url = pg
+        admin = f"postgresql://yammic:yammic@localhost:{port}/postgres"
     else:  # no Docker: embedded Postgres (pgserver dev dependency) on a unix socket
         import pgserver
         d = str(Path.home() / ".yammic-pg")
         pgserver.get_server(d, cleanup_mode=None)
         admin = f"postgresql://postgres:@/postgres?host={d}"
-        url = f"postgresql+psycopg://postgres:@/yammic_test?host={d}"
+        url = f"postgresql+psycopg://postgres:@/yammic_v4_test?host={d}"
     with psycopg.connect(admin, autocommit=True) as c:
-        if not c.execute("SELECT 1 FROM pg_database WHERE datname='yammic_test'").fetchone():
-            c.execute("CREATE DATABASE yammic_test")
+        if not c.execute("SELECT 1 FROM pg_database WHERE datname='yammic_v4_test'").fetchone():
+            c.execute("CREATE DATABASE yammic_v4_test")
     return url
 
 
@@ -49,11 +52,19 @@ from app.main import app  # noqa: E402
 @pytest.fixture(autouse=True)
 def fresh_db():
     open(os.environ["AUDIT_ANCHOR"], "w").close()  # new DB, new anchor
-    with engine.begin() as c:
-        c.execute(text("DROP SCHEMA public CASCADE"))
-        c.execute(text("CREATE SCHEMA public"))
-    migrate()
-    seed.load()
+    with engine.connect() as lock_conn:
+        lock_conn.execute(text("SELECT pg_advisory_lock(7740)"))
+        lock_conn.commit()
+        try:
+            with engine.begin() as c:
+                c.execute(text("DROP SCHEMA public CASCADE"))
+                c.execute(text("CREATE SCHEMA public"))
+            migrate()
+            seed.load()
+            yield
+        finally:
+            lock_conn.execute(text("SELECT pg_advisory_unlock(7740)"))
+            lock_conn.commit()
 
 
 @pytest.fixture

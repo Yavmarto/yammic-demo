@@ -12,6 +12,26 @@ TYPES = ("Patient", "Condition", "Observation", "Procedure", "MedicationRequest"
          "DocumentReference", "DiagnosticReport")
 
 
+def parse_sources(raw: str | None = None) -> list[dict]:
+    """Read `FHIR_SOURCES` JSON array of `{id, name, url, siteId?}`; fall back to `FHIR_BASE_URL`."""
+    raw = raw if raw is not None else os.environ.get("FHIR_SOURCES", "").strip()
+    if raw:
+        try:
+            items = json.loads(raw)
+            if isinstance(items, list) and items:
+                out = []
+                for idx, x in enumerate(items, 1):
+                    sid = str(x.get("id") or f"hospital-{idx}")
+                    name = str(x.get("name") or f"Hospital {idx}")
+                    url = str(x.get("url") or BASE).rstrip("/")
+                    site_id = x.get("siteId") or ("SITE-02" if "2" in sid else "SITE-01")
+                    out.append({"id": sid, "name": name, "url": url, "siteId": site_id})
+                return out
+        except (ValueError, TypeError, AttributeError):
+            pass
+    return [{"id": "hospital-1", "name": "Hospital 1 (FHIR R4)", "url": BASE, "siteId": "SITE-01"}]
+
+
 class FhirError(Exception):
     pass
 
