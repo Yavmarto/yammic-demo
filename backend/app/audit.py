@@ -44,13 +44,12 @@ def _drop_pending(conn):
     conn.info.pop("audit_anchor", None)
 
 
-def _last_anchor():
-    """Highest (count, head) in the anchor log, or None."""
+def _anchors():
+    """Every (count, head) line in the anchor log, or None if the log is missing."""
     try:
-        rows = [l.split() for l in ANCHOR.read_text().splitlines() if l.strip()]
+        return [(int(r[1]), r[2]) for r in (l.split() for l in ANCHOR.read_text().splitlines() if l.strip())]
     except FileNotFoundError:
         return None
-    return max(((int(r[1]), r[2]) for r in rows), default=None)
 
 
 def record(c, user, action, entity_type, entity_id, *, participant_id=None, before=None,
@@ -86,10 +85,15 @@ def verify(c) -> dict:
             return {"ok": False, "count": n, "brokenSeq": d["seq"], "reason": "hash does not match event content (event modified)"}
         prev = d["hash"]
         at[n] = prev
-    a = _last_anchor()
-    if a is None and n:
+    anchors = _anchors()
+    if anchors is None and n:
         return {"ok": False, "count": n, "brokenSeq": None, "reason": "anchor log missing (cannot prove no events were deleted)"}
-    if a and (n < a[0] or at[a[0]] != a[1]):
-        why = "events deleted from the end of the chain" if n < a[0] else "chain rewritten (does not match the external anchor)"
-        return {"ok": False, "count": n, "brokenSeq": None, "reason": f"{why}: anchor says {a[0]} events"}
+    # Check every anchor, not only the newest: a tail deletion followed by a normal app write
+    # re-anchors the same count with a different head, which only the older line exposes.
+    # ponytail: O(anchors) per verify; fine at demo scale, keep a checkpoint offset if the log grows large
+    for cnt, head in anchors or ():
+        if cnt > n:
+            return {"ok": False, "count": n, "brokenSeq": None, "reason": f"events deleted from the end of the chain: anchor says {cnt} events"}
+        if at[cnt] != head:
+            return {"ok": False, "count": n, "brokenSeq": None, "reason": f"chain rewritten (does not match the external anchor at event {cnt})"}
     return {"ok": True, "count": n, "brokenSeq": None, "reason": None, "headHash": prev}

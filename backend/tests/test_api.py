@@ -243,6 +243,16 @@ def test_audit_detects_tail_deletion(client, auth):
     assert v["ok"] is False and "deleted from the end" in v["reason"]
 
 
+def test_audit_detects_tail_deletion_followed_by_new_write(client, auth):
+    # regression: the next app write re-anchors the same count, so checking only the newest anchor missed it
+    h = auth("nurse")
+    client.post("/extractions/EXT-0001/decision", json=ACCEPT, headers=h)
+    _bypass("DELETE FROM audit_event WHERE seq = (SELECT max(seq) FROM audit_event)")
+    client.post("/extractions/EXT-0002/decision", json=ACCEPT, headers=h)  # normal write after the deletion
+    v = client.get("/audit/verify", headers=h).json()
+    assert v["ok"] is False and "anchor" in v["reason"]
+
+
 def test_audit_detects_full_rewrite(client, auth, monkeypatch):
     from app import audit
     h = auth("nurse")
