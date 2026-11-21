@@ -1,7 +1,8 @@
 # Monday demo v3 — the connected platform slice
 
-Owner: PM (CEL-1786) · Version **3.0** · Demo: **Monday 2026-11-23**, 10 minutes + Q&A
-Build check: **CEO cold start 2026-11-21 15:20 CET** · measured model queue: **7 runs ≈ 3 min**
+Owner: PM (CEL-1789) · Version **3.1** · Demo: **Monday 2026-11-23**, 10 minutes + Q&A
+Build check: **CEO re-verification 2026-11-21 ~15:45 CET** (after CEL-1785 `f5b0386` and `c60b2be`) · measured model queue: **all runs 323 s ≈ 5.4 min; plan for 3–6 min**
+Board click-through: **2026-11-21, evening** — same running build and flow; the app clock stays at 23 Nov (cosmetic, R5)
 Build: Flutter (web + macOS) → FastAPI → PostgreSQL 16 → HAPI FHIR R4, all local · **synthetic data only**
 Code freeze: **Sunday 2026-11-22 20:00 CET** · This script replaces the v1 script for the disconnected prototype.
 
@@ -33,7 +34,7 @@ Code freeze: **Sunday 2026-11-22 20:00 CET** · This script replaces the v1 scri
 | Flutter read a bundled JSON file. No network. | Flutter → FastAPI → Postgres. Login, live data, real writes. |
 | "AI" values were pre-computed JSON. | The 8 baseline participants still carry **pre-computed** fixture extractions (`provider: fixture`, model `demo-extractor v0.1`). Documents that arrive through **Sync** are extracted **live** by a local Ollama model (`qwen2.5:7b-instruct`, prompt `extract_v4`); `rules` is the fallback. |
 | No hospital. | HAPI FHIR R4 server on this machine; new patients arrive over FHIR and are pseudonymised on ingest. |
-| No audit. | Every action is hash-chained, and "Verify chain" detects edits made **through the application**; database-level anchoring is the next hardening step (SEC-02). |
+| No audit. | Every action is hash-chained with a key held outside the database and anchored outside it. Verify detects edits and deletions, including changes made directly in the database (SEC-02 fixed and verified live, CEL-1785 / `c60b2be`). |
 | No exports. | CDISC ODM 1.3.2 study XML and FHIR QuestionnaireResponse + Provenance + AuditEvents, with write-back to FHIR. |
 | Zeta looked plain. | Redesigned shell and screens (visual direction v2, `deliverables/D7b_visual_direction.md`); before/after shots in `deliverables/design/`. |
 
@@ -96,21 +97,21 @@ git rev-parse --short HEAD    # write it here: ________
 | 0:00–0:30 | Opening + honesty frame | Slide 1 | Set trust; name what changed |
 | 0:30–1:00 | Login | `/login` | Connected; three roles; banner |
 | 1:00–1:40 | Live dashboard | `/` | KPIs from Postgres; the work queue |
-| 1:40–2:30 | **FHIR sync** | `/integrations` | Press Sync; result in ~1.5 s; 7 runs queued |
-| 2:30–3:15 | **Integrations + audit talk** (model runs) | `/integrations` (no clicks) | Fill the model wait; no silence (4.4b) |
-| 3:15–3:40 | New participant | `/participants/GBM-NL-009` | Pseudonymised, 3 source documents |
-| 3:40–4:20 | **Live AI extraction** (first finished doc) | `/review` (009) | Local model, evidence, abstention |
-| 4:20–4:50 | Accept | `/review` (009) | Proposal → verified data |
-| 4:50–5:35 | Correct | `/review` (002) | Catch a wrong value; before/after |
-| 5:35–5:55 | Defer | `/review` (009) | Abstention → open task |
-| 5:55–6:35 | **Audit verify** | `/audit` | Hash chain, human decisions |
-| 6:35–7:10 | **AI quality** | `/ai-quality` | Per-field metrics + registry |
-| 7:10–8:00 | **Export + write-back** | `/export` | ODM + FHIR + push |
-| 8:00–8:35 | Monitor | `/participants/GBM-NL-002` (tab B) | Read-only + SDV |
-| 8:35–9:15 | Is / is not + decision | Slide 3–4 | Honest limits; one ask |
-| 9:15–10:00 | Stop talking | — | 45 s of deliberate slack; invite Q&A |
+| 1:40–2:30 | **FHIR sync** | `/integrations` | Press Sync; result in ~1.5 s; 7 arrival runs queued |
+| 2:30–4:30 | **Queue wait: integrations + audit + AI-quality talk** | `/integrations` (no clicks) | Cover a 3–6 min queue; open the first finished arrival document |
+| 4:30–4:55 | New participant | `/participants/GBM-NL-009` | Pseudonymised, 3 source documents |
+| 4:55–5:30 | **Live AI extraction** (first finished arrival doc) | `/review` (009) | Local model, evidence, abstention |
+| 5:30–5:55 | Accept | `/review` (009) | Proposal → verified data |
+| 5:55–6:30 | Correct | `/review` (002) | Catch a wrong value; before/after |
+| 6:30–6:45 | Defer | `/review` (009) | Abstention → open task |
+| 6:45–7:15 | **Audit verify** | `/audit` | Hash chain, human decisions |
+| 7:15–7:30 | **AI quality** (screen only; the talk is in 4.4b) | `/ai-quality` | Per-field metrics + registry |
+| 7:30–8:10 | **Export + write-back** | `/export` | ODM + FHIR + push |
+| 8:10–8:40 | Monitor | `/participants/GBM-NL-002` (tab B) | Read-only + SDV |
+| 8:40–9:20 | Is / is not + decision | Slide 3–4 | Honest limits; one ask |
+| 9:20–10:00 | Stop talking | — | ~40 s of slack; invite Q&A |
 
-**Pacing:** ≈140 spoken words per minute. Measured with `say -r 140`: the segment text is **7:04**; the new 4.4b filler adds **≈0:35** of prepared talk, so the spoken plan is **≈7:39**. Click/transition budget is about **1:25** (30 clicks at ~2 s plus ~10 route loads). The planned content ends at **9:15**, leaving 45 s of deliberate silence before 10:00 — and more if the room is warm. **The 4.4b filler is not optional:** a sync queues 7 model runs that need about **3 minutes** in total; the first proposals arrive in 45–70 s. Never stand in silence waiting for the queue. If you are 45 s late at 2:30, shorten the dashboard to 30 s and the participant to 15 s. **Never cut:** the sync result, 4.4b, the correction, the abstention, the audit verify, or the "is not" slide.
+**Pacing:** ≈140 spoken words per minute. Spoken text measured with `say -r 140`: the prepared segments are **≈8:17** after the 4.4b wait talk replaced the separate audit and AI-quality talk; the click/transition budget is about **1:25** (30 clicks at ~2 s plus ~10 route loads). The planned content ends at **9:20**, leaving **40 s before 10:00 if you leave the wait early and about 20 s if you use the full 2-minute block**. **The 4.4b wait talk is not optional:** measured on this machine after a fresh sync, the queue needs **3–6 minutes** (all runs finished in **323 s ≈ 5.4 min**; the earlier run was **179 s ≈ 3 min**). Seven runs are the live Ollama arrival runs, and the first arrival document finishes early in the queue: **open the first finished arrival document as soon as it appears** — never wait for the whole queue. If you are 45 s late at 2:30, shorten the dashboard to 30 s and the participant to 15 s. **Never cut:** the sync result, 4.4b, the correction, the abstention, the audit verify, or the "is not" slide.
 
 ---
 
@@ -175,21 +176,27 @@ git rev-parse --short HEAD    # write it here: ________
 - If the panel says **Unreachable**, the FHIR container is down. Say "the hospital endpoint is unreachable; the platform keeps the last synced data and keeps working" and skip to Participants. Restart `make up` only after the demo.
 - If **Sync now** is disabled, you are signed in as monitor (tab B). Switch to tab A (PI).
 
-### 4.4b Integrations + audit talk — 2:30–3:15 (fills the model wait)
+### 4.4b Queue wait — integrations + audit + AI-quality talk (2:30–4:30, extend to 5:30 if needed)
 
-**Screen:** stay on `/integrations`; do **not** open another tab or a terminal. The 7 extraction runs are queued and the local model is working. The first proposals (pathology) arrive in **45–70 s**; the whole queue takes **about 3 minutes**.
+**Screen:** stay on `/integrations`; do **not** open another tab or a terminal. The extraction runs are queued and the local model is working. Measured on this machine after a fresh sync: the queue needs **3–6 minutes** (all runs finished in **323 s ≈ 5.4 min**; the earlier run took **179 s ≈ 3 min**). Seven runs are the live Ollama arrival runs. **Check for a finished arrival document every ~30 s:** the first arrival documents finish early in the queue, and you must **open the first finished arrival document as soon as it appears** (4.5–4.6). Never wait for the whole queue and never stand in silence.
 
-> "While those seven runs go, two words on what sits under this screen. First, integrations: this is one connector, a FHIR R4 pull from a HAPI server. In production the same ingest path takes a hospital feed, pseudonymises it at the boundary, and keeps the raw identifiers out of the platform tables. Nothing in the review loop changes when the connector changes.
+> "While those runs go, three things about what sits under this screen.
 >
-> Second, the audit trail: every ingest, every proposal and every human decision is appended to one hash chain. Each event carries the hash of the one before it, so the verifier can show a gap or an in-app edit. The audit is a first-class part of the product, not a log file added later — but it is local in this demo: the chain is not yet anchored outside the database, and that anchoring is the next hardening step."
+> First, integrations: this is one connector, a FHIR R4 pull from a HAPI server. In production the same ingest path takes a hospital feed, pseudonymises at the boundary and keeps the raw identifiers out of the platform tables. Nothing in the review loop changes when the connector changes.
+>
+> Second, the audit trail: every ingest, every proposal and every human decision is appended to one hash chain. Each event carries the hash of the one before it. The chain is keyed with a key held outside the database and anchored in an append-only file outside the database, so verify detects edits and deletions, including changes made directly in the database. That is the difference between a log file and a control. The honest limit: someone with both the database and the key and the anchor file on this machine could still defeat it. In production the key and the anchor go to a separate service; that is on the roadmap.
+>
+> Third, AI quality: precision, recall and abstention, per field, for the local model and for the deterministic rules fallback. The hard cases are the point, and the measured numbers are on the next screens — including why a hundred percent on a synthetic gold set proves the pipeline, not clinical accuracy."
 
-**Audience should notice:** the "Sync runs" row stays **Completed**; the queue is visible as `7 extraction runs`; no error toast. The point of this beat is that the model runs in the background and the platform does not block on it.
+**Audience should notice:** the "Sync runs" row stays **Completed**; the queue is visible as the extraction runs; no error toast. The point of this beat is that the model runs in the background and the platform does not block on it.
 
-**If the topic is exhausted before 3:15:** open **Participants → GBM-NL-009** early and start 4.5. Do not fill with a status check or a refresh.
+**If the first arrival document is ready before 4:30:** leave this beat and open **Participants → GBM-NL-009** (4.5). Do not fill the time with a status check or a refresh.
 
-**Switch-back note (SEC-FIX):** if the CTO's fix merges before Monday **and the CEO confirms it**, replace the last sentence with "the chain head is anchored outside the application database, so verify also detects database-level edits". Do not use that stronger wording without the CTO merge and the CEO's confirmation.
+**If no arrival document is ready at 4:30:** continue the same three topics — the audit limit and the AI-quality hard cases — until **5:30** at the latest, then go to 4.5 anyway. To keep the 10:00 stop, cut the AI-quality screen (7:15) to a 10-second look and keep Export and Monitor to the click path. If 009 still has no finished proposals when you reach 4.6, run the loop on **GBM-NL-002**'s pre-computed queue (4.7–4.9) and return to 009 after the audit if its live proposals have arrived.
 
-### 4.5 The new participant — 3:15–3:40
+**Wording note (SEC-02 fixed, verified live 2026-11-21):** the chain is keyed (HMAC, key outside the DB) and anchored in an append-only file outside the DB (CEL-1785 `f5b0386`, verify fix `c60b2be`). The CEO tested a superuser who disabled the trigger and deleted the newest event, then made a normal app write: **Verify chain reported "chain rewritten (does not match the external anchor)"**. Use the wording above. The bans stand: no "Annex 11 compliant", no "GCP compliant", no "certified".
+
+### 4.5 The new participant — 4:30–4:55
 
 **Screen:** `/participants` → click row **GBM-NL-009**.
 
@@ -201,29 +208,29 @@ git rev-parse --short HEAD    # write it here: ________
 
 **Recovery:** if 009 is absent, the sync did not create it. Open the **AI review** rail item and continue on GBM-NL-002 (recovery from 4.4).
 
-### 4.6 Live AI extraction — 3:40–4:20 (the centrepiece, synced arrival only)
+### 4.6 Live AI extraction — 4:55–5:30 (the centrepiece, synced arrival only)
 
 **Screen:** `/review`, filtered to **GBM-NL-009** (the dropdown shows `GBM-NL-009`).
 
-> "This is the live run, on a patient that arrived through Sync less than two minutes ago. The local Qwen 2.5 model, seven billion parameters, running on this laptop through Ollama, read the pathology report. No data leaves the machine, no paid API. Here is what it produced: histology, IDH status, MGMT — unmethylated, which matches the report — and nine abstentions. The model does not guess what the document does not say. Every proposal carries its evidence span, a confidence, the model id and the prompt version, and the run and the proposal are in the audit chain."
+> "This is the live run, on a patient that arrived through Sync a few minutes ago. The local Qwen 2.5 model, seven billion parameters, running on this laptop through Ollama, read the pathology report. No data leaves the machine, no paid API. Here is what it produced: histology, IDH status, MGMT — unmethylated, which matches the report — and nine abstentions. The model does not guess what the document does not say. Every proposal carries its evidence span, a confidence, the model id and the prompt version, and the run and the proposal are in the audit chain."
 
 **Audience should notice:**
 - Toolbar: "AI extraction review"; dropdown **GBM-NL-009**; progress counts the 009 proposals that have finished (15 when only the pathology report is done).
 - Left pane: **"SOURCE · pathology report · DOC-009-PATH"**, Dutch source text with the matched sentence highlighted.
 - Middle: cards with amber **"AI · Unverified"**, `conf 0.95`, and low-confidence flags where present; nine of the fifteen pathology proposals are grey **"AI abstained"**.
 - Right pane: **Model `qwen2.5:7b-instruct`**, **Prompt `extract_v4@1ef2060c673d`**, **Provider `ollama`**.
-- If you press **Run extraction**: the run bar reads "Extraction running · ollama…" for the selected document (one run, ~45 s). The sync's 7 runs finish in the background in **about 3 minutes**; pathology is ready within ~70 s. **Do not wait for the queue on stage** — open the first finished document.
+- If you press **Run extraction**: the run bar reads "Extraction running · ollama…" for the selected document (one run, ~45 s). The sync's arrival runs finish in the background in **3–6 minutes**; the first arrival document finishes early in the queue. **Do not wait for the queue on stage** — you are here because the first finished arrival document was ready.
 
 **Provenance note:** every card on 009 is live `ollama` output. The 8 baseline participants (including GBM-NL-002, used for the correction) carry **pre-computed** fixtures: `provider: fixture`, model `demo-extractor v0.1`. Never call those "live". The review loop is identical; only the provenance differs.
 
-**Timing note (measured 2026-11-21):** Ollama takes **35–66 s per document** on this laptop (44 s for DOC-009-PATH); `rules` is <10 ms. A sync queues **7 runs** and the worker processes them sequentially, so the whole queue takes **about 3 minutes**. The first 009 proposals — pathology — are ready **45–70 s after Sync**, i.e. by this beat. Open the first finished document; do not wait for all seven.
+**Timing note (measured 2026-11-21):** Ollama takes **35–66 s per document** on this laptop (44 s for DOC-009-PATH); `rules` is <10 ms. The worker processes runs sequentially. Measured after a fresh sync: **all runs finished in 323 s (~5.4 min)**, against **179 s (~3 min)** in the earlier run; **plan a 3–6 minute window**. Seven runs are the live Ollama arrival runs, and the first arrival document finishes early in the queue. Open the **first finished arrival document**; never wait for the whole queue.
 
 **Recovery:**
-- If 009 shows **"Queue is empty"** at 3:40, the first run is unusually slow. Return to **4.4b** and finish the integrations/audit talk, then return to 009. If it is still empty, say "the local model is still reading the three reports; the platform does not block on it — let us review the existing queue while it works", switch the dropdown to **GBM-NL-002**, and do 4.7–4.9 there. Return to 009 after the audit if proposals have arrived.
+- If 009 shows **"Queue is empty"** when you arrive, the first run is unusually slow. Return to **4.4b**, check again every ~30 s and finish the integrations/audit/AI-quality talk, then return to 009 (not later than 5:30). If it is still empty, say "the local model is still reading the three reports; the platform does not block on it — let us review the existing queue while it works", switch the dropdown to **GBM-NL-002**, and do 4.7–4.9 there. Return to 009 after the audit if proposals have arrived.
 - If no new proposals arrive at all, the AI worker is not running. Say "the local model service is not running in this snapshot; these are the pre-computed gold-set proposals, and the live run is what we rehearsed" and continue. Do not start a terminal on stage.
-- If Ollama is slow, the service **falls back to `rules` automatically**; the proposals then show Provider `rules`. Same story, different provider: "the local model was slow, so the deterministic extractor took over; the review loop is identical."
+- If Ollama is slow, the service **falls back to `rules` automatically**; the proposals then show Provider `rules`. Same story, different provider: "the local model was slow, so the deterministic extractor took over; the review loop is identical." This is the recovery line for a 6-minute queue: keep the review loop moving and never wait in silence.
 
-### 4.7 Accept — 4:20–4:50
+### 4.7 Accept — 5:30–5:55
 
 **Click:** click the **Histology (central review)** card in the middle column, then **Accept** (or press `A`).
 
@@ -233,7 +240,7 @@ git rev-parse --short HEAD    # write it here: ________
 
 **Recovery:** if **Accept** is disabled, the card has no valid evidence span (an abstention). Pick a proposed card (amber), not a grey one. If the write fails ("Could not save: …"), say "the local API rejected the write" and continue; the audit will show the truth.
 
-### 4.8 Correct — 4:50–5:35 (the case that matters)
+### 4.8 Correct — 5:55–6:30 (the case that matters)
 
 **Click:** set the participant dropdown to **GBM-NL-002**. Scroll the middle column to the **MGMT promoter methylation** card (13th of 16; two flicks). Click it → **Correct** (or `C`) → replace `Methylated` with `Unmethylated` → **Save correction**.
 
@@ -245,7 +252,7 @@ git rev-parse --short HEAD    # write it here: ________
 
 **Recovery:** if the MGMT card is hard to find, type the participant filter `GBM-NL-002` and use the card's label; do not scroll blindly. If you cannot reach it in 20 s, skip the correction and go to 4.9 (the abstention already proves the safety story). Never cut the audit verify.
 
-### 4.9 Defer — 5:35–5:55
+### 4.9 Defer — 6:30–6:45
 
 **Click:** set the dropdown back to **GBM-NL-009**; click the **Date of progression (RANO)** card (grey, `Not stated`, conf 0.00); click **Defer** (or `D`).
 
@@ -255,15 +262,15 @@ git rev-parse --short HEAD    # write it here: ________
 
 **Recovery:** if the defer write fails, continue to audit; the previous two decisions are enough to show the loop.
 
-### 4.10 Audit trail + hash-chain verify — 5:55–6:35
+### 4.10 Audit trail + hash-chain verify — 6:45–7:15
 
 **Click:** **View audit trail** in the target pane, or **Audit trail** in the sidebar. Click **Verify chain**. Then click the **Human** segment.
 
-> "Audit trail. Every proposal and every decision. Every action is hash-chained, and verify detects edits made through the application: press Verify chain [press], and it returns every event, no gaps and no edits, with the head hash. Be precise about the limit: this chain runs inside the application database and is not yet anchored outside it, so database-level anchoring is the next hardening step. Filter to human actions. There are the three decisions, newest first — the defer, the correction, the accept — next to the eCRF writes they triggered. Open the correction: before methylated, after unmethylated, by whom, when, and which model and prompt proposed it. A monitor can reconstruct exactly what happened and why."
+> "Audit trail. Press Verify chain [press]: every event, no gaps and no edits, with the head hash — the chain is keyed outside the database and anchored outside it, so this also catches edits and deletions made directly in the database. Filter to human actions. There are the three decisions, newest first — the defer, the correction, the accept — next to the eCRF writes they triggered. Open the correction: before methylated, after unmethylated, by whom, when, and which model and prompt proposed it."
 
-**Required wording (do not improvise):** "Every action is hash-chained, and verify detects edits made through the application; database-level anchoring is the next hardening step." Do **not** say "tamper-evident", "cannot be tampered with", "Annex 11 compliant" or "GCP compliant" — the security review (§9, SEC-02) says the chain is tamper-**detecting** for app writes but not tamper-**evident** against a database superuser.
+**Required wording (do not improvise):** "Every action is hash-chained with a key held outside the database and anchored outside it. Verify detects edits and deletions, including changes made directly in the database." Do **not** say "tamper-proof", "cannot be tampered with", "Annex 11 compliant", "GCP compliant" or "certified". The fixed chain detects DB-level edits, but the check depends on the key and the anchor file on this machine; a compliance or certification claim needs validation and a separate key/anchor service.
 
-**Switch-back note (SEC-FIX):** if the CTO's fix merges before Monday and **the CEO confirms it**, the stronger wording is available — "verify detects edits made through the application and at the database level, because the chain head is externally anchored". Do not switch back on your own.
+**Evidence note (SEC-02 fixed, verified live 2026-11-21):** CEL-1785 (`f5b0386`) keys the chain with an HMAC key outside the DB and anchors it in an append-only file outside the DB; `c60b2be` makes verify check every anchor line. The CEO tested a superuser who disabled the trigger and deleted the newest event, then made a normal app write: **Verify chain reported "chain rewritten (does not match the external anchor)"**. Use the wording above; do not add "compliant" or "certified".
 
 **Click next:** click the `extraction.decision` row for the correction (Entity `EXT-0020`).
 
@@ -273,19 +280,21 @@ git rev-parse --short HEAD    # write it here: ________
 - Detail panel: **BEFORE `{"reviewState":"pending"}` / AFTER `{… "decision":"correct" …}`**, actor, role, time, **Prompt** version, **Prev hash** and **Hash** (copyable).
 - The verify call is fast (≈30 ms locally).
 
-**Recovery:** if the human rows are missing, the review writes did not persist. Say "the review state did not persist in this run" and show the recording's audit segment; continue. If **Verify chain** returns red "Chain broken at event #…", stop the chain story, say "a row was changed without recomputing the chain; catching that is what the verifier does", and move on. Do not debug and do not claim the demo is fully tamper-proof: a full database-level rewrite is the documented SEC-02 gap.
+**Recovery:** if the human rows are missing, the review writes did not persist. Say "the review state did not persist in this run" and show the recording's audit segment; continue. If **Verify chain** returns red, read the reason — e.g. "chain rewritten (does not match the external anchor at event N)" or "events deleted from the end of the chain". Say "a row was changed outside the application; catching that is what the verifier does" and move on. Do not debug, and do not claim the demo is unbreakable: someone with the database, the key and the anchor file on this machine could still defeat it (Q9).
 
-### 4.11 AI quality — 6:35–7:10
+### 4.11 AI quality — 7:15–7:30
 
 **Click:** **AI quality** in the PLATFORM sidebar.
 
-> "AI quality. Precision, recall, F1 and abstention per field, for the local model and for the deterministic rules fallback. On our synthetic gold set — thirteen documents, fifty-seven annotations — the local model matched everything. I will not sell you that number: a hundred percent on a synthetic set proves the pipeline, not clinical accuracy. The hard cases are the point: the hedged wording at 0.38, the wrong MGMT, the abstention. Real evaluation comes with site data under approval."
+> "AI quality, as I said while the model ran. Per-field precision, recall and abstention for the local model and the rules fallback; the hard cases — the hedged wording at 0.38, the wrong MGMT, the abstention; and the model and prompt registry with the prompt hash. The hundred percent is on the synthetic gold set only; real evaluation comes with site data under approval."
 
 **Audience should notice:** segmented **ollama | rules**; metric strip **Precision 100 % · Recall 100 % · F1 100 % · Abstention 7 % · Documents 13**; subtitle "Precision and recall against the gold set, per field and provider. Quality is measured before it is trusted."; per-field table (Support, Precision, Recall, F1, Abstain, Mean conf.). **Scroll once** to the **Model registry** and **Prompt registry**: `rules` and `ollama` available and local; the active prompt is `extract_v4` with a SHA-256.
 
+**If you are short of time:** this screen is a quick confirmation of the talk from 4.4b; show the metric strip and the registry, then move to Export. If the queue ran long, skip the scroll.
+
 **Recovery:** if the screen says "No evaluation results yet", the committed eval JSON is not present. Say "the eval harness output is not loaded in this build; the number we can defend is that the gold set has 13 documents and 57 annotations" and move on. Do not invent metrics.
 
-### 4.12 Export + FHIR write-back — 7:10–8:00
+### 4.12 Export + FHIR write-back — 7:30–8:10
 
 **Click:** **Export** (PLATFORM). Format **CDISC ODM 1.3.2** → **Generate export**. Point at the XML. Then click the **FHIR R4 bundle** card; choose **GBM-NL-002** (it is preselected as the participant with verified values); **Generate export**; then **Push to FHIR server**.
 
@@ -301,7 +310,7 @@ git rev-parse --short HEAD    # write it here: ________
 
 **Recovery:** if **Generate export** is disabled, you are on monitor/nurse or offline. Switch to tab A (PI). If the FHIR push fails (hospital server down), show the generated bundle and say "the export is valid; write-back needs the FHIR server, which is down in this run." If the ODM preview is truncated ("… more characters in the download"), that is by design (8 000-char preview), not an error.
 
-### 4.13 Monitor, read-only + SDV — 8:00–8:35
+### 4.13 Monitor, read-only + SDV — 8:10–8:40
 
 **Click:** switch to **tab B** (Monitor, pre-signed in). Click **Participants** → **GBM-NL-002**. Scroll the eCRF table to **MGMT promoter methylation** (the corrected value); click **Mark SDV**.
 
@@ -311,13 +320,13 @@ git rev-parse --short HEAD    # write it here: ________
 
 **Recovery:** if tab B is signed out or shows the offline snapshot, switch the role from tab A (avatar → **Switch demo role**) and sign in as Monitor; that takes about 10 s. If time is short, skip SDV and just show the read-only banner and disabled buttons.
 
-### 4.14 Is / is not + decision — 8:35–9:15
+### 4.14 Is / is not + decision — 8:40–9:20
 
 **Slide 3 → 4.** Read the four "is not" lines; do not soften them.
 
 > "So, plainly. This is a connected, local slice of the platform on synthetic data. It is not real patient data, not a hospital connection beyond this laptop, not a medical device, and not validated. It is not an accuracy claim, and it is not a Gate 2 decision. What we ask is narrow: keep MVP B as the direction, and let us finish the Gate 1 evidence so Gate 2 can decide scope, roadmap and cost. Thank you."
 
-### 4.15 Stop — 9:15–10:00
+### 4.15 Stop — 9:20–10:00
 
 Stop talking. Leave the last slide up. Invite questions.
 
@@ -385,7 +394,7 @@ Stop talking. Leave the last slide up. Invite questions.
 | New patients arrive over FHIR R4 and are pseudonymised on ingest (keyed HMAC); raw MRN and name are not stored in the app tables. | `backend/app/ingest/`, security review §3 SEC-04 |
 | AI extraction uses a local open-weight model (`qwen2.5:7b-instruct`) behind one provider interface; `rules` is the deterministic fallback; every run logs model + prompt version. | `backend/app/ai/`, `/ai/providers`, `/ai/prompts` |
 | Every proposal must carry an evidence span that is re-located in the source; an unsupported value becomes an abstention. | `backend/app/ai/span.py`, `ollama.py` |
-| Every action is hash-chained, and "Verify chain" detects edits made through the application; database-level anchoring is the next hardening step. | `backend/app/audit.py`, `/audit/verify`; security review §9 (SEC-02) |
+| Every action is hash-chained with a key held outside the database and anchored outside it. Verify detects edits and deletions, including changes made directly in the database. | `backend/app/audit.py`, `/audit/verify`; SEC-02 fixed in CEL-1785 (`f5b0386`) and re-verified live (`c60b2be`) |
 | The 8 baseline participants carry pre-computed fixture extractions (`provider: fixture`, model `demo-extractor v0.1`); only synced arrivals are extracted live (`ollama`, `qwen2.5:7b-instruct`, prompt `extract_v4`). | `backend/app/seed.py`; `app/assets/data/extractions.json`; live run §9 |
 | Exports: CDISC ODM 1.3.2 study XML with AuditRecords; FHIR QuestionnaireResponse + Provenance + AuditEvents, with write-back. | `backend/app/export/`; rehearsal §9 |
 | On the synthetic gold set (13 documents, 57 annotations) the local model scored 100 % precision and recall with 6.6 % abstention. | `backend/eval/results/latest.json` |
@@ -401,13 +410,13 @@ Stop talking. Leave the last slide up. Invite questions.
 |---|---|
 | Any clinical accuracy or time-saving figure ("95 % accurate", "saves 70 %") | Only a synthetic gold set exists; no clinical evidence. |
 | "Clinically validated", "production-ready", "hospital-ready", "MDR compliant", "GDPR compliant" | No validation, QMS, DPIA or legal sign-off. |
-| "Secure" without the qualifier | The security review lists High findings that must close before a pilot (SEC-01/02/03/04). Say "local demo; the gaps are documented". |
+| "Secure" without the qualifier | The four High findings are fixed (CEL-1785 `f5b0386`), but the Medium findings and a penetration test are open. Say "local demo; the gaps are documented". |
 | "Yamicc cannot do this" / "Yamicc is only a mock-up" | Overclaim. Say what public evidence shows, nothing more. |
 | "Yamicc's 650,000 patients / 20 %" as fact | [CLAIMED-C, unverified]; verify first. |
 | "This replaces your EDC" | The design integrates external EDCs (FR-036). |
 | "Open source" as settled | Licence not chosen; NFR-09 is a target. |
-| "The audit cannot be tampered with" / "tamper-evident" | It detects edits made through the app, but a database superuser can disable the trigger and rewrite or truncate the chain (SEC-02). Say the required §4.10 sentence: "hash-chained; verify detects edits made through the application; database-level anchoring is the next hardening step". |
-| "Annex 11 compliant" / "GCP compliant" / "validated audit trail" | The security review §9 says the chain must be fixed before it can be cited as an Annex 11/GCP control. It is not anchored or keyed yet. |
+| "The audit cannot be tampered with" / "tamper-proof" | The chain is keyed and externally anchored, so verify catches DB-level edits and deletions — but the key and the anchor file sit on the same machine. Say the required §4.10 sentence: "hash-chained with a key held outside the database and anchored outside it; verify detects edits and deletions, including changes made directly in the database". |
+| "Annex 11 compliant" / "GCP compliant" / "certified" / "validated audit trail" | The mechanism is now keyed and anchored, but there is no validation, QMS evidence or certification, and the key/anchor are local (Q9). A demo mechanism is not a compliance control. |
 | Calling the 46 pre-computed fixture proposals "live AI" | Only synced arrivals (GBM-NL-009/010/011) are live `ollama` output. The baseline queue is `provider: fixture`, model `demo-extractor v0.1` (Q2b). |
 | "All data stays in the hospital" | In this demo everything is on one laptop; the production trust boundary is a design, not a demonstrated deployment. |
 
@@ -419,7 +428,7 @@ Stop talking. Leave the last slide up. Invite questions.
 No. Every patient, document and number is synthetic. The FHIR server, the database and the model all run on this laptop. The banner is on every screen, by rule.
 
 **Q2. Is the AI live?**
-Yes — for the documents that arrived through Sync. A local Qwen 2.5 7B model through Ollama read the new pathology report during the demo; you saw its proposals, its abstentions, and its model and prompt version. It took about 45 seconds for that document. `rules` is the deterministic fallback if the model is slow. No paid API, and no data leaves the machine.
+Yes — for the documents that arrived through Sync. A local Qwen 2.5 7B model through Ollama read the new pathology report during the demo; you saw its proposals, its abstentions, and its model and prompt version. That document took about 45 seconds; the full queue can run for 3–6 minutes, so we open the first finished document. `rules` is the deterministic fallback if the model is slow. No paid API, and no data leaves the machine.
 
 **Q2b. Then why do the pre-loaded participants say `fixture`?**
 Because the 8 baseline participants are seeded with **pre-computed** extractions: provider `fixture`, model `demo-extractor v0.1`, generated offline with no model call. They exist to populate the review queue and the synthetic gold set, not to fake a live run. Only documents that arrive through Sync — tonight GBM-NL-009/010/011 — are extracted live by `ollama` (`qwen2.5:7b-instruct`, prompt `extract_v4`). Provenance is stored per proposal and shown on the card, so a reviewer can always tell which run produced it.
@@ -443,13 +452,13 @@ Flutter (web and macOS) → FastAPI → PostgreSQL 16 as the canonical store; HA
 FHIR R4 with mCODE-style resources in and out; CDISC ODM 1.3.2 out; ICD-O-3 for histology; LOINC/SNOMED where a code exists, and the UI marks placeholder codes as unverified. A terminology service and full mCODE conformance are Phase 2. Naming the standards publicly is a deliberate differentiator: Yamicc says "open standards" but names none in its primary sources (`deliverables/D2_yamicc.md` §0).
 
 **Q9. Can I trust the audit trail?**
-It is tamper-**detecting**, not tamper-**evident**. Every action is hash-chained, append-only by trigger, and the verifier checks every link, so it detects edits made through the application and ordinary corruption. But the chain is **unkeyed and not externally anchored**, and the app uses a database superuser, so a DB-level writer could disable the trigger and rewrite or truncate the chain (security review SEC-02). That is a documented High finding and the next hardening step: an HMAC key in a secret manager plus an external anchor or WORM store. I do not claim Annex 11 or GCP compliance for it. The demo proves the mechanism, not the production control.
+It is tamper-detecting, and it is now keyed and anchored. Every action is hash-chained with a key held outside the database and anchored outside it — an HMAC key outside the DB and an append-only anchor file outside the DB — and the verifier checks every link and every anchor line. Verify detects edits and deletions, including changes made directly in the database: we tested a superuser who disabled the trigger and deleted the newest event, then made a normal app write, and Verify chain reported "chain rewritten (does not match the external anchor)". **What could still defeat it?** Someone with both the database and the key and the anchor file on this machine. In production the key and anchor go to a separate service (roadmap). I do not claim Annex 11, GCP compliance or certification for it; the demo proves the mechanism, not the production control.
 
 **Q10. Why does the corrected row say provider `fixture`?**
 Because that wrong-value case is a scripted fixture from the synthetic gold set, loaded through the backend on purpose. The live model's proposals on GBM-NL-009 carry provider `ollama`, model `qwen2.5:7b-instruct` and prompt `extract_v4`. We label provenance per proposal so a reviewer can always tell which came from which run.
 
 **Q11. Is it secure?**
-It is a local demo, not a secure deployment. The security review found no Critical issue for this scope, but it lists 3 High and 7 Medium findings: a committed default JWT secret, an unkeyed audit chain, an unauthenticated HAPI with known CVEs, and a default pseudonymisation key. All four are on the remediation list before any pilot, and the code must not be lifted into a hosted environment as is (`deliverables/security_review_demo_v3.md`).
+It is a local demo, not a secure deployment. The security review found no Critical issue for this scope, but it lists High findings: a committed default JWT secret, an unkeyed audit chain, an unauthenticated HAPI with known CVEs, and a default pseudonymisation key. These were fixed in CEL-1785 (`f5b0386`) — no default secrets, a keyed and externally anchored audit chain, least-privilege DB roles, and HAPI's own DB user with pinned CORS — and SEC-02 was re-verified live (`c60b2be`). The Medium findings and a penetration test are still open before any pilot, and the code must not be lifted into a hosted environment as is (`deliverables/security_review_demo_v3.md`).
 
 **Q12. What about GDPR and pseudonymisation?**
 Pseudonymisation here is a keyed HMAC of the hospital MRN; the raw MRN and name are not persisted in the app tables. Pseudonymised is not anonymous. A DPIA, the controller/processor model, the legal basis and EU-only hosting are Phase 1–2 work with legal review. Nothing is solved yet (07 §1).
@@ -473,7 +482,7 @@ Demo JWT roles: research nurse (review and eCRF), monitor (read-only plus source
 Gate 3: no paid APIs, and no data may leave the machine. A local open-weight model keeps the data boundary and the cost at zero. The provider interface is pluggable; a hosted model is a decision for the Board, not a demo default.
 
 **Q19. What is still missing before a hospital could use it?**
-Real connectors and terminology services; an IdP with SSO/MFA and site scoping; audit anchoring and secret management; HAPI hardening and network isolation; validation evidence and a QMS; a DPIA and legal agreements; a penetration test. That is Phase 2–4 and the larger part of the work.
+Real connectors and terminology services; an IdP with SSO/MFA and site scoping; the audit key and anchor moved to a separate service, plus secret management; HAPI hardening and network isolation; validation evidence and a QMS; a DPIA and legal agreements; a penetration test. That is Phase 2–4 and the larger part of the work.
 
 **Q20. What does a pilot cost, and when?**
 I will not invent a number. Phase 3 is a controlled single-hospital pilot; cost ranges come with Gate 2. The demo is cheap; the pilot is not.
@@ -489,12 +498,12 @@ I will not invent a number. Phase 3 is a controlled single-hospital pilot; cost 
 | Backend down / "Local backend is down" | Continue in the offline snapshot (read-only banner). Say "the app keeps the last snapshot; writes need the local backend". Use the recording for sync/export. |
 | FHIR panel "Unreachable" | Skip the sync beat; go to Participants and use the existing queue. Say "the hospital endpoint is down; the platform keeps the last synced data". |
 | Sync returns 0 created | Already synced. Point at the previous run row and continue; never press twice. |
-| Model still running at 3:40 (009 "Queue is empty") | Go back to **4.4b** and finish the integrations/audit talk; the first proposals need 45–70 s and the queue ~3 min. If still empty, review GBM-NL-002's pre-computed queue; say "the model runs in the background; the review loop does not block on it". |
-| Sync was pressed late | 4.4b absorbs the wait. Never stand in silence and never press Sync twice. |
-| Ollama slow | The service falls back to `rules` automatically; the proposals show Provider `rules`. Same story. |
+| Model still running when you reach 009 ("Queue is empty") | Go back to **4.4b** and continue the integrations/audit/AI-quality talk; check every ~30 s, open the first finished arrival document. The queue needs **3–6 min** (measured 323 s ≈ 5.4 min). If still empty at 5:30, review GBM-NL-002's pre-computed queue; say "the model runs in the background; the review loop does not block on it". |
+| Sync was pressed late | 4.4b absorbs the wait (3–6 min). Never stand in silence and never press Sync twice. |
+| Ollama slow | The service falls back to `rules` automatically; the proposals show Provider `rules`. Same story, and this is the recovery line if the queue runs to 6 min. |
 | Review write fails | Say "the local API rejected the write"; go to audit and show what did persist. |
 | Audit human rows missing | The writes did not persist; use the recording's audit segment; continue. |
-| "Chain broken" | Say "a row was changed without recomputing the chain; catching that is what the verifier does"; move on. Do not claim full tamper-proofing. |
+| "Chain broken" / "chain rewritten" | Say "a row was changed outside the application; catching that is what the verifier does"; move on. Do not claim the demo is unbreakable. |
 | Export 403 / disabled | You are on nurse or monitor; switch to tab A (PI). |
 | Push fails | Show the generated bundle; say write-back needs the FHIR server. |
 | Layout breaks on the projector | Switch to the macOS app, or use the recording at 1440×900. |
@@ -510,6 +519,8 @@ Rehearsed **2026-11-21 14:00–14:40 CET** on `dev` at `a8e397f` (W7 connected a
 
 **Update 2026-11-21 15:20 — CEO cold-start verification.** The CEO verified Demo v3 from a cold start on the running stack. Three claims were tightened in this revision (CEL-1786): the audit wording (§4.10, §6.2, Q9), the fixture-versus-live provenance split (§1, 4.3, 4.6, Q2/Q2b, Q10), and the model-queue timing (run sheet, 4.4b, 4.6). **Measured on that machine: a sync queues 7 runs and the local model needs about 3 minutes to finish all 7; the first proposals arrive sooner (45–70 s).** This script now schedules a 4.4b talk-through so the presenter never waits in silence.
 
+**Update 2026-11-21 ~15:45 — CEO re-verification after the security fixes (CEL-1789).** The CEO re-verified Demo v3 from a cold start after CEL-1785 (`f5b0386`) and the verify fix (`c60b2be`). Two changes in v3.1: (1) **audit wording is upgraded** — the chain is keyed (HMAC, key outside the DB) and anchored in an append-only file outside the DB, and the CEO's tamper test returned **"chain rewritten (does not match the external anchor)"**; the switch-back note is retired and the old "database-level anchoring is the next hardening step" wording is gone (§1, 4.4b, 4.10, 6.1, 6.2, Q9). (2) **the live-extraction wait is re-timed** — after a fresh sync **all 17 runs in the queue at that time finished in 323 s (~5.4 min)**, against **179 s (~3 min)** earlier; seven are live Ollama arrival runs and the first arrival documents finish early, so the run sheet now reserves a **3–6 minute** window and opens the first finished arrival document first, filling the wait with integrations, audit and AI-quality talk. The `rules` fallback stays the recovery line.
+
 **What was verified, with commands**
 
 | Check | Command / method | Result |
@@ -521,11 +532,13 @@ Rehearsed **2026-11-21 14:00–14:40 CET** on `dev` at `a8e397f` (W7 connected a
 | Pseudonymisation count | `GET /integrations` after sync | `pseudonymisedPatients: 11` |
 | Live extraction (Ollama) | `python -m app.ai --run-id 11 --provider ollama` on `DOC-009-PATH` | **44.2 s**; 15 proposals (6 proposed, 9 abstained); model `qwen2.5:7b-instruct`; prompt `extract_v4@1ef2060c673d` |
 | Per-document model latency | provider timed on all 7 arrival documents | **35–66 s** (mean ≈45 s); `rules` < 10 ms |
-| Whole queue | CEO cold-start verification, 2026-11-21 15:20 | **7 runs ≈ 3 min**; first proposals at **45–70 s** |
+| Whole queue (earlier) | CEO cold-start verification, 2026-11-21 15:20 | **179 s ≈ 3 min**; first proposals at **45–70 s** |
+| Whole queue (re-verified) | CEO re-verification, 2026-11-21 ~15:45, after a fresh sync | **323 s ≈ 5.4 min** for all 17 runs in the queue at that time (7 are live Ollama arrival runs); plan **3–6 min** |
 | Accept | `POST /extractions/EXT-0018/decision {"decision":"accept"}` | 200 in **71 ms**; eCRF value written |
 | Correct | `POST /extractions/EXT-0020/decision {"decision":"correct","correctedValue":"Unmethylated"}` | 200 in **21 ms**; `reviewState=corrected`; before/after recorded |
 | Defer | `POST /extractions/EXT-0023/decision {"decision":"defer"}` | 200 in **27 ms** |
 | Audit verify | `GET /audit/verify` | `ok: true` in **33 ms**, head hash returned |
+| Audit tamper test (SEC-02) | Superuser disabled the trigger, deleted the newest event, then a normal app write; `GET /audit/verify` | **`ok: false`** — reason **"chain rewritten (does not match the external anchor at event N)"** (CEO, 2026-11-21 ~15:45) |
 | Human audit filter | `GET /audit?source=human` | `extraction.decision` rows for defer/correct/accept + `ecrf.value_set` rows |
 | ODM export | `GET /studies/GBM-NL-2026-01/export/odm` (PI) | 200 in **204 ms**, **9 694–10 525 bytes**, `ItemData` for verified values, `AuditRecord` present |
 | FHIR export | `GET /participants/GBM-NL-002/export/fhir` (PI) | 200 in **43 ms**, 4 779 bytes, resources `QuestionnaireResponse`, `Provenance`, `AuditEvent`×3 |
@@ -549,23 +562,23 @@ Rehearsed **2026-11-21 14:00–14:40 CET** on `dev` at `a8e397f` (W7 connected a
 | 4.2 Login | 0:25 | 0:05 | 0:30 |
 | 4.3 Dashboard | 0:28 | 0:04 | 0:40 |
 | 4.4 Sync | 0:40 | 0:08 | 0:50 |
-| 4.4b Integrations + audit talk | 0:35 (prepared) | — | 0:45 |
+| 4.4b Queue wait: integrations + audit + AI-quality talk | 1:22 (prepared) | — | 2:00 |
 | 4.5 Participant | 0:25 | 0:05 | 0:25 |
 | 4.6 Live extraction | 0:38 | 0:05 | 0:40 |
 | 4.7 Accept | 0:31 | 0:05 | 0:30 |
 | 4.8 Correct | 0:32 | 0:18 | 0:45 |
 | 4.9 Defer | 0:20 | 0:05 | 0:20 |
-| 4.10 Audit | 0:35 | 0:10 | 0:40 |
-| 4.11 AI quality | 0:35 | 0:05 | 0:35 |
-| 4.12 Export | 0:41 | 0:14 | 0:50 |
-| 4.13 Monitor | 0:21 | 0:10 | 0:35 |
+| 4.10 Audit | 0:34 | 0:10 | 0:30 |
+| 4.11 AI quality | 0:25 | 0:05 | 0:15 |
+| 4.12 Export | 0:41 | 0:14 | 0:40 |
+| 4.13 Monitor | 0:21 | 0:10 | 0:30 |
 | 4.14 Is / is not | 0:29 | 0:05 | 0:40 |
-| **Total** | **7:39** (7:04 measured + 0:35 prepared) | **≈1:25** | **9:15** |
+| **Total** | **8:17** (re-measured 2026-11-21) | **≈1:25** | **9:20** |
 
-Content ends at **~9:15** in practice; the 10:00 slot leaves **45 s of deliberate silence plus ≈1:00 of buffer** for a hostile question or a slow local model. If the human read is slower than 140 wpm, cut in this order: AI-quality per-field detail, dashboard alert detail, participant summary. **Never cut 4.4b while the model queue runs** — that is the silence the CEO flagged.
+Content ends at **~9:20** in practice; the 10:00 slot leaves **≈40 s of slack** for a hostile question or a slow local model, and more if you leave the wait block early. If the human read is slower than 140 wpm, cut in this order: AI-quality per-field detail, dashboard alert detail, participant summary. **Never cut 4.4b while the model queue runs** — that is the silence the CEO flagged — but leave it as soon as the first arrival document is finished.
 
 **Presenter card (print this)**
-`0:00 open · 0:30 PI login · 1:00 dashboard (8/24, 46 pre-computed queue) · 1:40 Sync now (3 patients, 7 docs, 7 runs) · 2:30 4.4b integrations + audit talk (model runs ~3 min) · 3:15 Participants → GBM-NL-009 · 3:40 review 009 (live ollama, abstains; fixture ≠ live) · 4:20 accept histology · 4:50 002 → correct MGMT · 5:35 009 → defer RANO · 5:55 audit → Verify chain → Human → EXT-0020 (hash-chained; no tamper-evident claim) · 6:35 AI quality (100 % synthetic, say why) · 7:10 ODM → FHIR 002 → Push (6 resources) · 8:00 tab B monitor → 002 → Mark SDV · 8:35 is/is not + ask · 9:15 stop`
+`0:00 open · 0:30 PI login · 1:00 dashboard (8/24, 46 pre-computed queue) · 1:40 Sync now (3 patients, 7 docs, 7 arrival runs) · 2:30 queue wait: integrations + audit + AI-quality talk (3–6 min; leave when the first arrival doc is done) · 4:30 Participants → GBM-NL-009 · 4:55 review 009 (live ollama, abstains; fixture ≠ live) · 5:30 accept histology · 5:55 002 → correct MGMT · 6:30 009 → defer RANO · 6:45 audit → Verify chain → Human → EXT-0020 (keyed + externally anchored; no compliance or certification claim) · 7:15 AI quality (screen; 100 % synthetic, say why) · 7:30 ODM → FHIR 002 → Push (6 resources) · 8:10 tab B monitor → 002 → Mark SDV · 8:40 is/is not + ask · 9:20 stop`
 
 **Remaining for the human/engineer before Monday**
 1. **`make demo` starts the AI worker** (`backend/app/ai`) since CEL-1784: background process, `ops/run/ai.pid`, log `ops/logs/ai.log`, stopped by `make stop`. Pre-flight step 4 now only confirms one worker runs. Keep `make demo` in front of the audience, never `make ai`.
@@ -583,14 +596,14 @@ Content ends at **~9:15** in practice; the 10:00 slot leaves **45 s of deliberat
 |---|---|---|---|
 | R1 | `make demo` now starts **one** AI worker (CEL-1784); `make health STRICT=1` fails if it is missing or if two run | DevOps / Engineer | Pre-flight step 4 confirms one pid; if it dies on stage, no live proposals (recovery §8) |
 | R2 | Arrivals are staged by `make stage-arrivals`, not by `make reset`/`make seed` | DevOps / Junior Engineer | Pre-flight step 2; without it the sync creates 0 participants |
-| R3 | Ollama is a single local server; QA + demo workers share it, and concurrent runs serialise; a sync queues **7 runs ≈ 3 min** | Engineer | 4.4b fills the wait; open the first finished document; never wait in silence |
-| R4 | Security High findings (SEC-01 JWT default, SEC-02 unkeyed audit, SEC-03 HAPI auth/CVEs, SEC-04 pseudonym key) | CTO / Security | Say "local demo"; do not claim "secure"; fix before any pilot |
+| R3 | Ollama is a single local server; QA + demo workers share it, and concurrent runs serialise; measured queue **3–6 min** (323 s ≈ 5.4 min; earlier 179 s ≈ 3 min) | Engineer | 4.4b fills the wait; open the first finished arrival document; `rules` is the fallback; never wait in silence |
+| R4 | Security High findings SEC-01/02/03/04 fixed in CEL-1785 (`f5b0386`); SEC-02 re-verified live (`c60b2be`); Medium findings and a pen test remain | CTO / Security | Say "local demo"; do not claim "secure", "compliant" or "certified" |
 | R5 | `Session.demoToday` is fixed at 2026-11-23; after Monday the UI date is stale | Engineer | Cosmetic; keep the clock for the demo |
 | R6 | AI quality shows 100 % on the synthetic set; a Board member may read it as marketing | PM | The script pre-empts it (§4.11, Q3) |
 | R7 | The `/ai/eval` screen hint says "Run `make eval`", but there is no `make eval` target | Engineer / DevOps | Cosmetic; do not show the empty state on stage |
 | R8 | No browser in this session; the interactive click path is QA/human-owned | QA / PM | QA CEL-1781 + the dress rehearsal cover it |
 | R9 | The 8 baseline participants are fixtures (`provider: fixture`); only synced arrivals are live. Easy to mislabel under pressure | PM | §1, 4.3, 4.6 and Q2b state the split; never call fixture output "live" |
-| R10 | SEC-FIX may merge before Monday; the audit wording is then stronger | CTO / CEO | §4.10 switch-back note; only change after the CEO confirms |
+| R10 | Residual audit risk: the DB, the HMAC key and the anchor file are on one machine | CTO / CEO | Q9 line: "someone with all three could still defeat it; separate service is roadmap"; no "compliant" or "certified" |
 
 ---
 
