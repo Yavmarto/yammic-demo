@@ -114,7 +114,7 @@ void main() {
   testWidgets('monitor role is read-only on review', (t) async {
     final (be, _) = await boot(t);
     await signIn(t, 'monitor');
-    expect(find.text('Monitor role is read-only in this demo.'), findsWidgets);
+    expect(find.text('Monitor · queries and source verification only. The eCRF is read-only.'), findsWidgets);
     await t.tap(find.text('AI review').first);
     await settle(t);
     await t.sendKeyEvent(LogicalKeyboardKey.keyA);

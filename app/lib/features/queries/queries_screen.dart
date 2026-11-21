@@ -28,6 +28,15 @@ class _QueriesScreenState extends State<QueriesScreen> {
     }
   }
 
+  Future<void> _answer(Session s, Map q, String text, VoidCallback reload) async {
+    try {
+      await s.api.post('/queries/${q['id']}/answer', {'answer': text});
+      reload();
+    } catch (e) {
+      if (mounted) _snack('Could not close the query: $e');
+    }
+  }
+
   Future<void> _ask(Session s) async {
     final pid = TextEditingController(), field = TextEditingController(), text = TextEditingController();
     var sev = 'medium';
@@ -82,7 +91,7 @@ class _QueriesScreenState extends State<QueriesScreen> {
         ),
         const SizedBox(height: K.s16),
         Wrap(spacing: 8, children: [
-          for (final f in const [('open', 'Open'), ('closed', 'Closed'), ('all', 'All')])
+          for (final f in const [('open', 'Open'), ('answered', 'Answered'), ('closed', 'Closed'), ('all', 'All')])
             ChoiceChip(key: Key('qf-${f.$1}'), label: Text(f.$2), selected: filter == f.$1, onSelected: (_) => setState(() => filter = f.$1)),
         ]),
         const SizedBox(height: K.s16),
@@ -102,10 +111,14 @@ class _QueriesScreenState extends State<QueriesScreen> {
                   Text(q['fieldId'] == null ? '—' : '${q['fieldId']}', style: K.small),
                   Text('${q['text']}', maxLines: 2, overflow: TextOverflow.ellipsis, style: K.body),
                   Text('${q['siteId']}', style: K.small),
-                  Align(alignment: Alignment.centerLeft, child: Pill(q['status'] == 'open' ? 'Open' : 'Closed', tone: q['status'] == 'open' ? (q['severity'] == 'high' ? Tone.bad : Tone.ai) : Tone.ok, icon: q['status'] == 'open' ? Icons.help_outline : Icons.check)),
+                  Align(alignment: Alignment.centerLeft, child: switch ('${q['status']}') {
+                    'open' => Pill('Open', tone: q['severity'] == 'high' ? Tone.bad : Tone.ai, icon: Icons.help_outline),
+                    'answered' => const Pill('Answered', tone: Tone.info, icon: Icons.reply),
+                    _ => const Pill('Closed', tone: Tone.ok, icon: Icons.check),
+                  }),
                 ],
               ),
-              if (openId == '${q['id']}') _Thread(q: q, s: s, onClose: () => _close(s, q, reload)),
+              if (openId == '${q['id']}') _Thread(q: q, s: s, onClose: () => _close(s, q, reload), onAnswer: (t) => _answer(s, q, t, reload)),
             ],
           ])),
       ]),
@@ -113,11 +126,23 @@ class _QueriesScreenState extends State<QueriesScreen> {
   }
 }
 
-class _Thread extends StatelessWidget {
+class _Thread extends StatefulWidget {
   final Map q;
   final Session s;
   final VoidCallback onClose;
-  const _Thread({required this.q, required this.s, required this.onClose});
+  final ValueChanged<String> onAnswer;
+  const _Thread({required this.q, required this.s, required this.onClose, required this.onAnswer});
+  @override
+  State<_Thread> createState() => _ThreadState();
+}
+
+class _ThreadState extends State<_Thread> {
+  final reply = TextEditingController();
+  @override
+  void dispose() {
+    reply.dispose();
+    super.dispose();
+  }
 
   Widget _msg(String who, Object? when, String text, {bool closed = false}) => Padding(
         padding: const EdgeInsets.only(bottom: K.s8),
@@ -125,7 +150,7 @@ class _Thread extends StatelessWidget {
           Icon(closed ? Icons.check_circle_outline : Icons.chat_bubble_outline, size: 16, color: closed ? K.okLine : K.ink3),
           const SizedBox(width: 8),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('$who · ${fmtDate(when)}', style: K.small),
+            Text('$who · ${fmtDateTime(when)}', style: K.small),
             Text(text, style: K.body),
           ])),
         ]),
@@ -133,20 +158,33 @@ class _Thread extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final open = q['status'] == 'open';
-    final canClose = open && !s.offline && !s.isMonitor; // nurse / PI resolve
+    final q = widget.q, s = widget.s;
+    final st = '${q['status']}';
+    final live = !s.offline;
+    final canAnswer = live && st == 'open' && (s.role == 'nurse' || s.isPi);
+    final canClose = live && st != 'closed' && (s.isMonitor || s.isPi || (s.role == 'nurse' && st == 'answered'));
     return Container(
       key: Key('thread-${q['id']}'),
       padding: const EdgeInsets.fromLTRB(K.s24, K.s12, K.s16, K.s12),
       color: K.sidebar,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         _msg('${q['openedBy']} (query)', q['createdAt'], '${q['text']}'),
-        if (!open) _msg('${q['closedBy']} (resolved)', q['closedAt'], 'Query closed.', closed: true),
+        if (q['answer'] != null) _msg('${q['answeredBy']} (answer)', q['answeredAt'], '${q['answer']}'),
+        if (st == 'closed') _msg('${q['closedBy']} (closed)', q['closedAt'], 'Query closed.', closed: true),
+        if (canAnswer)
+          Padding(
+            padding: const EdgeInsets.only(bottom: K.s8),
+            child: Row(children: [
+              Expanded(child: TextField(key: const Key('answer-text'), controller: reply, decoration: const InputDecoration(hintText: 'Answer from the source record'))),
+              const SizedBox(width: 8),
+              FilledButton(key: Key('answer-${q['id']}'), onPressed: () => reply.text.trim().isEmpty ? null : widget.onAnswer(reply.text.trim()), child: const Text('Send answer')),
+            ]),
+          ),
         Row(children: [
           TextButton.icon(onPressed: () => Navigator.of(context).pushNamed('/participants/${q['participantId']}'), icon: const Icon(Icons.open_in_new, size: 16), label: const Text('Open participant')),
           const Spacer(),
-          if (open && s.isMonitor) Text('Waiting for the site to resolve', style: K.small),
-          if (canClose) FilledButton(key: Key('close-${q['id']}'), onPressed: onClose, child: const Text('Resolve query')),
+          if (st == 'open' && s.isMonitor) Text('Waiting for the site to answer', style: K.small),
+          if (canClose) FilledButton(key: Key('close-${q['id']}'), onPressed: widget.onClose, child: Text(s.isMonitor ? 'Close query' : 'Resolve query')),
         ]),
       ]),
     );

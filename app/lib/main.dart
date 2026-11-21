@@ -9,7 +9,10 @@ import 'features/export/export_screen.dart';
 import 'features/integrations/integrations_screen.dart';
 import 'features/login/login_screen.dart';
 import 'features/participant/participant_screen.dart';
+import 'features/protocol/protocol_screen.dart';
 import 'features/queries/queries_screen.dart';
+import 'features/screening/screening_screen.dart';
+import 'features/timeline/timeline_screen.dart';
 import 'features/review/review_screen.dart';
 import 'shell/shell.dart';
 import 'theme/tokens.dart';
@@ -71,12 +74,15 @@ class _DemoAppState extends State<DemoApp> {
       page = const LoginScreen();
       nav = '';
     } else if (name.startsWith('/participants/')) {
-      page = ParticipantScreen(id: name.substring('/participants/'.length));
+      final rest = name.substring('/participants/'.length);
+      page = rest.endsWith('/timeline') ? TimelineScreen(id: rest.substring(0, rest.length - '/timeline'.length)) : ParticipantScreen(id: rest);
       nav = '/participants';
     } else {
       nav = name == '/login' ? '/' : name;
       page = switch (name) {
         '/participants' => const ParticipantListScreen(),
+        '/screening' => const ScreeningScreen(),
+        '/protocol' => const ProtocolScreen(),
         '/queries' => const QueriesScreen(),
         '/review' => ReviewScreen(participantId: s.arguments as String?),
         '/audit' => const AuditScreen(),
