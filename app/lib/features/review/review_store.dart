@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import '../../data/audit_store.dart';
+import '../../data/repository.dart';
 import '../../models/models.dart';
 
 enum RState { unverified, accepted, corrected, rejected, deferred }
@@ -36,9 +35,11 @@ class ReviewItem {
 
 class ReviewStore extends ChangeNotifier {
   final AuditStore audit;
-  ReviewStore(this.audit);
+  final DemoRepository repo;
+  ReviewStore(this.audit, [DemoRepository? repo]) : repo = repo ?? const JsonAssetRepository();
   static ReviewStore? _shared;
-  static ReviewStore of(AuditStore a) => (_shared?.audit == a) ? _shared! : (_shared = ReviewStore(a));
+  static ReviewStore of(AuditStore a, [DemoRepository? r]) =>
+      (_shared?.audit == a) ? _shared! : (_shared = ReviewStore(a, r));
 
   List<ReviewItem> items = [];
   final Map<String, RState> state = {};
@@ -51,11 +52,11 @@ class ReviewStore extends ChangeNotifier {
       .where((i) => (pid == null || i.participantId == pid) && stateOf(i) == RState.unverified)
       .length;
 
-  Future<void> load([AssetBundle? bundle]) async {
+  Future<void> load() async {
     if (loaded) return;
+    error = null;
     try {
-      final raw = await (bundle ?? rootBundle).loadString('assets/data/extractions.json', cache: false);
-      items = [for (final e in (jsonDecode(raw)['extractions'] as List)) ReviewItem(e as Map<String, dynamic>)];
+      items = [for (final e in await repo.extractions()) ReviewItem(e)];
       // AI "extract" events once, so the audit trail shows AI vs human provenance.
       if (!audit.events.any((e) => e.action == 'extract')) {
         for (final i in items) {

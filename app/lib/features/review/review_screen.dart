@@ -1,44 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:zeta_flutter/zeta_flutter.dart';
 import '../../data/app_state.dart';
+import '../../theme/tokens.dart';
+import '../../ui/widgets.dart';
 import 'review_store.dart';
 
-// Spec colours (deliverables/D7_demo_screens.md §1.1, §2.4).
+// Provenance semantics (deliverables/D7_demo_screens.md §1.1, §2.4):
+// amber dashed = AI proposal, green solid = human verified, red = rejected, grey = neutral.
 class _Look {
-  final Color bg, border, fg;
+  final Tone tone;
   final IconData icon;
   final String label;
   final bool dashed;
-  const _Look(this.bg, this.border, this.fg, this.icon, this.label, {this.dashed = false});
+  const _Look(this.tone, this.icon, this.label, {this.dashed = false});
+  Color get bg => toneColors(tone).$1;
+  Color get border => toneColors(tone).$2;
+  Color get fg => toneColors(tone).$3;
 }
 
-// Zeta semantic colours: warning = AI proposal (dashed), positive = human-verified, negative = rejected, cool = neutral.
-_Look _lookOf(BuildContext cx, ReviewItem i, RState s) {
-  final c = Zeta.of(cx).colors;
-  _Look neutral(IconData ic, String l, {bool dashed = false}) =>
-      _Look(c.surfaceCool, c.borderDefault, c.mainDefault, ic, l, dashed: dashed);
-  _Look ok(IconData ic, String l) => _Look(c.surfacePositiveSubtle, c.borderPositive, c.mainDefault, ic, l);
-  return switch (s) {
-    RState.unverified => i.abstained
-        ? neutral(Icons.help_outline, 'AI abstained', dashed: true)
-        : _Look(c.surfaceWarningSubtle, c.borderWarning, c.mainDefault, Icons.auto_awesome, 'AI · Unverified', dashed: true),
-    RState.accepted => ok(Icons.check_circle_outline, 'Verified · Accepted'),
-    RState.corrected => ok(Icons.edit_note, 'Verified · Corrected'),
-    RState.rejected => _Look(c.surfaceNegativeSubtle, c.borderNegative, c.mainDefault, Icons.block, 'Rejected'),
-    RState.deferred => neutral(Icons.schedule, 'Deferred'),
-  };
-}
+_Look _lookOf(ReviewItem i, RState s) => switch (s) {
+      RState.unverified => i.abstained
+          ? const _Look(Tone.muted, Icons.help_outline, 'AI abstained', dashed: true)
+          : const _Look(Tone.ai, Icons.auto_awesome, 'AI · Unverified', dashed: true),
+      RState.accepted => const _Look(Tone.ok, Icons.check_circle_outline, 'Verified · Accepted'),
+      RState.corrected => const _Look(Tone.ok, Icons.edit_note, 'Verified · Corrected'),
+      RState.rejected => const _Look(Tone.bad, Icons.block, 'Rejected'),
+      RState.deferred => const _Look(Tone.muted, Icons.schedule, 'Deferred'),
+    };
 
 class _Dashed extends CustomPainter {
   final Color c;
   _Dashed(this.c);
   @override
   void paint(Canvas canvas, Size s) {
-    final p = Paint()..color = c..style = PaintingStyle.stroke..strokeWidth = 2;
-    final path = Path()..addRRect(RRect.fromRectAndRadius(Offset.zero & s, const Radius.circular(8)));
+    final p = Paint()..color = c..style = PaintingStyle.stroke..strokeWidth = 1.5;
+    final path = Path()..addRRect(RRect.fromRectAndRadius(Offset.zero & s, const Radius.circular(10)));
     for (final m in path.computeMetrics()) {
-      for (double d = 0; d < m.length; d += 10) {
+      for (double d = 0; d < m.length; d += 9) {
         canvas.drawPath(m.extractPath(d, d + 5), p);
       }
     }
@@ -47,7 +45,7 @@ class _Dashed extends CustomPainter {
   bool shouldRepaint(_Dashed o) => o.c != c;
 }
 
-/// Box with the state's colour + (dashed|solid) border; icon+label chip lives inside callers.
+/// Box with the state's colour + (dashed|solid) border.
 class _StateBox extends StatelessWidget {
   final _Look look;
   final Widget child;
@@ -56,32 +54,22 @@ class _StateBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) => CustomPaint(
         foregroundPainter: look.dashed ? _Dashed(look.border) : null,
-        child: Container(
-          padding: const EdgeInsets.all(12),
+        child: AnimatedContainer(
+          duration: K.fast,
+          curve: K.ease,
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: look.bg,
-            borderRadius: BorderRadius.circular(8),
-            border: look.dashed ? null : Border.all(color: look.border, width: 2),
-            boxShadow: selected ? [BoxShadow(color: Zeta.of(context).colors.borderSelected, spreadRadius: 3)] : null,
+            borderRadius: BorderRadius.circular(10),
+            border: look.dashed ? null : Border.all(color: look.border, width: 1.5),
+            boxShadow: selected ? const [BoxShadow(color: K.accent, spreadRadius: 2)] : null,
           ),
           child: child,
         ),
       );
 }
 
-Widget _chip(_Look l) => Semantics(
-      label: 'Status: ${l.label}',
-      excludeSemantics: true,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(color: l.bg, border: Border.all(color: l.border), borderRadius: BorderRadius.circular(4)),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(l.icon, size: 16, color: l.fg),
-          const SizedBox(width: 4),
-          Text(l.label, style: TextStyle(color: l.fg, fontWeight: FontWeight.w600, fontSize: 12)),
-        ]),
-      ),
-    );
+Widget _chip(_Look l) => Pill(l.label, tone: l.tone, icon: l.icon);
 
 class ReviewScreen extends StatefulWidget {
   final String? participantId;
@@ -110,7 +98,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     super.didChangeDependencies();
     if (_init) return;
     _init = true;
-    store = ReviewStore.of(AppScope.of(context).audit);
+    store = ReviewStore.of(AppScope.of(context).audit, AppScope.of(context).repository);
     store.load();
   }
 
@@ -182,9 +170,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
         listenable: store,
         builder: (context, _) {
           if (store.error != null) {
-            return Center(child: Text('Could not load synthetic data: ${store.error}'));
+            return ErrorState(
+              message: '${store.error}',
+              onRetry: () { store.load(); setState(() {}); },
+            );
           }
-          if (!store.loaded) return const Center(child: CircularProgressIndicator());
+          if (!store.loaded) return const PageSkeleton();
           final i = cur;
           return CallbackShortcuts(
             bindings: {
@@ -201,18 +192,18 @@ class _ReviewScreenState extends State<ReviewScreen> {
             child: Focus(
               autofocus: true,
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.fromLTRB(K.s32, 28, K.s32, K.s24),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   _toolbar(),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: K.s16),
                   Expanded(
                     child: i == null
-                        ? const Center(child: Text('No AI extractions in this queue'))
+                        ? const Panel(child: SizedBox(height: 240, child: EmptyState(icon: Icons.fact_check_outlined, title: 'Queue is empty', hint: 'No AI extractions for this selection. Pick another participant.')))
                         : Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                             Expanded(flex: 448, child: _source(i)),
-                            const SizedBox(width: 16),
+                            const SizedBox(width: K.s16),
                             Expanded(flex: 320, child: _list()),
-                            const SizedBox(width: 16),
+                            const SizedBox(width: K.s16),
                             Expanded(flex: 360, child: _target(i)),
                           ]),
                   ),
@@ -225,35 +216,58 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
   Widget _toolbar() {
     final pids = {for (final i in store.items) i.participantId}.toList()..sort();
-    return Row(children: [
-      Text('AI extraction review', style: Theme.of(context).textTheme.titleLarge),
-      const SizedBox(width: 24),
-      DropdownButton<String?>(
-        value: pid,
-        items: [
-          const DropdownMenuItem(value: null, child: Text('All participants')),
-          for (final p in pids) DropdownMenuItem(value: p, child: Text(p)),
-        ],
-        onChanged: (v) => setState(() { pid = v; sel = 0; correcting = false; }),
+    final total = visible.length, left = store.pending(pid);
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      PageHeader(
+        title: 'AI extraction review',
+        subtitle: 'Check each proposed value against its source before it enters the eCRF.',
+        trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(color: K.surface, border: Border.all(color: K.lineStrong), borderRadius: BorderRadius.circular(8)),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String?>(
+                value: pid,
+                isDense: false,
+                borderRadius: BorderRadius.circular(10),
+                style: K.body.copyWith(fontWeight: FontWeight.w500),
+                items: [
+                  const DropdownMenuItem(value: null, child: Text('All participants')),
+                  for (final p in pids) DropdownMenuItem(value: p, child: Text(p)),
+                ],
+                onChanged: (v) => setState(() { pid = v; sel = 0; correcting = false; }),
+              ),
+            ),
+          ),
+          const SizedBox(width: K.s12),
+          const Tooltip(
+            message: 'A accept · C correct · X reject · D defer · J/↓ next · K/↑ previous · Esc cancel',
+            child: Padding(padding: EdgeInsets.all(8), child: Icon(Icons.keyboard_outlined, color: K.ink2)),
+          ),
+        ]),
       ),
-      const SizedBox(width: 16),
-      Text('${store.pending(pid)} pending'),
-      const Spacer(),
-      const Tooltip(
-        message: 'A accept · C correct · X reject · D defer · J/↓ next · K/↑ previous · Esc cancel',
-        child: Icon(Icons.keyboard_outlined),
-      ),
+      const SizedBox(height: K.s16),
+      Row(children: [
+        SizedBox(width: 260, child: Bar(total == 0 ? 0 : (total - left) / total, color: K.okLine)),
+        const SizedBox(width: 12),
+        Text('${total - left} of $total reviewed', style: K.small),
+        const SizedBox(width: 8),
+        Text('·', style: K.small),
+        const SizedBox(width: 8),
+        Text('$left pending', style: K.small.copyWith(fontWeight: FontWeight.w600, color: left > 0 ? K.aiInk : K.okInk)),
+      ]),
     ]);
   }
 
-  Widget _pane(String title, Widget body) => Card(
+  Widget _pane(String title, Widget body) => DecoratedBox(
+        decoration: BoxDecoration(color: K.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: K.line)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Text(title, style: Theme.of(context).textTheme.titleSmall),
+            padding: const EdgeInsets.fromLTRB(K.s16, 14, K.s16, 12),
+            child: Text(title.toUpperCase(), style: K.label, overflow: TextOverflow.ellipsis),
           ),
           const Divider(),
-          Expanded(child: Scrollbar(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: body))),
+          Expanded(child: Scrollbar(child: SingleChildScrollView(padding: const EdgeInsets.all(K.s16), child: body))),
         ]),
       );
 
@@ -264,22 +278,26 @@ class _ReviewScreenState extends State<ReviewScreen> {
             TextSpan(text: t.substring(0, i.start)),
             TextSpan(
               text: t.substring(i.start, i.end),
-              style: TextStyle(backgroundColor: Zeta.of(context).colors.surfaceWarning, fontWeight: FontWeight.w700, decoration: TextDecoration.underline),
+              style: const TextStyle(backgroundColor: Color(0xFFFFE3A1), fontWeight: FontWeight.w700, decoration: TextDecoration.underline, decorationColor: K.aiLine),
             ),
             TextSpan(text: t.substring(i.end)),
           ])
         : TextSpan(text: t);
     return _pane(
-      'SOURCE · ${i.docType} · ${i.docId}',
+      'Source · ${i.docType} · ${i.docId}',
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         if (!i.spanValid)
           Container(
             margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(8),
-            color: Zeta.of(context).colors.surfaceCool,
-            child: const Text('No evidence span — AI abstained. Accept is disabled.'),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: K.mutedBg, borderRadius: BorderRadius.circular(8)),
+            child: const Row(children: [
+              Icon(Icons.help_outline, size: 18, color: K.mutedInk),
+              SizedBox(width: 8),
+              Expanded(child: Text('No evidence span: the AI abstained. Accept is disabled.', style: K.small)),
+            ]),
           ),
-        SelectableText.rich(TextSpan(style: TextStyle(fontSize: 15, height: 1.6, color: Zeta.of(context).colors.mainDefault), children: [body])),
+        SelectableText.rich(TextSpan(style: const TextStyle(fontSize: 14.5, height: 1.7, color: K.ink), children: [body])),
       ]),
     );
   }
@@ -287,15 +305,16 @@ class _ReviewScreenState extends State<ReviewScreen> {
   Widget _list() {
     final v = visible;
     return _pane(
-      'PROPOSED VALUES',
-      Column(children: [
+      'Proposed values · ${v.length}',
+      Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         for (var k = 0; k < v.length; k++) ...[
           InkWell(
             key: ValueKey('card-${v[k].id}'),
+            borderRadius: BorderRadius.circular(10),
             onTap: () => setState(() { sel = k; correcting = false; }),
-            child: _StateBox._(_lookOf(context, v[k], store.stateOf(v[k])), _card(v[k]), k == sel),
+            child: _StateBox._(_lookOf(v[k], store.stateOf(v[k])), _card(v[k]), k == sel),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
         ],
       ]),
     );
@@ -304,81 +323,129 @@ class _ReviewScreenState extends State<ReviewScreen> {
   Widget _card(ReviewItem i) {
     final s = store.stateOf(i);
     final shown = s == RState.corrected ? store.corrected[i.id]! : i.value;
+    final low = i.confidence < 0.70 && !i.abstained;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('${i.participantId} · ${i.label}', style: const TextStyle(fontSize: 12)),
+      Text('${i.participantId} · ${i.label}', style: K.small),
       const SizedBox(height: 4),
-      Text('$shown ${i.unit}'.trim(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-      const SizedBox(height: 8),
-      Wrap(spacing: 8, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
-        _chip(_lookOf(context, i, s)),
-        Text('conf ${i.confidence.toStringAsFixed(2)}'),
-        if (i.confidence < 0.70 && !i.abstained)
-          Text('Low confidence', style: TextStyle(color: Zeta.of(context).colors.mainWarning, fontWeight: FontWeight.w700)),
+      Text('$shown ${i.unit}'.trim(), style: K.heading.copyWith(fontSize: 16)),
+      const SizedBox(height: 10),
+      Wrap(spacing: 8, runSpacing: 6, crossAxisAlignment: WrapCrossAlignment.center, children: [
+        _chip(_lookOf(i, s)),
+        Text('conf ${i.confidence.toStringAsFixed(2)}', style: K.small),
+        if (low) const Pill('Low confidence', tone: Tone.bad, icon: Icons.warning_amber_rounded),
       ]),
     ]);
   }
 
+  Widget _kv(String k, String v) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          SizedBox(width: 92, child: Text(k, style: K.small)),
+          Expanded(child: Text(v, style: K.body.copyWith(fontSize: 13))),
+        ]),
+      );
+
+  Widget _act(String label, String key, VoidCallback? onTap, {bool primary = false, bool danger = false}) {
+    final kb = Kbd(key, color: primary ? Colors.white70 : null);
+    final row = Row(children: [Text(label), const Spacer(), kb]);
+    return SizedBox(
+      width: double.infinity,
+      child: primary
+          ? FilledButton(onPressed: onTap, child: row)
+          : danger
+              ? TextButton(style: TextButton.styleFrom(foregroundColor: K.badInk), onPressed: onTap, child: row)
+              : OutlinedButton(onPressed: onTap, child: row),
+    );
+  }
+
   Widget _target(ReviewItem i) {
     final s = store.stateOf(i);
-    final l = _lookOf(context, i, s);
+    final l = _lookOf(i, s);
     final pending = s == RState.unverified;
     final written = s == RState.accepted ? i.value : s == RState.corrected ? store.corrected[i.id] : null;
     final code = i.code;
+    final low = i.confidence < 0.70 && !i.abstained;
     return _pane(
-      'TARGET eCRF · ${i.label}',
-      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        _StateBox._(
-          l,
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            _chip(l),
-            const SizedBox(height: 8),
-            Text(
-              written != null
-                  ? '$written ${i.unit}'.trim()
-                  : s == RState.rejected
-                      ? 'Not entered — rejected: ${store.reason[i.id]}'
-                      : pending
-                          ? (i.abstained ? 'Not stated in source' : 'Not entered (AI proposes: ${i.value} ${i.unit})'.replaceAll(' )', ')'))
-                          : 'Pending review',
-              style: TextStyle(fontSize: 16, color: l.fg, fontWeight: FontWeight.w600),
+      'Target eCRF · ${i.label}',
+      AnimatedSwitcher(
+        duration: const Duration(milliseconds: 180),
+        child: Column(
+          key: ValueKey('${i.id}-$s-$correcting'),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _StateBox._(
+              l,
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                _chip(l),
+                const SizedBox(height: 10),
+                Text(
+                  written != null
+                      ? '$written ${i.unit}'.trim()
+                      : s == RState.rejected
+                          ? 'Not entered. Rejected: ${store.reason[i.id]}'
+                          : pending
+                              ? (i.abstained ? 'Not stated in source' : 'Not entered (AI proposes: ${i.value} ${i.unit})'.replaceAll(' )', ')'))
+                              : 'Pending review',
+                  style: K.heading.copyWith(fontSize: 16, color: l.fg),
+                ),
+                if (written != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text('Verified by $reviewerId', style: K.small.copyWith(color: l.fg))),
+              ]),
+              false,
             ),
-            if (written != null) Text('Verified by $reviewerId', style: TextStyle(color: l.fg)),
-          ]),
-          false,
-        ),
-        const SizedBox(height: 12),
-        Text('Confidence ${i.confidence.toStringAsFixed(2)}${i.confidence < 0.70 && !i.abstained ? ' · Low confidence' : ''}'),
-        if (code != null)
-          Text('Code ${code['system']} ${code['code']} — ${code['display']}'
-              '${code['codeVerified'] == true ? '' : ' (placeholder, unverified)'}'),
-        Text('Model ${i.model} · prompt ${i.prompt}'),
-        const SizedBox(height: 16),
-        if (correcting)
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            TextField(
-              controller: edit,
-              autofocus: true,
-              decoration: InputDecoration(labelText: 'Corrected value', suffixText: i.unit, errorText: editError, border: const OutlineInputBorder()),
-              onSubmitted: (_) => _saveCorrect(),
-            ),
-            const SizedBox(height: 8),
-            Wrap(spacing: 8, runSpacing: 8, children: [
-              FilledButton(onPressed: _saveCorrect, child: const Text('Save correction')),
-              TextButton(onPressed: () => setState(() => correcting = false), child: const Text('Cancel')),
+            const SizedBox(height: K.s16),
+            Row(children: [
+              const SizedBox(width: 92, child: Text('Confidence', style: K.small)),
+              Expanded(child: Bar(i.confidence, color: low ? K.badLine : K.accent, height: 5)),
+              const SizedBox(width: 10),
+              Text(i.confidence.toStringAsFixed(2), style: K.mono),
             ]),
-          ])
-        else
-          Wrap(spacing: 8, runSpacing: 8, children: [
-            FilledButton(onPressed: pending && i.canAccept ? _accept : null, child: const Text('Accept')),
-            FilledButton.tonal(onPressed: pending ? _startCorrect : null, child: const Text('Correct')),
-            TextButton(onPressed: pending ? _reject : null, child: const Text('Reject')),
-            OutlinedButton(onPressed: pending ? _defer : null, child: const Text('Defer')),
-          ]),
-        if (pending && !i.canAccept)
-          const Padding(padding: EdgeInsets.only(top: 8), child: Text('Accept disabled: no evidence in source. Correct, reject or defer.')),
-        const SizedBox(height: 12),
-        TextButton(onPressed: () => Navigator.of(context).pushReplacementNamed('/audit'), child: const Text('View audit trail')),
-      ]),
+            if (low) Padding(padding: const EdgeInsets.only(top: 6, left: 92), child: Text('Low confidence: check the source closely.', style: K.small.copyWith(color: K.badInk))),
+            const SizedBox(height: 6),
+            if (code != null)
+              _kv('Code', '${code['system']} ${code['code']} (${code['display']})'
+                  '${code['codeVerified'] == true ? '' : ' · placeholder, unverified'}'),
+            _kv('Model', i.model),
+            _kv('Prompt', i.prompt),
+            const SizedBox(height: K.s16),
+            if (correcting)
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                TextField(
+                  controller: edit,
+                  autofocus: true,
+                  decoration: InputDecoration(labelText: 'Corrected value', suffixText: i.unit, errorText: editError),
+                  onSubmitted: (_) => _saveCorrect(),
+                ),
+                const SizedBox(height: 12),
+                Wrap(spacing: 8, runSpacing: 8, children: [
+                  FilledButton(onPressed: _saveCorrect, child: const Text('Save correction')),
+                  TextButton(onPressed: () => setState(() => correcting = false), child: const Text('Cancel')),
+                ]),
+              ])
+            else
+              Column(children: [
+                _act('Accept', 'A', pending && i.canAccept ? _accept : null, primary: true),
+                const SizedBox(height: 8),
+                _act('Correct', 'C', pending ? _startCorrect : null),
+                const SizedBox(height: 8),
+                Row(children: [
+                  Expanded(child: _act('Defer', 'D', pending ? _defer : null)),
+                  const SizedBox(width: 8),
+                  Expanded(child: _act('Reject', 'X', pending ? _reject : null, danger: true)),
+                ]),
+              ]),
+            if (pending && !i.canAccept)
+              const Padding(padding: EdgeInsets.only(top: 10), child: Text('Accept is disabled: no evidence in source. Correct, reject or defer.', style: K.small)),
+            const SizedBox(height: K.s16),
+            const Divider(),
+            const SizedBox(height: 4),
+            TextButton.icon(
+              onPressed: () => Navigator.of(context).pushReplacementNamed('/audit'),
+              icon: const Icon(Icons.history, size: 18),
+              label: const Text('View audit trail'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

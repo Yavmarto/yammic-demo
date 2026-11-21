@@ -6,6 +6,8 @@ import 'features/dashboard/dashboard_screen.dart';
 import 'features/participant/participant_screen.dart';
 import 'features/review/review_screen.dart';
 import 'shell/shell.dart';
+import 'theme/tokens.dart';
+import 'ui/widgets.dart';
 
 void main() => runApp(const DemoApp());
 
@@ -17,7 +19,7 @@ class DemoApp extends StatefulWidget {
 
 class _DemoAppState extends State<DemoApp> {
   final state = AppState();
-  late final Future<void> loaded = state.load();
+  late Future<void> loaded = state.load();
 
   Route<dynamic> _route(RouteSettings s) {
     final name = s.name ?? '/';
@@ -59,15 +61,20 @@ class _DemoAppState extends State<DemoApp> {
           builder: (context, light, dark, themeMode) => MaterialApp(
             title: 'Yammic demo',
             debugShowCheckedModeBanner: false,
-            theme: light,
-            darkTheme: dark,
-            themeMode: themeMode,
+            theme: applyLook(light),
+            darkTheme: applyLook(light), // light-only product look
+            themeMode: ThemeMode.light,
             builder: (context, child) => FutureBuilder<void>(
               future: loaded,
               builder: (_, snap) => snap.connectionState != ConnectionState.done
-                  ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+                  ? const Scaffold(body: PageSkeleton())
                   : snap.hasError
-                      ? Scaffold(body: Center(child: Text('Data load failed: ${snap.error}')))
+                      ? Scaffold(
+                          body: ErrorState(
+                            message: '${snap.error}',
+                            onRetry: () => setState(() => loaded = state.load()),
+                          ),
+                        )
                       : child!,
             ),
             onGenerateRoute: _route,

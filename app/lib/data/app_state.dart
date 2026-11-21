@@ -1,15 +1,16 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../models/models.dart';
 import 'audit_store.dart';
+import 'repository.dart';
 
-/// Single app-wide state: bundled JSON + shared audit store.
+/// Single app-wide state: repository-backed data + shared audit store.
 /// Access anywhere: `AppScope.of(context)`.
 class AppState extends ChangeNotifier {
+  final DemoRepository repository;
+  AppState({DemoRepository? repository}) : repository = repository ?? const JsonAssetRepository();
+
   late Dashboard dashboard;
   List<Participant> participants = [];
-  List<AiExtraction> extractions = [];
   final AuditStore audit = AuditStore();
 
   Participant? participant(String id) {
@@ -19,17 +20,9 @@ class AppState extends ChangeNotifier {
     return null;
   }
 
-  Future<Map<String, dynamic>> _load(String f) async =>
-      jsonDecode(await rootBundle.loadString('assets/data/$f')) as Map<String, dynamic>;
-
   Future<void> load() async {
-    dashboard = Dashboard.fromJson(await _load('dashboard.json'));
-    final p = await _load('participants.json');
-    participants = (p['participants'] as List).map((e) => Participant.fromJson(e)).toList();
-    try {
-      final x = await _load('extractions.json'); // optional until data task lands
-      extractions = (x['extractions'] as List).map((e) => AiExtraction.fromJson(e)).toList();
-    } catch (_) {}
+    dashboard = await repository.dashboard();
+    participants = await repository.participants();
     notifyListeners();
   }
 }

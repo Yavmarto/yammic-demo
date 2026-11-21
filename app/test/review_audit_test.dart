@@ -5,6 +5,7 @@ import 'package:yammic_demo/data/app_state.dart';
 import 'package:yammic_demo/features/audit/audit_screen.dart';
 import 'package:yammic_demo/features/review/review_screen.dart';
 import 'package:yammic_demo/models/models.dart';
+import 'package:yammic_demo/ui/widgets.dart';
 
 Future<AppState> pump(WidgetTester t, Widget w) async {
   t.view.physicalSize = const Size(1440, 900);
@@ -12,7 +13,7 @@ Future<AppState> pump(WidgetTester t, Widget w) async {
   addTearDown(t.view.reset);
   final s = AppState();
   await t.pumpWidget(AppScope(state: s, child: MaterialApp(home: Scaffold(body: w))));
-  for (var k = 0; k < 20 && find.byType(CircularProgressIndicator).evaluate().isNotEmpty; k++) {
+  for (var k = 0; k < 20 && find.byType(Skeleton).evaluate().isNotEmpty; k++) {
     await t.runAsync(() => Future.delayed(const Duration(milliseconds: 100)));
     await t.pump();
   }
@@ -60,6 +61,6 @@ void main() {
 
     await t.pumpWidget(AppScope(state: s, child: const MaterialApp(home: Scaffold(body: AuditScreen()))));
     await t.pumpAndSettle();
-    expect(find.textContaining('correct ·'), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const ValueKey('audit-row-0')), matching: find.text('correct')), findsOneWidget);
   });
 }
