@@ -1,0 +1,6 @@
+{"participants":[{"id":"SYN-0001","studyId":"ST-01","siteId":"SITE-A","status":"active","age":58,"sex":"F","summary":"Sample synthetic participant.",
+"visits":[{"name":"Baseline","date":"2026-10-01","status":"completed","note":""},{"name":"Week 4","date":"2026-11-26","status":"scheduled"}],
+"ecrfs":[{"form":"Vitals","status":"awaiting_review","completePct":80}],
+"issues":[{"severity":"medium","message":"Missing weight","field":"weight_kg"}],
+"treatments":[{"name":"Drug X (synthetic)","dose":"10 mg","start":"2026-10-01"}]},
+{"id":"SYN-0002","studyId":"ST-01","siteId":"SITE-A","status":"screening","age":64,"sex":"M","summary":"Placeholder; replaced by data task.","visits":[],"ecrfs":[],"issues":[],"treatments":[]}]}

@@ -1,0 +1,5 @@
+{"studies":[{"id":"ST-01","title":"Synthetic Cardio Study","phase":"II","target":40,"enrolled":3,"completeness":0.62}],
+"sites":[{"id":"SITE-A","name":"Site A (synthetic)","studyId":"ST-01","target":20,"enrolled":2,"openQueries":3}],
+"milestones":[{"studyId":"ST-01","name":"Database lock","date":"2027-03-01","done":false}],
+"alerts":[{"studyId":"ST-01","severity":"warning","message":"Sample alert"}],
+"tasks":[{"studyId":"ST-01","title":"Review AI extractions","due":"2026-11-24","assignee":"Nurse A","participantId":"SYN-0001"}]}
