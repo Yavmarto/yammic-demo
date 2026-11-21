@@ -7,7 +7,8 @@ class Panel extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final String? title;
   final Widget? trailing;
-  const Panel({super.key, required this.child, this.padding = const EdgeInsets.all(K.s16), this.title, this.trailing});
+  final bool fill; // true: stretch to the parent's height and let the child use Expanded/scroll
+  const Panel({super.key, required this.child, this.padding = const EdgeInsets.all(K.s16), this.title, this.trailing, this.fill = false});
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
@@ -16,7 +17,7 @@ class Panel extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: K.line),
         ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: fill ? MainAxisSize.max : MainAxisSize.min, children: [
           if (title != null) ...[
             Padding(
               padding: const EdgeInsets.fromLTRB(K.s16, 14, K.s16, 12),
@@ -27,7 +28,7 @@ class Panel extends StatelessWidget {
             ),
             const Divider(),
           ],
-          Padding(padding: padding, child: child),
+          if (fill) Expanded(child: Padding(padding: padding, child: child)) else Padding(padding: padding, child: child),
         ]),
       );
 }
@@ -94,7 +95,7 @@ class Pill extends StatelessWidget {
         decoration: BoxDecoration(color: bg, border: Border.all(color: line.withValues(alpha: .6)), borderRadius: BorderRadius.circular(999)),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           if (icon != null) ...[Icon(icon, size: 13, color: ink), const SizedBox(width: 4)],
-          Flexible(child: Text(label, overflow: TextOverflow.ellipsis, style: TextStyle(color: ink, fontWeight: FontWeight.w600, fontSize: 12, height: 1.3))),
+          Flexible(child: Text(label, overflow: TextOverflow.ellipsis, style: TextStyle(color: ink, fontWeight: FontWeight.w500, fontSize: 12, height: 1.3))),
         ]),
       ),
     );
@@ -133,7 +134,7 @@ class Kbd extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
         decoration: BoxDecoration(border: Border.all(color: color ?? K.lineStrong), borderRadius: BorderRadius.circular(4)),
-        child: Text(k, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color ?? K.ink3, height: 1.4)),
+        child: Text(k, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: color ?? K.ink3, height: 1.4)),
       );
 }
 
@@ -259,3 +260,141 @@ Tone statusTone(String s) => switch (s) {
       'withdrawn' || 'missed' => Tone.bad,
       _ => Tone.muted,
     };
+
+/// Table header row: label cells with flex widths on a sunken background.
+class TableHead extends StatelessWidget {
+  final List<(String, int, bool)> cols; // (label, flex, rightAligned)
+  const TableHead(this.cols, {super.key});
+  @override
+  Widget build(BuildContext context) => Container(
+        height: 32,
+        padding: const EdgeInsets.symmetric(horizontal: K.s16),
+        decoration: const BoxDecoration(color: K.sidebar, border: Border(bottom: BorderSide(color: K.line))),
+        child: Row(children: [
+          for (final c in cols)
+            Expanded(flex: c.$2, child: Text(c.$1.toUpperCase(), textAlign: c.$3 ? TextAlign.right : TextAlign.left, overflow: TextOverflow.ellipsis, style: K.label)),
+        ]),
+      );
+}
+
+/// Hoverable, optionally tappable 44px data row.
+class DataRow2 extends StatefulWidget {
+  final List<Widget> cells;
+  final List<int> flex;
+  final VoidCallback? onTap;
+  final bool selected;
+  final double height;
+  const DataRow2({super.key, required this.cells, required this.flex, this.onTap, this.selected = false, this.height = 44});
+  @override
+  State<DataRow2> createState() => _DataRow2State();
+}
+
+class _DataRow2State extends State<DataRow2> {
+  bool hover = false;
+  @override
+  Widget build(BuildContext context) => MouseRegion(
+        onEnter: (_) => setState(() => hover = true),
+        onExit: (_) => setState(() => hover = false),
+        cursor: widget.onTap == null ? MouseCursor.defer : SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: widget.onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            constraints: BoxConstraints(minHeight: widget.height),
+            padding: const EdgeInsets.symmetric(horizontal: K.s16, vertical: 6),
+            decoration: BoxDecoration(
+              color: widget.selected ? K.accentSoft : hover ? K.bg : K.surface,
+              border: const Border(bottom: BorderSide(color: K.line)),
+            ),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+              for (var i = 0; i < widget.cells.length; i++) Expanded(flex: widget.flex[i], child: widget.cells[i]),
+            ]),
+          ),
+        ),
+      );
+}
+
+const _tab = [FontFeature.tabularFigures()];
+const numStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: K.ink, fontFeatures: _tab);
+
+/// Metric strip: one continuous panel, segments divided by hairlines.
+class MetricStrip extends StatelessWidget {
+  final List<Metric> items;
+  const MetricStrip(this.items, {super.key});
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+        decoration: BoxDecoration(color: K.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: K.line)),
+        child: IntrinsicHeight(
+          child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            for (var i = 0; i < items.length; i++) ...[
+              if (i > 0) const VerticalDivider(width: 1, color: K.line),
+              Expanded(child: items[i]),
+            ],
+          ]),
+        ),
+      );
+}
+
+class Metric extends StatelessWidget {
+  final String label, value;
+  final String? sub;
+  final double? progress;
+  final Color? dot;
+  final VoidCallback? onTap;
+  const Metric(this.label, this.value, {super.key, this.sub, this.progress, this.dot, this.onTap});
+  @override
+  Widget build(BuildContext context) => InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(K.s16, 14, K.s16, 12),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
+            Row(children: [
+              if (dot != null) ...[CircleAvatar(radius: 3.5, backgroundColor: dot), const SizedBox(width: 6)],
+              Flexible(child: Text(label.toUpperCase(), style: K.label, overflow: TextOverflow.ellipsis)),
+            ]),
+            const SizedBox(height: 6),
+            Text(value, style: const TextStyle(fontSize: 28, height: 1.2, fontWeight: FontWeight.w500, letterSpacing: -.3, color: K.ink, fontFeatures: _tab)),
+            if (sub != null) Padding(padding: const EdgeInsets.only(top: 2), child: Text(sub!, style: K.small, overflow: TextOverflow.ellipsis)),
+            if (progress != null) Padding(padding: const EdgeInsets.only(top: 8), child: Bar(progress!, height: 3)),
+          ]),
+        ),
+      );
+}
+
+/// Confidence as a 3-segment meter (low <0.7, medium 0.7-0.9, high >0.9) + number.
+class ConfMeter extends StatelessWidget {
+  final double v;
+  const ConfMeter(this.v, {super.key});
+  @override
+  Widget build(BuildContext context) {
+    final lvl = v < .7 ? 1 : v < .9 ? 2 : 3;
+    final c = v < .7 ? K.badLine : v < .9 ? K.aiLine : K.accent;
+    return Semantics(
+      label: 'Confidence ${v.toStringAsFixed(2)}',
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        for (var i = 1; i <= 3; i++) Container(width: 10, height: 6, margin: const EdgeInsets.only(right: 2), decoration: BoxDecoration(color: i <= lvl ? c : K.line, borderRadius: BorderRadius.circular(2))),
+        const SizedBox(width: 6),
+        Text(v.toStringAsFixed(2), style: K.mono),
+      ]),
+    );
+  }
+}
+
+/// Text link in accentInk.
+class LinkText extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  const LinkText(this.label, this.onTap, {super.key});
+  @override
+  Widget build(BuildContext context) => TextButton(onPressed: onTap, style: TextButton.styleFrom(foregroundColor: K.infoInk, minimumSize: const Size(0, 32), padding: const EdgeInsets.symmetric(horizontal: 8)), child: Text(label));
+}
+
+/// Wraps a write action; disabled with a tooltip reason when the role or connection forbids it.
+class WriteGate extends StatelessWidget {
+  final String? blockedReason;
+  final Widget Function(bool enabled) builder;
+  const WriteGate({super.key, required this.blockedReason, required this.builder});
+  @override
+  Widget build(BuildContext context) =>
+      blockedReason == null ? builder(true) : Tooltip(message: blockedReason!, child: builder(false));
+}

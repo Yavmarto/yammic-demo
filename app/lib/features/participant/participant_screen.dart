@@ -1,263 +1,313 @@
 import 'package:flutter/material.dart';
-import '../../data/app_state.dart';
-import '../../models/models.dart';
+import '../../data/session.dart';
 import '../../theme/tokens.dart';
+import '../../ui/async.dart';
+import '../../ui/format.dart';
 import '../../ui/widgets.dart';
 
-String _nice(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1).replaceAll('_', ' ');
+void _go(BuildContext c, String r, [Object? a]) => Navigator.of(c).pushReplacementNamed(r, arguments: a);
 
-/// Participant list at /participants.
-class ParticipantListScreen extends StatelessWidget {
+class ParticipantListScreen extends StatefulWidget {
   const ParticipantListScreen({super.key});
   @override
-  Widget build(BuildContext context) {
-    final ps = AppScope.of(context).participants;
-    return ListView(padding: const EdgeInsets.fromLTRB(K.s32, 28, K.s32, K.s48), children: [
-      PageHeader(title: 'Participants', subtitle: '${ps.length} pseudonymised participants'),
-      const SizedBox(height: K.s24),
-      if (ps.isEmpty)
-        const Panel(child: SizedBox(height: 220, child: EmptyState(icon: Icons.people_outline, title: 'No participants yet', hint: 'Participants appear once screening starts.')))
-      else
-        Panel(
-          padding: EdgeInsets.zero,
-          child: Column(children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: K.s16, vertical: 12),
-              child: Row(children: [
-                Expanded(flex: 3, child: Text('PARTICIPANT', style: K.label)),
-                Expanded(flex: 3, child: Text('STUDY · SITE', style: K.label)),
-                Expanded(flex: 2, child: Text('AGE · SEX', style: K.label)),
-                Expanded(flex: 2, child: Text('STATUS', style: K.label)),
-                Expanded(flex: 3, child: Text('NEEDS ATTENTION', style: K.label)),
-                SizedBox(width: 24),
-              ]),
-            ),
-            for (final p in ps) ...[const Divider(), _Row(p)],
-          ]),
-        ),
-    ]);
+  State<ParticipantListScreen> createState() => _ListState();
+}
+
+class _ListState extends State<ParticipantListScreen> {
+  String q = '';
+  @override
+  Widget build(BuildContext context) => Loader<List>(
+        load: (s) => s.run((a) async => await a.get('/participants') as List),
+        builder: (c, all, reload) {
+          final rows = [for (final p in all) if ('${p['id']} ${p['siteId']} ${p['statusDetail']}'.toLowerCase().contains(q.toLowerCase())) p];
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(K.s24),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              PageHeader(
+                title: 'Participants',
+                subtitle: '${all.length} pseudonymised participants in GBM-NL-2026-01',
+                trailing: SizedBox(
+                  width: 260,
+                  child: TextField(onChanged: (v) => setState(() => q = v), decoration: const InputDecoration(hintText: 'Filter by ID, site, status', prefixIcon: Icon(Icons.search, size: 18))),
+                ),
+              ),
+              const SizedBox(height: K.s16),
+              Panel(
+                padding: EdgeInsets.zero,
+                child: rows.isEmpty
+                    ? const SizedBox(height: 160, child: EmptyState(icon: Icons.search_off, title: 'No participants match', hint: 'Clear the filter to see all participants.'))
+                    : Column(children: [
+                        const TableHead([('Participant', 3, false), ('Site', 2, false), ('Status', 3, false), ('Age / sex', 2, false), ('eCRF verified', 3, false), ('AI pending', 2, true), ('Queries', 2, true)]),
+                        for (final p in rows)
+                          DataRow2(
+                            key: ValueKey('p-${p['id']}'),
+                            flex: const [3, 2, 3, 2, 3, 2, 2],
+                            onTap: () => _go(context, '/participants/${p['id']}'),
+                            cells: [
+                              Text('${p['id']}', style: numStyle.copyWith(color: K.infoInk)),
+                              Text('${p['siteId']}', style: K.small),
+                              Align(alignment: Alignment.centerLeft, child: Pill('${p['statusDetail'] ?? p['status']}'.replaceAll('_', ' '), tone: statusTone('${p['status']}'))),
+                              Text('${p['age']} · ${p['sex']}', style: K.small),
+                              Row(children: [
+                                SizedBox(width: 56, child: Bar((p['ecrfCompletePct'] as num) / 100, height: 5)),
+                                const SizedBox(width: 8),
+                                Text('${p['ecrfCompletePct']}%', style: K.mono),
+                              ]),
+                              Text('${p['extractionsPending']}', textAlign: TextAlign.right, style: numStyle),
+                              Text('${p['openQueries']}', textAlign: TextAlign.right, style: numStyle),
+                            ],
+                          ),
+                      ]),
+              ),
+            ]),
+          );
+        },
+      );
+}
+
+class _W {
+  final Map p, ecrf;
+  final List docs;
+  _W(this.p, this.ecrf, this.docs);
+}
+
+class ParticipantScreen extends StatelessWidget {
+  final String id;
+  const ParticipantScreen({super.key, required this.id});
+  @override
+  Widget build(BuildContext context) => Loader<_W>(
+        load: (s) => s.run((a) async => _W(await a.get('/participants/$id') as Map, await a.get('/participants/$id/ecrf') as Map, await a.get('/participants/$id/documents') as List)),
+        builder: (c, w, reload) => _Workspace(w, reload),
+      );
+}
+
+class _Workspace extends StatefulWidget {
+  final _W w;
+  final VoidCallback reload;
+  const _Workspace(this.w, this.reload);
+  @override
+  State<_Workspace> createState() => _WorkspaceState();
+}
+
+class _WorkspaceState extends State<_Workspace> {
+  Map get p => widget.w.p;
+
+  Future<void> _sdv(String field) async {
+    final s = SessionScope.read(context);
+    try {
+      await s.api.post('/participants/${p['id']}/ecrf/$field/sdv');
+      widget.reload();
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('SDV failed: $e')));
+    }
   }
-}
 
-class _Row extends StatefulWidget {
-  final Participant p;
-  const _Row(this.p);
-  @override
-  State<_Row> createState() => _RowState();
-}
-
-class _RowState extends State<_Row> {
-  bool hover = false;
-  @override
-  Widget build(BuildContext context) {
-    final p = widget.p;
-    final waiting = p.ecrfs.where((e) => e.status == 'awaiting_review').length;
-    return MouseRegion(
-      onEnter: (_) => setState(() => hover = true),
-      onExit: (_) => setState(() => hover = false),
-      child: InkWell(
-        onTap: () => Navigator.of(context).pushNamed('/participant/${p.id}'),
-        child: AnimatedContainer(
-          duration: K.fast,
-          color: hover ? K.bg : Colors.transparent,
-          padding: const EdgeInsets.symmetric(horizontal: K.s16, vertical: 14),
-          child: Row(children: [
-            Expanded(flex: 3, child: Text(p.id, style: K.body.copyWith(fontWeight: FontWeight.w600))),
-            Expanded(flex: 3, child: Text('${p.studyId} · ${p.siteId}', style: K.small, overflow: TextOverflow.ellipsis)),
-            Expanded(flex: 2, child: Text('${p.age} ${p.sex}', style: K.small)),
-            Expanded(flex: 2, child: Align(alignment: Alignment.centerLeft, child: Pill(_nice(p.status), tone: statusTone(p.status)))),
-            Expanded(
-              flex: 3,
-              child: Wrap(spacing: 6, runSpacing: 4, children: [
-                if (waiting > 0) Pill('$waiting to review', tone: Tone.ai, icon: Icons.auto_awesome),
-                if (p.issues.isNotEmpty) Pill('${p.issues.length} ${p.issues.length == 1 ? 'issue' : 'issues'}', tone: Tone.bad),
-                if (waiting == 0 && p.issues.isEmpty) const Text('None', style: K.small),
+  Future<void> _openDoc(String id) async {
+    final s = SessionScope.read(context);
+    final d = await s.run((a) async => await a.get('/documents/$id') as Map);
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 760, maxHeight: 640),
+          child: Padding(
+            padding: const EdgeInsets.all(K.s24),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Expanded(child: Text('${d['title']}', style: K.title)),
+                IconButton(tooltip: 'Close', onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
               ]),
-            ),
-            const SizedBox(width: 24, child: Icon(Icons.chevron_right, size: 18, color: K.ink3)),
-          ]),
+              Text('${d['id']} · ${fmtDate(d['documentDate'])} · sha256 ${short('${d['sha256']}', 6)}', style: K.mono),
+              const Divider(height: 24),
+              Expanded(child: SingleChildScrollView(child: SelectableText('${d['text']}', style: const TextStyle(fontSize: 14.5, height: 1.65)))),
+            ]),
+          ),
         ),
       ),
     );
   }
-}
-
-/// UI-002 participant workspace.
-class ParticipantScreen extends StatelessWidget {
-  final String id;
-  const ParticipantScreen({super.key, required this.id});
 
   @override
   Widget build(BuildContext context) {
-    final p = AppScope.of(context).participant(id);
-    if (p == null) {
-      return EmptyState(
-        icon: Icons.person_search_outlined,
-        title: 'Unknown participant $id',
-        hint: 'This participant is not in the current study data.',
-        action: OutlinedButton(onPressed: () => Navigator.of(context).pushReplacementNamed('/participants'), child: const Text('Back to participants')),
-      );
-    }
-    final waiting = p.ecrfs.any((e) => e.status == 'awaiting_review');
-    final left = Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Panel(title: 'Clinical summary', child: Text(p.summary.isEmpty ? 'No summary recorded.' : p.summary, style: K.body.copyWith(height: 1.6))),
-      const SizedBox(height: K.s16),
-      Panel(title: 'Visit timeline', child: _Visits(p.visits)),
-      const SizedBox(height: K.s16),
-      Panel(title: 'Treatment history', padding: EdgeInsets.zero, child: _Treatments(p.treatments)),
-    ]);
-    final right = Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Panel(title: 'eCRF status', padding: EdgeInsets.zero, child: _Ecrfs(p.ecrfs)),
-      const SizedBox(height: K.s16),
-      Panel(title: 'Quality issues', padding: EdgeInsets.zero, child: _Issues(p.issues)),
-    ]);
-    return LayoutBuilder(builder: (context, box) {
-      final two = box.maxWidth >= 1000;
-      return ListView(padding: const EdgeInsets.fromLTRB(K.s32, 28, K.s32, K.s48), children: [
+    final s = SessionScope.of(context);
+    final ecrf = widget.w.ecrf, docs = widget.w.docs;
+    final pending = p['extractionsPending'] as int;
+    final visits = (p['visits'] as List?) ?? [];
+    final treatments = (p['treatments'] as List?) ?? [];
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(K.s24),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         PageHeader(
           crumbs: const [('Participants', '/participants'), ('Workspace', null)],
-          title: p.id,
-          subtitle: '${p.studyId} · ${p.siteId} · ${p.age} y · ${p.sex}',
+          title: '${p['id']}',
+          subtitle: '${p['age']} y · ${p['sex']} · ${p['siteId']} · enrolled ${fmtDate(p['enrolledDate'])}',
           trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-            Pill(_nice(p.status), tone: statusTone(p.status)),
-            const SizedBox(width: K.s16),
+            Pill('${p['statusDetail'] ?? p['status']}'.replaceAll('_', ' '), tone: statusTone('${p['status']}')),
+            const SizedBox(width: 12),
             FilledButton.icon(
-              icon: const Icon(Icons.auto_awesome, size: 18),
-              label: Text(waiting ? 'Review AI values' : 'Open AI review'),
-              onPressed: () => Navigator.of(context).pushNamed('/review', arguments: p.id),
+              onPressed: () => _go(context, '/review', p['id']),
+              icon: const Icon(Icons.auto_awesome, size: 16),
+              label: Text('Review AI ($pending)'),
             ),
           ]),
         ),
+        if (p['summary'] != null) Padding(padding: const EdgeInsets.only(top: K.s12), child: Text('${p['summary']}', style: K.small.copyWith(fontSize: 13.5))),
         const SizedBox(height: K.s24),
-        if (two)
-          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Expanded(flex: 58, child: left),
-            const SizedBox(width: K.s24),
-            Expanded(flex: 42, child: right),
-          ])
-        else ...[left, const SizedBox(height: K.s16), right],
-      ]);
-    });
+        LayoutBuilder(builder: (c, box) {
+          final main = Column(children: [_timeline(visits), const SizedBox(height: K.s16), _ecrf(ecrf, s), const SizedBox(height: K.s16), _treatments(treatments)]);
+          final rail = Column(children: [_docs(docs), const SizedBox(height: K.s16), _quality(ecrf)]);
+          return box.maxWidth >= 1000
+              ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Expanded(flex: 8, child: main), const SizedBox(width: K.s16), Expanded(flex: 4, child: rail)])
+              : Column(children: [main, const SizedBox(height: K.s16), rail]);
+        }),
+      ]),
+    );
   }
-}
 
-class _Visits extends StatelessWidget {
-  final List<Visit> vs;
-  const _Visits(this.vs);
-  @override
-  Widget build(BuildContext context) {
-    if (vs.isEmpty) return const Text('No visits scheduled yet.', style: K.small);
-    return Column(children: [
-      for (var i = 0; i < vs.length; i++)
-        IntrinsicHeight(
-          child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            SizedBox(
-              width: 22,
-              child: Column(children: [
-                Container(
-                  width: 14,
-                  height: 14,
-                  margin: const EdgeInsets.only(top: 3),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: switch (vs[i].status) { 'completed' => K.okLine, 'missed' => K.badLine, _ => K.surface },
-                    border: Border.all(color: switch (vs[i].status) { 'completed' => K.okLine, 'missed' => K.badLine, _ => K.lineStrong }, width: 2),
+  Widget _timeline(List visits) => Panel(
+        title: 'Visit timeline',
+        child: visits.isEmpty
+            ? const Text('No visits recorded.', style: K.small)
+            : Column(children: [
+                for (var i = 0; i < visits.length; i++)
+                  IntrinsicHeight(
+                    child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                      SizedBox(
+                        width: 20,
+                        child: Column(children: [
+                          Container(
+                            width: 10, height: 10, margin: const EdgeInsets.only(top: 5),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: visits[i]['status'] == 'completed' ? K.ink2 : K.surface,
+                              border: Border.all(color: visits[i]['status'] == 'completed' ? K.ink2 : K.accent, width: 2),
+                            ),
+                          ),
+                          if (i < visits.length - 1) Expanded(child: Container(width: 1, color: K.lineStrong)),
+                        ]),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10, left: 4),
+                          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Expanded(
+                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Text('${visits[i]['name']}', style: K.body.copyWith(fontWeight: FontWeight.w500)),
+                                if ('${visits[i]['note'] ?? ''}'.isNotEmpty) Text('${visits[i]['note']}', style: K.small),
+                              ]),
+                            ),
+                            Text(fmtDate(visits[i]['date']), style: K.mono),
+                            const SizedBox(width: 12),
+                            SizedBox(width: 96, child: Align(alignment: Alignment.centerRight, child: Pill('${visits[i]['status']}'.replaceAll('_', ' '), tone: statusTone('${visits[i]['status']}')))),
+                          ]),
+                        ),
+                      ),
+                    ]),
                   ),
-                  child: vs[i].status == 'scheduled' ? null : Icon(vs[i].status == 'missed' ? Icons.close : Icons.check, size: 9, color: Colors.white),
-                ),
-                if (i < vs.length - 1) Expanded(child: Container(width: 2, color: K.line)),
               ]),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Row(children: [
-                    Text(vs[i].name, style: K.body.copyWith(fontWeight: FontWeight.w600)),
-                    const SizedBox(width: 8),
-                    Text(vs[i].date, style: K.mono),
-                  ]),
-                  Text('${_nice(vs[i].status)}${vs[i].note.isEmpty ? '' : ' · ${vs[i].note}'}', style: K.small),
-                ]),
-              ),
-            ),
-          ]),
-        ),
-    ]);
+      );
+
+  Widget _ecrf(Map ecrf, Session s) {
+    final fields = (ecrf['fields'] as List).cast<Map>();
+    return Panel(
+      title: 'eCRF · ${ecrf['formId']}',
+      trailing: Text('${ecrf['verified']}/${ecrf['total']} verified', style: K.mono),
+      padding: EdgeInsets.zero,
+      child: fields.isEmpty
+          ? const Padding(padding: EdgeInsets.all(K.s16), child: Text('eCRF is not part of the offline snapshot.', style: K.small))
+          : Column(children: [
+              const TableHead([('Field', 4, false), ('Value', 4, false), ('State', 3, false), ('', 2, true)]),
+              for (final f in fields)
+                DataRow2(
+                  flex: const [4, 4, 3, 2],
+                  cells: [
+                    Text('${f['label']}${f['required'] == true ? ' *' : ''}', style: K.body.copyWith(fontSize: 13), overflow: TextOverflow.ellipsis),
+                    Text(f['value'] == null ? '—' : '${f['value']['value']}${f['unit'] != null ? ' ${f['unit']}' : ''}', style: numStyle.copyWith(fontWeight: FontWeight.w400), overflow: TextOverflow.ellipsis),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: f['value'] != null
+                          ? (f['value']['sdvAt'] != null
+                              ? const Pill('SDV done', tone: Tone.ok, icon: Icons.verified_user_outlined)
+                              : const Pill('Verified', tone: Tone.ok, icon: Icons.check_circle_outline))
+                          : f['pendingExtractionId'] != null
+                              ? const Pill('AI · Unverified', tone: Tone.ai, icon: Icons.auto_awesome)
+                              : const Pill('Empty', tone: Tone.muted),
+                    ),
+                    f['value'] != null && f['value']['sdvAt'] == null
+                        ? Align(
+                            alignment: Alignment.centerRight,
+                            child: WriteGate(
+                              blockedReason: s.offline ? s.writeBlockedReason : s.role != 'monitor' ? 'Source data verification is a monitor action.' : null,
+                              builder: (en) => TextButton(onPressed: en ? () => _sdv('${f['id']}') : null, child: const Text('Mark SDV')),
+                            ),
+                          )
+                        : const SizedBox(),
+                  ],
+                ),
+            ]),
+    );
   }
-}
 
-class _Treatments extends StatelessWidget {
-  final List<Treatment> ts;
-  const _Treatments(this.ts);
-  @override
-  Widget build(BuildContext context) => ts.isEmpty
-      ? const Padding(padding: EdgeInsets.all(K.s16), child: Text('No treatments recorded.', style: K.small))
-      : Column(children: [
-          for (var i = 0; i < ts.length; i++) ...[
-            if (i > 0) const Divider(),
-            Padding(
-              padding: const EdgeInsets.all(K.s16),
-              child: Row(children: [
-                Expanded(child: Text('${ts[i].name} ${ts[i].dose}'.trim(), style: K.body.copyWith(fontWeight: FontWeight.w500))),
-                Text('${ts[i].start} → ${ts[i].end ?? 'ongoing'}', style: K.mono),
+  Widget _treatments(List t) => Panel(
+        title: 'Treatment history',
+        padding: EdgeInsets.zero,
+        child: t.isEmpty
+            ? const Padding(padding: EdgeInsets.all(K.s16), child: Text('No treatment recorded.', style: K.small))
+            : Column(children: [
+                for (final x in t)
+                  DataRow2(
+                    flex: const [5, 4, 3],
+                    cells: [
+                      Text('${x['name']}', style: K.body.copyWith(fontSize: 13, fontWeight: FontWeight.w500)),
+                      Text('${x['dose'] ?? ''}', style: K.small),
+                      Text('${fmtDate(x['start'])} → ${x['end'] == null ? 'ongoing' : fmtDate(x['end'])}', style: K.mono.copyWith(fontSize: 11.5)),
+                    ],
+                  ),
               ]),
-            ),
-          ],
-        ]);
-}
+      );
 
-class _Ecrfs extends StatelessWidget {
-  final List<Ecrf> es;
-  const _Ecrfs(this.es);
-  @override
-  Widget build(BuildContext context) => es.isEmpty
-      ? const Padding(padding: EdgeInsets.all(K.s16), child: Text('No eCRFs started.', style: K.small))
-      : Column(children: [
-          for (var i = 0; i < es.length; i++) ...[
-            if (i > 0) const Divider(),
-            Padding(
-              padding: const EdgeInsets.all(K.s16),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+  Widget _docs(List docs) => Panel(
+        title: 'Source documents · ${docs.length}',
+        padding: EdgeInsets.zero,
+        child: Column(children: [
+          for (final d in docs)
+            DataRow2(
+              key: ValueKey('doc-${d['id']}'),
+              flex: const [1],
+              onTap: () => _openDoc('${d['id']}'),
+              height: 56,
+              cells: [
                 Row(children: [
-                  Expanded(child: Text(es[i].form, style: K.body.copyWith(fontWeight: FontWeight.w500))),
-                  Pill(_nice(es[i].status), tone: statusTone(es[i].status), icon: es[i].status == 'awaiting_review' ? Icons.auto_awesome : null),
-                ]),
-                const SizedBox(height: 10),
-                Row(children: [
-                  Expanded(child: Bar(es[i].completePct / 100, color: es[i].status == 'complete' ? K.okLine : K.accent, height: 5)),
+                  const Icon(Icons.description_outlined, size: 18, color: K.ink2),
                   const SizedBox(width: 10),
-                  SizedBox(width: 36, child: Text('${es[i].completePct}%', style: K.small, textAlign: TextAlign.right)),
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+                      Text('${d['title']}', style: K.body.copyWith(fontSize: 13, fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text('${d['id']} · ${fmtDate(d['documentDate'])} · ${d['extractionCount'] ?? 0} AI values', style: K.small.copyWith(fontSize: 11.5)),
+                    ]),
+                  ),
                 ]),
-              ]),
+              ],
             ),
-          ],
-        ]);
-}
+        ]),
+      );
 
-class _Issues extends StatelessWidget {
-  final List<QualityIssue> qs;
-  const _Issues(this.qs);
-  @override
-  Widget build(BuildContext context) => qs.isEmpty
-      ? const SizedBox(height: 120, child: EmptyState(icon: Icons.verified_outlined, title: 'No quality issues', hint: 'Data checks found nothing to fix.'))
-      : Column(children: [
-          for (var i = 0; i < qs.length; i++) ...[
-            if (i > 0) const Divider(),
-            Padding(
-              padding: const EdgeInsets.all(K.s16),
-              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Pill(_nice(qs[i].severity), tone: switch (qs[i].severity) { 'high' => Tone.bad, 'medium' => Tone.ai, _ => Tone.muted }),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(qs[i].message, style: K.body.copyWith(fontSize: 13.5)),
-                    if (qs[i].field.isNotEmpty) Text(qs[i].field, style: K.mono),
-                  ]),
-                ),
-              ]),
-            ),
-          ],
-        ]);
+  Widget _quality(Map ecrf) {
+    final queries = p['openQueries'] as int;
+    final pend = p['extractionsPending'] as int;
+    return Panel(
+      title: 'Data quality',
+      child: Column(children: [
+        _qrow(Icons.help_outline, 'Open queries', '$queries'),
+        _qrow(Icons.auto_awesome, 'AI proposals awaiting review', '$pend'),
+        _qrow(Icons.check_circle_outline, 'eCRF fields verified', '${ecrf['verified']}/${ecrf['total']}'),
+      ]),
+    );
+  }
+
+  Widget _qrow(IconData i, String l, String v) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(children: [Icon(i, size: 16, color: K.ink2), const SizedBox(width: 8), Expanded(child: Text(l, style: K.body.copyWith(fontSize: 13))), Text(v, style: numStyle)]),
+      );
 }

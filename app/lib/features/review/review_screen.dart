@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../data/app_state.dart';
+import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../../ui/widgets.dart';
 import 'review_store.dart';
@@ -80,6 +80,9 @@ class ReviewScreen extends StatefulWidget {
 
 class _ReviewScreenState extends State<ReviewScreen> {
   late ReviewStore store;
+  late Session session;
+  Map? run; // live extraction run being polled
+  bool _polling = false;
   String? pid;
   int sel = 0;
   bool correcting = false;
@@ -98,8 +101,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
     super.didChangeDependencies();
     if (_init) return;
     _init = true;
-    store = ReviewStore.of(AppScope.of(context).audit, AppScope.of(context).repository);
-    store.load();
+    session = SessionScope.read(context);
+    store = ReviewStore(session)..load();
   }
 
   List<ReviewItem> get visible => [for (final i in store.items) if (pid == null || i.participantId == pid) i];
@@ -114,41 +117,49 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
   void _next() => _move(1);
 
-  void _accept() {
-    final i = cur;
-    if (_typing || i == null || !i.canAccept || store.stateOf(i) != RState.unverified) return;
-    store.act(i, 'accept');
-    _done('${i.label} accepted — verified by $reviewerId');
+  bool get _canAct => session.canWrite;
+
+  Future<bool> _write(ReviewItem i, String action, {String? value, String? why}) async {
+    final err = await store.act(i, action, value: value, why: why);
+    if (err != null && mounted) {
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(SnackBar(content: Text('Could not save: $err')));
+    }
+    return err == null;
   }
 
-  void _defer() {
+  Future<void> _accept() async {
     final i = cur;
-    if (_typing || i == null || store.stateOf(i) != RState.unverified) return;
-    store.act(i, 'defer');
-    _done('${i.label} deferred');
+    if (_typing || !_canAct || i == null || !i.canAccept || i.state != RState.unverified) return;
+    if (await _write(i, 'accept') && mounted) _done('${i.label} accepted — verified by ${session.username}');
+  }
+
+  Future<void> _defer() async {
+    final i = cur;
+    if (_typing || !_canAct || i == null || i.state != RState.unverified) return;
+    if (await _write(i, 'defer') && mounted) _done('${i.label} deferred');
   }
 
   void _startCorrect() {
     final i = cur;
-    if (_typing || i == null || store.stateOf(i) != RState.unverified) return;
+    if (_typing || !_canAct || i == null || i.state != RState.unverified) return;
     setState(() { correcting = true; editError = null; edit.text = i.abstained ? '' : i.value; });
   }
 
-  void _saveCorrect() {
+  Future<void> _saveCorrect() async {
     final i = cur!;
     final err = store.validate(i, edit.text);
     if (err != null) { setState(() => editError = err); return; }
-    store.act(i, 'correct', value: edit.text.trim());
-    _done('${i.label} corrected — verified by $reviewerId');
+    if (await _write(i, 'correct', value: edit.text.trim()) && mounted) _done('${i.label} corrected — verified by ${session.username}');
   }
 
   Future<void> _reject() async {
     final i = cur;
-    if (_typing || i == null || store.stateOf(i) != RState.unverified) return;
+    if (_typing || !_canAct || i == null || i.state != RState.unverified) return;
     final why = await showDialog<String>(context: context, builder: (_) => const _RejectDialog());
     if (why == null || !mounted) return;
-    store.act(i, 'reject', why: why);
-    _done('${i.label} rejected');
+    if (await _write(i, 'reject', why: why) && mounted) _done('${i.label} rejected');
   }
 
   void _done(String msg) {
@@ -157,7 +168,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     final v = visible;
     for (var k = 1; k <= v.length; k++) {
       final n = (sel + k) % v.length;
-      if (store.stateOf(v[n]) == RState.unverified) { sel = n; break; }
+      if (v[n].state == RState.unverified) { sel = n; break; }
     }
     setState(() {});
     ScaffoldMessenger.of(context)
@@ -215,7 +226,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
       );
 
   Widget _toolbar() {
-    final pids = {for (final i in store.items) i.participantId}.toList()..sort();
+    final pids = store.participantIds;
     final total = visible.length, left = store.pending(pid);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       PageHeader(
@@ -240,12 +251,22 @@ class _ReviewScreenState extends State<ReviewScreen> {
             ),
           ),
           const SizedBox(width: K.s12),
+          WriteGate(
+            blockedReason: session.writeBlockedReason ?? (pid == null ? 'Pick a participant first.' : null),
+            builder: (en) => OutlinedButton.icon(
+              onPressed: en && run == null ? _startRun : null,
+              icon: const Icon(Icons.play_arrow_rounded, size: 18),
+              label: const Text('Run extraction'),
+            ),
+          ),
+          const SizedBox(width: K.s12),
           const Tooltip(
             message: 'A accept · C correct · X reject · D defer · J/↓ next · K/↑ previous · Esc cancel',
             child: Padding(padding: EdgeInsets.all(8), child: Icon(Icons.keyboard_outlined, color: K.ink2)),
           ),
         ]),
       ),
+      if (run != null) _runBar(),
       const SizedBox(height: K.s16),
       Row(children: [
         SizedBox(width: 260, child: Bar(total == 0 ? 0 : (total - left) / total, color: K.okLine)),
@@ -254,9 +275,64 @@ class _ReviewScreenState extends State<ReviewScreen> {
         const SizedBox(width: 8),
         Text('·', style: K.small),
         const SizedBox(width: 8),
-        Text('$left pending', style: K.small.copyWith(fontWeight: FontWeight.w600, color: left > 0 ? K.aiInk : K.okInk)),
+        Text('$left pending', style: K.small.copyWith(fontWeight: FontWeight.w500, color: left > 0 ? K.aiInk : K.okInk)),
       ]),
     ]);
+  }
+
+  Future<void> _startRun() async {
+    setState(() => run = {'status': 'queued', 'done': 0, 'total': 0});
+    try {
+      run = await session.api.post('/participants/$pid/extract?provider=auto') as Map;
+    } catch (e) {
+      setState(() => run = {'status': 'failed', 'error': '$e', 'done': 0, 'total': 0});
+      return;
+    }
+    setState(() {});
+    _poll();
+  }
+
+  Future<void> _poll() async {
+    if (_polling) return;
+    _polling = true;
+    final started = DateTime.now();
+    while (mounted && run != null && run!['status'] != 'completed' && run!['status'] != 'failed') {
+      await Future.delayed(const Duration(milliseconds: 700));
+      try {
+        final r = await session.api.get('/runs/${run!['id']}') as Map;
+        if (mounted) setState(() => run = r);
+      } catch (_) {}
+      if (DateTime.now().difference(started).inSeconds > 90 && mounted) {
+        setState(() => run = {...?run, 'status': 'failed', 'error': 'Timed out. Is the AI service running?'});
+      }
+    }
+    _polling = false;
+    if (mounted && run?['status'] == 'completed') {
+      await store.load();
+      if (mounted) setState(() {});
+    }
+  }
+
+  /// Live extraction run: provider/model, progress, and the outcome.
+  Widget _runBar() {
+    final st = '${run!['status']}', done = (run!['done'] as num?)?.toInt() ?? 0, total = (run!['total'] as num?)?.toInt() ?? 0;
+    final fin = st == 'completed' || st == 'failed';
+    return Container(
+      margin: const EdgeInsets.only(top: K.s12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: st == 'failed' ? K.badBg : K.aiBg, borderRadius: BorderRadius.circular(10), border: Border.all(color: st == 'failed' ? K.badLine : K.aiLine.withValues(alpha: .5))),
+      child: Row(children: [
+        Icon(st == 'failed' ? Icons.error_outline : st == 'completed' ? Icons.check_circle_outline : Icons.auto_awesome, size: 18, color: st == 'failed' ? K.badInk : K.aiInk),
+        const SizedBox(width: 10),
+        Text(
+          st == 'failed' ? 'Extraction failed: ${run!['error']}' : st == 'completed' ? 'Extraction complete · $done proposals added for review' : 'Extraction ${st == 'queued' ? 'queued' : 'running'}${run!['provider'] != null ? ' · ${run!['provider']}' : ''}…',
+          style: K.small.copyWith(color: st == 'failed' ? K.badInk : K.aiInk, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(width: 16),
+        if (!fin) Expanded(child: Bar(total == 0 ? 0 : done / total, color: K.aiLine, height: 4)) else const Spacer(),
+        if (fin) TextButton(onPressed: () => setState(() => run = null), child: const Text('Dismiss')),
+      ]),
+    );
   }
 
   Widget _pane(String title, Widget body) => DecoratedBox(
@@ -278,7 +354,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             TextSpan(text: t.substring(0, i.start)),
             TextSpan(
               text: t.substring(i.start, i.end),
-              style: const TextStyle(backgroundColor: Color(0xFFFFE3A1), fontWeight: FontWeight.w700, decoration: TextDecoration.underline, decorationColor: K.aiLine),
+              style: const TextStyle(backgroundColor: Color(0xFFFFE3A1), fontWeight: FontWeight.w500, decoration: TextDecoration.underline, decorationColor: K.aiLine),
             ),
             TextSpan(text: t.substring(i.end)),
           ])
@@ -312,7 +388,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             key: ValueKey('card-${v[k].id}'),
             borderRadius: BorderRadius.circular(10),
             onTap: () => setState(() { sel = k; correcting = false; }),
-            child: _StateBox._(_lookOf(v[k], store.stateOf(v[k])), _card(v[k]), k == sel),
+            child: _StateBox._(_lookOf(v[k], v[k].state), _card(v[k]), k == sel),
           ),
           const SizedBox(height: 10),
         ],
@@ -321,8 +397,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
   }
 
   Widget _card(ReviewItem i) {
-    final s = store.stateOf(i);
-    final shown = s == RState.corrected ? store.corrected[i.id]! : i.value;
+    final s = i.state;
+    final shown = s == RState.corrected ? (i.correctedValue ?? '') : i.value;
     final low = i.confidence < 0.70 && !i.abstained;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('${i.participantId} · ${i.label}', style: K.small),
@@ -359,10 +435,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
   }
 
   Widget _target(ReviewItem i) {
-    final s = store.stateOf(i);
+    final s = i.state;
     final l = _lookOf(i, s);
     final pending = s == RState.unverified;
-    final written = s == RState.accepted ? i.value : s == RState.corrected ? store.corrected[i.id] : null;
+    final written = s == RState.accepted ? i.value : s == RState.corrected ? i.correctedValue : null;
     final code = i.code;
     final low = i.confidence < 0.70 && !i.abstained;
     return _pane(
@@ -382,13 +458,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   written != null
                       ? '$written ${i.unit}'.trim()
                       : s == RState.rejected
-                          ? 'Not entered. Rejected: ${store.reason[i.id]}'
+                          ? 'Not entered. Rejected: ${i.reason}'
                           : pending
                               ? (i.abstained ? 'Not stated in source' : 'Not entered (AI proposes: ${i.value} ${i.unit})'.replaceAll(' )', ')'))
                               : 'Pending review',
                   style: K.heading.copyWith(fontSize: 16, color: l.fg),
                 ),
-                if (written != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text('Verified by $reviewerId', style: K.small.copyWith(color: l.fg))),
+                if (written != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text('Verified by ${i.last?['username'] ?? session.username}', style: K.small.copyWith(color: l.fg))),
               ]),
               false,
             ),
@@ -406,6 +482,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   '${code['codeVerified'] == true ? '' : ' · placeholder, unverified'}'),
             _kv('Model', i.model),
             _kv('Prompt', i.prompt),
+            _kv('Provider', i.provider),
             const SizedBox(height: K.s16),
             if (correcting)
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -423,23 +500,25 @@ class _ReviewScreenState extends State<ReviewScreen> {
               ])
             else
               Column(children: [
-                _act('Accept', 'A', pending && i.canAccept ? _accept : null, primary: true),
+                _act('Accept', 'A', pending && i.canAccept && _canAct ? _accept : null, primary: true),
                 const SizedBox(height: 8),
-                _act('Correct', 'C', pending ? _startCorrect : null),
+                _act('Correct', 'C', pending && _canAct ? _startCorrect : null),
                 const SizedBox(height: 8),
                 Row(children: [
-                  Expanded(child: _act('Defer', 'D', pending ? _defer : null)),
+                  Expanded(child: _act('Defer', 'D', pending && _canAct ? _defer : null)),
                   const SizedBox(width: 8),
-                  Expanded(child: _act('Reject', 'X', pending ? _reject : null, danger: true)),
+                  Expanded(child: _act('Reject', 'X', pending && _canAct ? _reject : null, danger: true)),
                 ]),
               ]),
-            if (pending && !i.canAccept)
+            if (pending && !_canAct)
+              Padding(padding: const EdgeInsets.only(top: 10), child: Text(session.writeBlockedReason ?? '', style: K.small)),
+            if (pending && _canAct && !i.canAccept)
               const Padding(padding: EdgeInsets.only(top: 10), child: Text('Accept is disabled: no evidence in source. Correct, reject or defer.', style: K.small)),
             const SizedBox(height: K.s16),
             const Divider(),
             const SizedBox(height: 4),
             TextButton.icon(
-              onPressed: () => Navigator.of(context).pushReplacementNamed('/audit'),
+              onPressed: () => Navigator.of(context).pushReplacementNamed('/audit', arguments: i.participantId),
               icon: const Icon(Icons.history, size: 18),
               label: const Text('View audit trail'),
             ),

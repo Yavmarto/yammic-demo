@@ -1,58 +1,87 @@
 import 'package:flutter/material.dart';
 import 'package:zeta_flutter/zeta_flutter.dart';
-import 'data/app_state.dart';
+import 'data/session.dart';
+import 'features/ai_quality/ai_quality_screen.dart';
 import 'features/audit/audit_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
+import 'features/export/export_screen.dart';
+import 'features/integrations/integrations_screen.dart';
+import 'features/login/login_screen.dart';
 import 'features/participant/participant_screen.dart';
 import 'features/review/review_screen.dart';
 import 'shell/shell.dart';
 import 'theme/tokens.dart';
-import 'ui/widgets.dart';
 
-void main() => runApp(const DemoApp());
+void main() => runApp(DemoApp(session: Session()));
 
 class DemoApp extends StatefulWidget {
-  const DemoApp({super.key});
+  final Session session;
+  const DemoApp({super.key, required this.session});
   @override
   State<DemoApp> createState() => _DemoAppState();
 }
 
 class _DemoAppState extends State<DemoApp> {
-  final state = AppState();
-  late Future<void> loaded = state.load();
+  final nav = GlobalKey<NavigatorState>();
+  Session get session => widget.session;
+  String? _who;
+
+  @override
+  void initState() {
+    super.initState();
+    session.addListener(_onSession);
+  }
+
+  @override
+  void dispose() {
+    session.removeListener(_onSession);
+    super.dispose();
+  }
+
+  // Sign-in / sign-out resets the route stack (login <-> dashboard).
+  void _onSession() {
+    final who = session.user?['username'] as String?;
+    if (who != _who) {
+      _who = who;
+      nav.currentState?.pushNamedAndRemoveUntil('/', (_) => false);
+    }
+  }
 
   Route<dynamic> _route(RouteSettings s) {
     final name = s.name ?? '/';
     Widget page;
-    int tab = 0;
-    if (name.startsWith('/participant/')) {
-      page = ParticipantScreen(id: name.substring('/participant/'.length));
-      tab = 1;
+    String nav = '/';
+    if (!session.signedIn) {
+      page = const LoginScreen();
+      nav = '';
+    } else if (name.startsWith('/participants/')) {
+      page = ParticipantScreen(id: name.substring('/participants/'.length));
+      nav = '/participants';
     } else {
-      switch (name) {
-        case '/participants':
-          page = const ParticipantListScreen();
-          tab = 1;
-        case '/review':
-          page = ReviewScreen(participantId: s.arguments as String?);
-          tab = 2;
-        case '/audit':
-          page = const AuditScreen();
-          tab = 3;
-        default:
-          page = const DashboardScreen();
-      }
+      nav = name == '/login' ? '/' : name;
+      page = switch (name) {
+        '/participants' => const ParticipantListScreen(),
+        '/review' => ReviewScreen(participantId: s.arguments as String?),
+        '/audit' => const AuditScreen(),
+        '/integrations' => const IntegrationsScreen(),
+        '/ai-quality' => const AiQualityScreen(),
+        '/export' => const ExportScreen(),
+        _ => const DashboardScreen(),
+      };
     }
+    final body = nav.isEmpty ? page : Shell(selected: nav, child: page);
     return PageRouteBuilder(
       settings: s,
-      pageBuilder: (_, _, _) => Shell(selected: tab, child: page),
-      transitionDuration: Duration.zero,
+      pageBuilder: (_, _, _) => body,
+      transitionDuration: const Duration(milliseconds: 120),
+      reverseTransitionDuration: Duration.zero,
+      transitionsBuilder: (_, a, _, c) => FadeTransition(opacity: a, child: c),
     );
   }
 
   @override
-  Widget build(BuildContext context) => AppScope(
-        state: state,
+  Widget build(BuildContext context) => SessionScope(
+        session: session,
         child: ZetaProvider(
           initialThemeMode: ThemeMode.light,
           // ponytail: fixed contrast skips Zeta's shared-preferences read at startup;
@@ -64,19 +93,7 @@ class _DemoAppState extends State<DemoApp> {
             theme: applyLook(light),
             darkTheme: applyLook(light), // light-only product look
             themeMode: ThemeMode.light,
-            builder: (context, child) => FutureBuilder<void>(
-              future: loaded,
-              builder: (_, snap) => snap.connectionState != ConnectionState.done
-                  ? const Scaffold(body: PageSkeleton())
-                  : snap.hasError
-                      ? Scaffold(
-                          body: ErrorState(
-                            message: '${snap.error}',
-                            onRetry: () => setState(() => loaded = state.load()),
-                          ),
-                        )
-                      : child!,
-            ),
+            navigatorKey: nav,
             onGenerateRoute: _route,
           ),
         ),

@@ -3,35 +3,38 @@ import 'package:flutter/material.dart';
 /// Design tokens. Cool-tinted neutrals, one accent, semantic state colours.
 /// Light only: clinical coordinators work at a desk in daylight for long review sessions.
 class K {
-  static const bg = Color(0xFFF3F5F8);
-  static const surface = Color(0xFFFCFDFE);
-  static const sidebar = Color(0xFFEBEFF4);
-  static const line = Color(0xFFDFE4EA);
-  static const lineStrong = Color(0xFFC6CED8);
-  static const ink = Color(0xFF131B25);
-  static const ink2 = Color(0xFF475563);
-  static const ink3 = Color(0xFF76828F);
-  static const accent = Color(0xFF2B59C3);
-  static const accentSoft = Color(0xFFE8EEFB);
+  static const bg = Color(0xFFF3F6FA);
+  static const surface = Color(0xFFFFFFFF);
+  static const sidebar = Color(0xFFEEF2F7);
+  static const line = Color(0xFFE4E9F0);
+  static const lineStrong = Color(0xFFCED2DB);
+  static const ink = Color(0xFF1D1E23);
+  static const ink2 = Color(0xFF545963);
+  static const ink3 = Color(0xFF667085);
+  static const accent = Color(0xFF0073E6);
+  static const accentSoft = Color(0xFFF1F8FF);
 
   // Semantic: AI proposal (amber, dashed), human verified (green), rejected (red), neutral.
-  static const aiBg = Color(0xFFFFF6E3), aiLine = Color(0xFFD9A233), aiInk = Color(0xFF6E4A00);
-  static const okBg = Color(0xFFE9F5EE), okLine = Color(0xFF4EA26B), okInk = Color(0xFF1B5636);
-  static const badBg = Color(0xFFFCEBEB), badLine = Color(0xFFD25759), badInk = Color(0xFF86202A);
-  static const infoBg = Color(0xFFE8EEFB), infoLine = Color(0xFF7C9BE0), infoInk = Color(0xFF1E3F8F);
+  static const aiBg = Color(0xFFFEF2E2), aiLine = Color(0xFFB26A00), aiInk = Color(0xFF6E4A00);
+  static const okBg = Color(0xFFECFFF7), okLine = Color(0xFF4EA26B), okInk = Color(0xFF0C5734);
+  static const badBg = Color(0xFFFFF0F1), badLine = Color(0xFFD70015), badInk = Color(0xFF8F000E);
+  static const infoBg = Color(0xFFF1F8FF), infoLine = Color(0xFF7CB4F0), infoInk = Color(0xFF005BB8);
   static const mutedBg = Color(0xFFEDF0F4), mutedLine = Color(0xFFB5BEC9), mutedInk = Color(0xFF3F4B58);
 
   // Spacing rhythm (not uniform on purpose).
   static const s4 = 4.0, s8 = 8.0, s12 = 12.0, s16 = 16.0, s24 = 24.0, s32 = 32.0, s48 = 48.0;
 
   // Type scale ~1.2. One family (Zeta's), weight carries hierarchy.
-  static const display = TextStyle(fontSize: 28, height: 1.2, fontWeight: FontWeight.w600, letterSpacing: -0.4, color: ink);
-  static const title = TextStyle(fontSize: 20, height: 1.3, fontWeight: FontWeight.w600, letterSpacing: -0.2, color: ink);
-  static const heading = TextStyle(fontSize: 15, height: 1.4, fontWeight: FontWeight.w600, color: ink);
+  static const display = TextStyle(fontSize: 28, height: 1.2, fontWeight: FontWeight.w500, letterSpacing: -0.4, color: ink);
+  static const title = TextStyle(fontSize: 20, height: 1.3, fontWeight: FontWeight.w500, letterSpacing: -0.2, color: ink);
+  static const heading = TextStyle(fontSize: 15, height: 1.4, fontWeight: FontWeight.w500, color: ink);
   static const body = TextStyle(fontSize: 14, height: 1.5, color: ink);
   static const small = TextStyle(fontSize: 12.5, height: 1.4, color: ink2);
-  static const label = TextStyle(fontSize: 11, height: 1.3, fontWeight: FontWeight.w600, letterSpacing: 0.7, color: ink3);
+  static const label = TextStyle(fontSize: 11, height: 1.3, fontWeight: FontWeight.w500, letterSpacing: 0.7, color: ink3);
   static const mono = TextStyle(fontSize: 12.5, height: 1.4, color: ink2, fontFeatures: [FontFeature.tabularFigures()]);
+
+  static const teal = Color(0xFF1A8080), tealBg = Color(0xFFE7F7F7), tealInk = Color(0xFF0B4F4F);
+  static const chart3 = Color(0xFF8D7400);
 
   static const ease = Curves.easeOutCubic;
   static const fast = Duration(milliseconds: 160);
@@ -52,7 +55,7 @@ ThemeData applyLook(ThemeData z) => z.copyWith(
           minimumSize: const Size(0, 40),
           padding: const EdgeInsets.symmetric(horizontal: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -61,7 +64,7 @@ ThemeData applyLook(ThemeData z) => z.copyWith(
           minimumSize: const Size(0, 40),
           side: const BorderSide(color: K.lineStrong),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
@@ -69,7 +72,7 @@ ThemeData applyLook(ThemeData z) => z.copyWith(
           foregroundColor: K.accent,
           minimumSize: const Size(0, 40),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(

@@ -1,255 +1,351 @@
 import 'package:flutter/material.dart';
-import '../../data/app_state.dart';
-import '../../models/models.dart';
+import '../../data/session.dart';
 import '../../theme/tokens.dart';
+import '../../ui/async.dart';
+import '../../ui/format.dart';
 import '../../ui/widgets.dart';
 
-/// UI-001 study dashboard.
+const studyId = 'GBM-NL-2026-01';
+
+class _Data {
+  final Map dash;
+  final List participants, pendingTop, activity;
+  _Data(this.dash, this.participants, this.pendingTop, this.activity);
+}
+
+Future<_Data> _load(Session s) => s.run((a) async {
+      final dash = await a.get('/studies/$studyId/dashboard') as Map;
+      final parts = await a.get('/participants') as List;
+      final top = <Map>[];
+      for (final p in parts.where((p) => (p['extractionsPending'] as int) > 0)) {
+        for (final e in await a.get('/participants/${p['id']}/extractions') as List) {
+          if (e['reviewState'] == 'pending') top.add(e);
+        }
+      }
+      top.sort((x, y) => (x['confidence'] as num).compareTo(y['confidence'] as num));
+      final act = await a.get('/audit', query: {'limit': '4'});
+      s.setPending((dash['kpis'] as Map)['extractionsPending'] as int);
+      return _Data(dash, parts, top, (act['items'] as List));
+    });
+
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
+  @override
+  Widget build(BuildContext context) => Loader<_Data>(
+        load: _load,
+        builder: (c, d, reload) => _Body(d, reload),
+      );
+}
+
+class _Body extends StatelessWidget {
+  final _Data d;
+  final VoidCallback reload;
+  const _Body(this.d, this.reload);
+
+  Map get k => d.dash['kpis'];
+  void go(BuildContext c, String r, [Object? a]) => Navigator.of(c).pushReplacementNamed(r, arguments: a);
 
   @override
   Widget build(BuildContext context) {
-    final d = AppScope.of(context).dashboard;
-    final main = Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      if (d.studies.isEmpty)
-        const Panel(child: SizedBox(height: 200, child: EmptyState(icon: Icons.science_outlined, title: 'No studies yet', hint: 'Studies appear here once a protocol is configured.')))
-      else
-        for (final s in d.studies) ...[_StudyPanel(s, [for (final x in d.sites) if (x.studyId == s.id) x]), const SizedBox(height: K.s16)],
-    ]);
-    final rail = Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      _Alerts(d.alerts),
-      const SizedBox(height: K.s16),
-      _Tasks(d.tasks),
-      const SizedBox(height: K.s16),
-      _Milestones(d.milestones),
-    ]);
-    return LayoutBuilder(builder: (context, box) {
-      final two = box.maxWidth >= 1100;
-      return ListView(padding: EdgeInsets.fromLTRB(K.s32, 28, K.s32, K.s48), children: [
-        PageHeader(
-          title: 'Research dashboard',
-          subtitle: '${d.studies.length} ${d.studies.length == 1 ? 'study' : 'studies'} · ${d.sites.length} sites · '
-              '${d.alerts.where((a) => a.severity == 'critical').length} critical alerts',
-        ),
-        const SizedBox(height: K.s24),
-        if (two)
-          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Expanded(flex: 62, child: main),
-            const SizedBox(width: K.s24),
-            Expanded(flex: 38, child: rail),
-          ])
-        else ...[main, rail],
-      ]);
-    });
-  }
-}
-
-class _Metric extends StatelessWidget {
-  final String label, value, of;
-  final double fraction;
-  final Color color;
-  const _Metric(this.label, this.value, this.of, this.fraction, {this.color = K.accent});
-  @override
-  Widget build(BuildContext context) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(label.toUpperCase(), style: K.label),
-        const SizedBox(height: 6),
-        Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-          Text(value, style: K.title),
-          if (of.isNotEmpty) Text(' $of', style: K.small),
-        ]),
-        const SizedBox(height: 8),
-        Bar(fraction, color: color),
-      ]);
-}
-
-class _StudyPanel extends StatelessWidget {
-  final Study s;
-  final List<Site> sites;
-  const _StudyPanel(this.s, this.sites);
-
-  @override
-  Widget build(BuildContext context) {
-    final rec = s.target == 0 ? 0.0 : s.enrolled / s.target;
-    return Panel(
-      padding: EdgeInsets.zero,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Padding(
-          padding: const EdgeInsets.all(K.s24),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Expanded(child: Text(s.title, style: K.title)),
-              const SizedBox(width: 12),
-              Pill('Phase ${s.phase}', tone: Tone.info),
-            ]),
-            const SizedBox(height: 2),
-            Text(s.id, style: K.mono),
-            const SizedBox(height: K.s24),
-            Row(children: [
-              Expanded(child: _Metric('Recruitment', '${s.enrolled}', 'of ${s.target} participants', rec)),
-              const SizedBox(width: K.s32),
-              Expanded(child: _Metric('eCRF completeness', '${(s.completeness * 100).round()}%', '', s.completeness, color: K.okLine)),
-            ]),
+    final pending = k['extractionsPending'] as int;
+    final enrolled = k['enrolled'] as int, target = k['target'] as int;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(K.s24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1440),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          PageHeader(
+            title: 'Research dashboard',
+            subtitle: '${d.dash['title']} · Phase ${d.dash['phase']} · ${(d.dash['sites'] as List).length} sites',
+            trailing: OutlinedButton.icon(onPressed: reload, icon: const Icon(Icons.refresh, size: 18), label: const Text('Refresh')),
+          ),
+          const SizedBox(height: K.s16),
+          MetricStrip([
+            Metric('Enrolled', '$enrolled/$target', sub: 'of target', progress: enrolled / target),
+            Metric('eCRF verified', pct(k['ecrfCompleteness']), sub: '${k['ecrfFieldsVerified']} of ${k['ecrfFieldsTotal']} fields · verified only'),
+            Metric('Open queries', '${k['openQueries']}', sub: '${k['sdvDone']} SDV done · ${k['sdvPending']} pending'),
+            Metric('AI queue', '$pending', dot: K.aiLine, sub: '${k['needsAttention']} need attention', onTap: () => go(context, '/review')),
+            Metric('AI acceptance', k['aiAcceptanceRate'] == null ? '—' : pct(k['aiAcceptanceRate']), sub: '${k['extractionsReviewed']} of ${k['extractionsTotal']} reviewed'),
           ]),
+          const SizedBox(height: K.s32),
+          LayoutBuilder(builder: (c, box) {
+            final two = box.maxWidth >= 1000;
+            final left = Column(children: [
+              _recruitment(),
+              const SizedBox(height: K.s16),
+              _sites(context),
+            ]);
+            final right = Column(children: [
+              _queue(context, pending),
+              const SizedBox(height: K.s16),
+              _alerts(),
+            ]);
+            return two
+                ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Expanded(flex: 8, child: left), const SizedBox(width: K.s16), Expanded(flex: 4, child: right)])
+                : Column(children: [left, const SizedBox(height: K.s16), right]);
+          }),
+          const SizedBox(height: K.s16),
+          LayoutBuilder(builder: (c, box) {
+            final two = box.maxWidth >= 1000;
+            final t = _tasks(context), a = _activity(context);
+            return two
+                ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Expanded(flex: 7, child: t), const SizedBox(width: K.s16), Expanded(flex: 5, child: a)])
+                : Column(children: [t, const SizedBox(height: K.s16), a]);
+          }),
+        ]),
+      ),
+    );
+  }
+
+  /// Monthly enrolment from participants' enrolled dates (real data, FHIR-synced).
+  Widget _recruitment() {
+    final target = k['target'] as int;
+    final dates = [for (final p in d.participants) if (p['enrolledDate'] != null) DateTime.parse(p['enrolledDate'])]..sort();
+    final months = <String, int>{};
+    if (dates.isNotEmpty) {
+      var m = DateTime(dates.first.year, dates.first.month);
+      final end = DateTime(Session.demoToday.year, Session.demoToday.month);
+      while (!m.isAfter(end)) {
+        months['${m.year}-${m.month}'] = 0;
+        m = DateTime(m.year, m.month + 1);
+      }
+      for (final x in dates) {
+        months['${x.year}-${x.month}'] = months['${x.year}-${x.month}']! + 1;
+      }
+    }
+    final labels = [for (final key in months.keys) fmtDate('${key.split('-')[0]}-${key.split('-')[1].padLeft(2, '0')}-01').substring(2, 6)];
+    return Panel(
+      title: 'Recruitment',
+      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+        _legend(K.accent.withValues(alpha: .25), 'New per month'),
+        const SizedBox(width: 12),
+        _legend(K.accent, 'Cumulative'),
+        const SizedBox(width: 12),
+        _legend(K.chart3, 'Target $target'),
+      ]),
+      child: months.isEmpty
+          ? const SizedBox(height: 140, child: EmptyState(icon: Icons.show_chart, title: 'No recruitment data yet', hint: 'Sync the FHIR connection to load participants.'))
+          : SizedBox(
+              height: 200,
+              child: Semantics(
+                label: 'Recruitment chart: ${dates.length} of $target enrolled',
+                child: CustomPaint(painter: RecruitmentPainter(months.values.toList(), labels, target), size: Size.infinite),
+              ),
+            ),
+    );
+  }
+
+  Widget _legend(Color c, String t) => Row(mainAxisSize: MainAxisSize.min, children: [
+        Container(width: 12, height: 3, color: c),
+        const SizedBox(width: 6),
+        Text(t, style: K.small.copyWith(fontSize: 11.5)),
+      ]);
+
+  Widget _sites(BuildContext context) {
+    final sites = d.dash['sites'] as List;
+    final flex = [4, 2, 2, 3];
+    return Panel(
+      title: 'Site performance',
+      padding: EdgeInsets.zero,
+      child: Column(children: [
+        const TableHead([('Site', 4, false), ('Enrolled', 2, true), ('Queries', 2, true), ('Enrolment', 3, false)]),
+        for (final s in sites)
+          DataRow2(
+            flex: flex,
+            cells: [
+              Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+                Text('${s['shortName'] ?? s['name']}', style: K.body.copyWith(fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
+                Text('${s['city'] ?? ''} · ${s['id']}', style: K.small.copyWith(fontSize: 11.5, color: K.ink3)),
+              ]),
+              Text('${s['enrolled']}/${s['targetEnrolment'] ?? '—'}', textAlign: TextAlign.right, style: numStyle),
+              Text('${s['openQueries']}', textAlign: TextAlign.right, style: numStyle),
+              Padding(
+                padding: const EdgeInsets.only(left: K.s16),
+                child: Bar(((s['targetEnrolment'] ?? 0) == 0) ? 0 : (s['enrolled'] as int) / (s['targetEnrolment'] as int), height: 6),
+              ),
+            ],
+          ),
+        Padding(
+          padding: const EdgeInsets.all(K.s12),
+          child: Text('${sites.length} sites · ${k['enrolled']} enrolled · ${k['openQueries']} open queries', style: K.small.copyWith(fontSize: 12, color: K.ink3)),
         ),
-        if (sites.isNotEmpty) ...[
-          const Divider(),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(K.s24, 14, K.s24, 4),
+      ]),
+    );
+  }
+
+  Widget _queue(BuildContext context, int pending) {
+    final top = d.pendingTop.take(3).toList();
+    final total = (k['extractionsTotal'] as int).clamp(1, 1 << 30);
+    return Panel(
+      title: 'AI review',
+      trailing: LinkText('$pending pending · Review →', () => go(context, '/review')),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(2),
+          child: SizedBox(
+            height: 4,
             child: Row(children: [
-              const Expanded(flex: 4, child: Text('SITE', style: K.label)),
-              const Expanded(flex: 4, child: Text('ENROLMENT', style: K.label)),
-              Expanded(flex: 2, child: Text('OPEN QUERIES', style: K.label, textAlign: TextAlign.right)),
+              for (final (n, c) in [
+                (pending, K.aiLine),
+                ((k['extractionsAccepted'] as int) + (k['extractionsCorrected'] as int), K.okLine),
+                (k['extractionsRejected'] as int, K.badLine),
+                (k['extractionsDeferred'] as int, K.mutedLine),
+              ])
+                if (n > 0) Expanded(flex: n * 1000 ~/ total, child: Container(color: c)),
             ]),
           ),
-          for (final x in sites)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(K.s24, 10, K.s24, 10),
-              child: Row(children: [
-                Expanded(flex: 4, child: Text(x.name, style: K.body.copyWith(fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis)),
-                Expanded(
-                  flex: 4,
-                  child: Row(children: [
-                    Expanded(child: Bar(x.target == 0 ? 0 : x.enrolled / x.target, height: 5)),
-                    const SizedBox(width: 10),
-                    SizedBox(width: 48, child: Text('${x.enrolled}/${x.target}', style: K.small)),
-                  ]),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Align(alignment: Alignment.centerRight, child: x.openQueries == 0 ? const Text('0', style: K.small) : Pill('${x.openQueries}', tone: Tone.ai)),
-                ),
-              ]),
+        ),
+        const SizedBox(height: 4),
+        Text('Lowest confidence first', style: K.small.copyWith(fontSize: 11.5)),
+        if (top.isEmpty)
+          const Padding(padding: EdgeInsets.symmetric(vertical: K.s16), child: Text('Queue clear. All values reviewed.', style: K.small))
+        else
+          for (final e in top)
+            InkWell(
+              onTap: () => go(context, '/review', e['participantId']),
+              child: SizedBox(
+                height: 44,
+                child: Row(children: [
+                  Icon(e['status'] == 'abstained' ? Icons.help_outline : Icons.auto_awesome, size: 15, color: K.aiInk),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text('${e['fieldLabel']}', style: K.body.copyWith(fontSize: 13, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
+                      Text('${e['participantId']}', style: K.mono.copyWith(fontSize: 11.5)),
+                    ]),
+                  ),
+                  ConfMeter((e['confidence'] as num).toDouble()),
+                ]),
+              ),
             ),
-          const SizedBox(height: 8),
+      ]),
+    );
+  }
+
+  Widget _alerts() {
+    final alerts = d.dash['alerts'] as List;
+    final ms = d.dash['milestones'] as List;
+    final next = ms.cast<Map>().where((m) => m['done'] != true).firstOrNull;
+    return Panel(
+      title: 'Alerts and milestones',
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        if (alerts.isEmpty) const Text('No alerts', style: K.small),
+        for (final a in alerts.take(2))
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Icon(a['severity'] == 'warning' ? Icons.warning_amber_rounded : Icons.info_outline, size: 16, color: a['severity'] == 'warning' ? K.aiInk : K.infoInk),
+              const SizedBox(width: 8),
+              Expanded(child: Text('${a['message']}', style: K.body.copyWith(fontSize: 13))),
+            ]),
+          ),
+        if (next != null) ...[
+          const Divider(),
+          const SizedBox(height: 10),
+          Row(children: [
+            const Icon(Icons.flag_outlined, size: 16, color: K.ink2),
+            const SizedBox(width: 8),
+            Expanded(child: Text('Next: ${next['name']}', style: K.body.copyWith(fontSize: 13))),
+            Text(fmtDate(next['date']), style: K.mono),
+          ]),
         ],
       ]),
     );
   }
-}
 
-class _Alerts extends StatelessWidget {
-  final List<Alert> alerts;
-  const _Alerts(this.alerts);
-  @override
-  Widget build(BuildContext context) => Panel(
-        title: 'Alerts',
-        padding: EdgeInsets.zero,
-        child: alerts.isEmpty
-            ? const SizedBox(height: 120, child: EmptyState(icon: Icons.check_circle_outline, title: 'All clear', hint: 'No alerts need attention.'))
-            : Column(children: [
-                for (var i = 0; i < alerts.length; i++) ...[
-                  if (i > 0) const Divider(),
-                  Padding(
-                    padding: const EdgeInsets.all(K.s16),
-                    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      _SevIcon(alerts[i].severity),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(alerts[i].message, style: K.body.copyWith(fontSize: 13.5)),
-                          const SizedBox(height: 2),
-                          Text(alerts[i].studyId, style: K.mono),
-                        ]),
-                      ),
-                    ]),
-                  ),
-                ],
-              ]),
-      );
-}
-
-class _SevIcon extends StatelessWidget {
-  final String sev;
-  const _SevIcon(this.sev);
-  @override
-  Widget build(BuildContext context) {
-    final (tone, icon) = switch (sev) {
-      'critical' => (Tone.bad, Icons.priority_high),
-      'warning' => (Tone.ai, Icons.warning_amber_rounded),
-      _ => (Tone.info, Icons.info_outline),
-    };
-    final (bg, _, ink) = toneColors(tone);
-    return Tooltip(
-      message: sev,
-      child: Container(width: 28, height: 28, decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)), child: Icon(icon, size: 16, color: ink)),
+  Widget _tasks(BuildContext context) {
+    final tasks = d.dash['tasks'] as List;
+    return Panel(
+      title: 'Tasks due',
+      padding: EdgeInsets.zero,
+      child: tasks.isEmpty
+          ? const Padding(padding: EdgeInsets.all(K.s16), child: Text('No tasks due this week.', style: K.small))
+          : Column(children: [
+              for (final t in tasks.take(4))
+                DataRow2(
+                  flex: const [6, 3, 2],
+                  onTap: t['participantId'] == null ? null : () => go(context, '/participants/${t['participantId']}'),
+                  cells: [
+                    Text('${t['title']}', style: K.body.copyWith(fontSize: 13), overflow: TextOverflow.ellipsis),
+                    Text('${t['assignee']}', style: K.small, overflow: TextOverflow.ellipsis),
+                    Text(fmtDate(t['due']), textAlign: TextAlign.right, style: K.mono),
+                  ],
+                ),
+            ]),
     );
   }
-}
 
-class _Tasks extends StatelessWidget {
-  final List<StudyTask> tasks;
-  const _Tasks(this.tasks);
-  @override
-  Widget build(BuildContext context) => Panel(
-        title: 'My tasks',
+  Widget _activity(BuildContext context) => Panel(
+        title: 'Recent activity',
+        trailing: LinkText('View audit trail', () => go(context, '/audit')),
         padding: EdgeInsets.zero,
-        child: tasks.isEmpty
-            ? const SizedBox(height: 120, child: EmptyState(icon: Icons.task_alt, title: 'Nothing due', hint: 'Assigned tasks show up here.'))
+        child: d.activity.isEmpty
+            ? const Padding(padding: EdgeInsets.all(K.s16), child: Text('No activity recorded yet.', style: K.small))
             : Column(children: [
-                for (var i = 0; i < tasks.length; i++) ...[
-                  if (i > 0) const Divider(),
-                  InkWell(
-                    onTap: tasks[i].participantId == null ? null : () => Navigator.of(context).pushNamed('/participant/${tasks[i].participantId}'),
-                    child: Padding(
-                      padding: const EdgeInsets.all(K.s16),
-                      child: Row(children: [
-                        Expanded(
-                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text(tasks[i].title, style: K.body.copyWith(fontWeight: FontWeight.w500, fontSize: 13.5)),
-                            const SizedBox(height: 2),
-                            Text('${tasks[i].assignee} · due ${tasks[i].due}${tasks[i].participantId == null ? '' : ' · ${tasks[i].participantId}'}', style: K.small),
-                          ]),
-                        ),
-                        if (tasks[i].participantId != null) const Icon(Icons.chevron_right, size: 18, color: K.ink3),
-                      ]),
-                    ),
+                for (final e in d.activity)
+                  DataRow2(
+                    height: 40,
+                    flex: const [2, 4, 1],
+                    cells: [
+                      Text(fmtDateTime(e['ts']), style: K.mono.copyWith(fontSize: 11.5)),
+                      Text('${e['actor']} · ${e['action']}', style: K.small.copyWith(color: K.ink), overflow: TextOverflow.ellipsis),
+                      Align(alignment: Alignment.centerRight, child: Icon(e['source'] == 'ai' ? Icons.auto_awesome : Icons.person_outline, size: 14, color: e['source'] == 'ai' ? K.aiInk : K.ink2)),
+                    ],
                   ),
-                ],
               ]),
       );
 }
 
-class _Milestones extends StatelessWidget {
-  final List<Milestone> ms;
-  const _Milestones(this.ms);
+/// Bars = new per month, line = cumulative, dashed line = target.
+class RecruitmentPainter extends CustomPainter {
+  final List<int> perMonth;
+  final List<String> labels;
+  final int target;
+  RecruitmentPainter(this.perMonth, this.labels, this.target);
+
   @override
-  Widget build(BuildContext context) => Panel(
-        title: 'Milestones',
-        child: ms.isEmpty
-            ? const SizedBox(height: 100, child: EmptyState(icon: Icons.flag_outlined, title: 'No milestones', hint: 'Milestones for your studies appear here.'))
-            : Column(children: [
-                for (var i = 0; i < ms.length; i++)
-                  IntrinsicHeight(
-                    child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                      SizedBox(
-                        width: 20,
-                        child: Column(children: [
-                          Container(
-                            width: 12,
-                            height: 12,
-                            margin: const EdgeInsets.only(top: 4),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: ms[i].done ? K.okLine : K.surface,
-                              border: Border.all(color: ms[i].done ? K.okLine : K.lineStrong, width: 2),
-                            ),
-                          ),
-                          if (i < ms.length - 1) Expanded(child: Container(width: 2, color: K.line)),
-                        ]),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 14),
-                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text(ms[i].name, style: K.body.copyWith(fontWeight: FontWeight.w500, fontSize: 13.5, color: ms[i].done ? K.ink2 : K.ink)),
-                            Text('${ms[i].date} · ${ms[i].studyId}${ms[i].done ? ' · done' : ''}', style: K.small),
-                          ]),
-                        ),
-                      ),
-                    ]),
-                  ),
-              ]),
-      );
+  void paint(Canvas canvas, Size s) {
+    const left = 28.0, bottom = 20.0, top = 8.0;
+    final w = s.width - left, h = s.height - bottom - top;
+    final maxY = target.toDouble();
+    double y(num v) => top + h - (v / maxY) * h;
+    final grid = Paint()..color = K.line..strokeWidth = 1;
+    void text(String t, Offset o, {Color c = K.ink3, TextAlign a = TextAlign.left}) {
+      final tp = TextPainter(text: TextSpan(text: t, style: TextStyle(fontSize: 11, color: c, fontFeatures: const [FontFeature.tabularFigures()])), textDirection: TextDirection.ltr)..layout();
+      tp.paint(canvas, a == TextAlign.right ? Offset(o.dx - tp.width, o.dy) : a == TextAlign.center ? Offset(o.dx - tp.width / 2, o.dy) : o);
+    }
+
+    for (var i = 0; i <= 4; i++) {
+      final v = maxY * i / 4;
+      canvas.drawLine(Offset(left, y(v)), Offset(s.width, y(v)), grid);
+      text(v.round().toString(), Offset(left - 6, y(v) - 7), a: TextAlign.right);
+    }
+    final n = perMonth.length;
+    final slot = w / n;
+    final bar = Paint()..color = K.accent.withValues(alpha: .22);
+    final pts = <Offset>[];
+    var cum = 0;
+    for (var i = 0; i < n; i++) {
+      final cx = left + slot * (i + .5);
+      final bw = (slot * .5).clamp(4.0, 22.0);
+      if (perMonth[i] > 0) canvas.drawRRect(RRect.fromRectAndCorners(Rect.fromLTRB(cx - bw / 2, y(perMonth[i]), cx + bw / 2, y(0)), topLeft: const Radius.circular(2), topRight: const Radius.circular(2)), bar);
+      cum += perMonth[i];
+      pts.add(Offset(cx, y(cum)));
+      if (n <= 8 || i.isEven) text(labels[i], Offset(cx, s.height - 14), a: TextAlign.center);
+    }
+    final line = Paint()..color = K.accent..strokeWidth = 2..style = PaintingStyle.stroke;
+    canvas.drawPath(Path()..addPolygon(pts, false), line);
+    for (final p in pts) {
+      canvas.drawCircle(p, 3, Paint()..color = K.accent);
+    }
+    text('$cum', pts.last + const Offset(8, -16), c: K.accent);
+    // dashed target line
+    final dash = Paint()..color = K.chart3..strokeWidth = 1.5;
+    for (double x = left; x < s.width; x += 8) {
+      canvas.drawLine(Offset(x, y(target)), Offset((x + 4).clamp(0, s.width), y(target)), dash);
+    }
+  }
+
+  @override
+  bool shouldRepaint(RecruitmentPainter o) => o.perMonth != perMonth || o.target != target;
 }
