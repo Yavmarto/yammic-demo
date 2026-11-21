@@ -1,426 +1,582 @@
-# Monday demo — script, talking points and "what this is not"
+# Monday demo v2 — the connected platform slice
 
-Owner: PM (CEL-1755/CEL-1759) · Version 1.1 · Rehearsed 2026-11-21
-Demo date: **Monday 2026-11-23** · Slot: **10 minutes + Q&A**
-Build: Flutter (web + macOS) + Zeta design system, synthetic data only · **frozen commit `caf122c`** · Code freeze Sun 2026-11-22 20:00 CET
+Owner: PM (CEL-1782) · Version **2.0** · Demo: **Monday 2026-11-23**, 10 minutes + Q&A
+Build: Flutter (web + macOS) → FastAPI → PostgreSQL 16 → HAPI FHIR R4, all local · **synthetic data only**
+Code freeze: **Sunday 2026-11-22 20:00 CET** · This script replaces the v1 script for the disconnected prototype.
+
+> **Why v2 exists.** The Board rejected the v2 Monday demo on 2026-11-21 10:21: the app read bundled JSON, there was no backend, the UI looked plain, and the work was too shallow. This script is for the rebuilt demo: a **connected, local platform slice** (plan v3, [CEL-1727](/CEL/issues/CEL-1727#document-plan)). It shows the same review loop, but every number comes from a live backend, the new patients arrive over FHIR, and the AI extraction runs on a local model during the demo.
 
 ---
 
 ## 0. At a glance
 
 **One-sentence thesis**
-> Clinical trial data entry is still manual copying from hospital records into eCRFs; we show one open, auditable loop where AI proposes, a person decides, and the system remembers why.
+> We rebuilt the demo as a connected platform: a synthetic hospital sends FHIR R4 data into a local backend, a local open-weight model extracts eCRF values with evidence, a human decides, and a hash-chained audit plus standards exports make the result reviewable.
 
-**What the audience should remember (3 things)**
-1. The product is the **review loop**, not the model: evidence span → proposal → human accept/correct/reject → audit.
-2. AI output is **never** research data until a human acts. Uncertainty is shown, and the model may abstain.
-3. This is a **synthetic prototype**. No MDR claim, no hospital connection, no accuracy claim.
+**What the audience must remember (3 things)**
+1. **It is connected.** The app talks to a real backend and a real FHIR server; the hospital sync and the AI extraction happen live on this laptop.
+2. **The product is the review loop, not the model.** Evidence span → proposal → human accept/correct/defer → audit → export. AI output is never research data until a person acts.
+3. **It is honest.** Synthetic data, local only, not a medical device, no accuracy claim beyond a synthetic gold set. Gate 2 still decides the real MVP.
 
 **Decision requested (one sentence at the end)**
-> Keep MVP B (AI-assisted data capture) as the direction, and let us finish the Gate 1 evidence so Gate 2 can decide scope, roadmap and cost.
+> Keep **MVP B** (AI-assisted data capture) as the direction and let us finish the Gate 1 evidence, so **Gate 2** can decide scope, roadmap and cost.
 
-**Do not add slides.** Five slides total: title, problem, "what this is / is not", next steps, back cover. The product is the deck.
+**Deck rule:** four slides maximum — title, connected slice, "is / is not", next steps. The product is the deck. Do not add slides.
 
 ---
 
-## 1. Pre-flight (T-30 minutes)
+## 1. What changed since the rejected demo (say this only if asked)
+
+| Then (v2, rejected) | Now (v3, this demo) |
+|---|---|
+| Flutter read a bundled JSON file. No network. | Flutter → FastAPI → Postgres. Login, live data, real writes. |
+| "AI" values were pre-computed JSON. | A local Ollama model (`qwen2.5:7b-instruct`) extracts from the new documents during the demo; `rules` is the offline fallback. |
+| No hospital. | HAPI FHIR R4 server on this machine; new patients arrive over FHIR and are pseudonymised on ingest. |
+| No audit. | Append-only, SHA-256 hash-chained audit; "Verify chain" runs live. |
+| No exports. | CDISC ODM 1.3.2 study XML and FHIR QuestionnaireResponse + Provenance + AuditEvents, with write-back to FHIR. |
+| Zeta looked plain. | Redesigned shell and screens (visual direction v2, `deliverables/D7b_visual_direction.md`); before/after shots in `deliverables/design/`. |
+
+The v2 rule "no backend, no network" is **withdrawn**. The rule now: everything runs locally (Docker Desktop + local processes). No hosting, no real data, no outreach, no paid APIs (Gate 3).
+
+---
+
+## 2. Pre-flight (T-30 to T-0)
+
+Run this once, 30 minutes before. **Do not do any of it on stage.** `make reset` deletes the local volumes; it is safe because the data is synthetic and reseeded.
+
+```bash
+cd ~/yammic-demo
+
+# 1. Clean slate: Postgres + HAPI FHIR, backend seed, baseline FHIR set.
+#    Expect: 8 participants, 46 fixture proposals, 7 open queries, HAPI 8 patients.
+make reset
+
+# 2. The hospital "receives" 3 new patients (staged, NOT yet synced into the platform).
+#    Expect: HAPI 11 patients; the platform still has 8 participants.
+python3 fhir-seed/load.py --set arrivals
+
+# 3. Start backend + web and health-check all four components.
+make demo
+make health STRICT=1          # Result: OK — full demo stack is healthy.
+
+# 4. Start exactly ONE AI worker (not started by `make demo`).
+pkill -f "app.ai" 2>/dev/null || true
+( cd backend && nohup uv run python -m app.ai --provider auto > ../ops/logs/ai.log 2>&1 & )
+sleep 2 && tail -3 ops/logs/ai.log        # expect ai.poll / no queued runs
+
+# 5. Record the build you are presenting.
+git rev-parse --short HEAD    # write it here: ________
+```
 
 | # | Check | Pass condition |
 |---|---|---|
-| 0 | `git -C ~/yammic-demo rev-parse --short HEAD` | `caf122c` — the rehearsed build. Do not present from a different tree. |
-| 1 | `cd app && ~/flutter/bin/flutter build web --release` | Build succeeds; serve `build/web` on `127.0.0.1` |
-| 2 | Open the app in Chrome, full screen (`F11`), zoom 100% | Banner "Synthetic data — prototype, not for clinical use" visible |
-| 3 | Network off (Wi-Fi off, no hotspot) | App loads and all screens work |
-| 4 | Click path once, end to end (5 minutes) | No red screen, no dead button, no yellow overflow stripe |
-| 5 | Restart the app | State is fresh; audit trail is empty |
-| 6 | Backup recording (2 min, silent clicks) | Plays from local disk if the live build fails |
-| 7 | Laptop: power, Do Not Disturb, screen saver off, notifications off | No interruption |
-| 8 | Second machine or second browser tab on the start screen | 5-second recovery option |
+| 1 | `make health STRICT=1` | Postgres, FHIR, backend, web all OK |
+| 2 | Browser tab A: `http://127.0.0.1:8080`, full screen (F11), 100 % zoom | Login screen, banner "Synthetic data — prototype, not for clinical use" |
+| 3 | Tab A: sign in **PI** (`Use demo account`) | Dashboard; top bar "Connected · N ms"; no offline banner |
+| 4 | Integrations | "Connected"; **Pseudonymised patients 8**; **Last sync never** |
+| 5 | Participants | **8** rows; GBM-NL-009/010/011 **absent** |
+| 6 | AI review | **46 pending** (fixture proposals), no live 009 cards yet |
+| 7 | Second tab B: same URL, sign in **Monitor** | Read-only banner; keep this tab in the background |
+| 8 | AI quality | ollama | rules segmented button; precision/recall table visible |
+| 9 | Export (PI) | "Generate export" enabled |
+| 10 | Laptop: power, Do Not Disturb, notifications off, screen saver off | No interruption |
+| 11 | Backup recording: 2–3 minutes of silent clicks on the frozen build, played once from local disk | Plays offline |
+| 12 | PIDs: exactly one `app.ai` process | `pgrep -fl "app.ai"` shows one worker |
 
-**Rule:** never debug on stage. If a click fails, say "this is a prototype" and switch to the recording. Do not lose the narrative.
+**If step 4 shows "Last sync" not "never":** someone synced after the reset. Run `make reset` and repeat from step 2. A sync on stage must create the 3 arrivals; otherwise the live beat is dead.
+
+**Why the arrivals are staged before the demo but synced on stage:** the pull is live (about 1.5 s), and the 3 new patients are genuinely new to the platform at the moment you press **Sync now**. Staging them in the hospital server is the realistic scenario: the hospital has the data, the platform does not yet.
 
 ---
 
-## 2. Run sheet (timeboxed)
+## 3. Run sheet (10:00)
 
 | Time | Segment | Screen / route | Goal |
 |---|---|---|---|
-| 0:00–0:40 | Opening + honesty frame | Title slide | Set trust: synthetic, prototype |
-| 0:40–1:45 | The problem | Slide 2 (problem) | EHR-to-EDC burden is real and unsolved |
-| 1:45–2:05 | What we will show | Live app, dashboard | Give the map before the tour |
-| 2:05–2:55 | Study dashboard | `/` (UI-001) | "What needs my attention today" |
-| 2:55–3:55 | Participant workspace | `/participant/GBM-NL-002` (UI-002) | The nurse's home; open the review queue |
-| 3:55–7:10 | **AI extraction review** | `/review` (UI-005) | Accept (≈4:45) · Correct (≈5:25) · Defer (≈6:20) · provenance (≈6:55) |
-| 7:10–8:00 | Audit trail | `/audit` | Every action is attributable and append-only |
-| 8:00–8:45 | What this is / is not | Slide 3 | Pre-empt the overclaim objection |
-| 8:45–9:35 | Next steps + ask | Slide 4 | Gate 1/2 path; one clear decision |
-| 9:35–10:00 | Stop talking | — | 25 s of deliberate slack; invite Q&A |
-| after | Q&A | Section 6 | Honest answers, no invented numbers |
+| 0:00–0:30 | Opening + honesty frame | Slide 1 | Set trust; name what changed |
+| 0:30–1:00 | Login | `/login` | Connected; three roles; banner |
+| 1:00–1:40 | Live dashboard | `/` | KPIs from Postgres; the work queue |
+| 1:40–2:45 | **FHIR sync** | `/integrations` | 3 new patients, 7 documents, 7 runs |
+| 2:45–3:10 | New participant | `/participants/GBM-NL-009` | Pseudonymised, 3 source documents |
+| 3:10–3:55 | **Live AI extraction** | `/review` (009) | Local model, evidence, abstention |
+| 3:55–4:30 | Accept | `/review` (009) | Proposal → verified data |
+| 4:30–5:20 | Correct | `/review` (002) | Catch a wrong value; before/after |
+| 5:20–5:45 | Defer | `/review` (009) | Abstention → open task |
+| 5:45–6:30 | **Audit verify** | `/audit` | Hash chain, human decisions |
+| 6:30–7:10 | **AI quality** | `/ai-quality` | Per-field metrics + registry |
+| 7:10–8:05 | **Export + write-back** | `/export` | ODM + FHIR + push |
+| 8:05–8:40 | Monitor | `/participants/GBM-NL-002` (tab B) | Read-only + SDV |
+| 8:40–9:20 | Is / is not + decision | Slide 3–4 | Honest limits; one ask |
+| 9:20–10:00 | Stop talking | — | 40 s of deliberate slack; invite Q&A |
 
-**Pacing:** about 140 spoken words per minute. The measured spoken text is 6:38; with click transitions the full run is about 8:00, leaving 2:00 of buffer. If you are 45 seconds late at 3:55, cut the dashboard detail to 30 seconds and skip the visit timeline — never cut the Correct step, the abstention, or the audit trail.
+**Pacing:** ≈140 spoken words per minute. Measured with `say -r 140`: the exact spoken text is **7:04**. Click/transition budget is about **1:25** (30 clicks at ~2 s plus ~10 route loads). The planned content ends at **9:20**, leaving 40 s of deliberate silence before 10:00 — and more if the room is warm. If you are 45 s late at 2:45, shorten the dashboard to 30 s and the participant to 15 s. **Never cut:** the sync result, the correction, the abstention, the audit verify, or the "is not" slide.
 
 ---
 
-## 3. Segment scripts
+## 4. Segment scripts
 
 > Bracketed text is a stage direction. Quotes are spoken text. "Click" lines are the click path.
-> The demo participant is `GBM-NL-002`; ids are `GBM-NL-001..008` in the frozen data (`app/assets/data/participants.json`). All three scripted cases — accept, correct, defer — exist on `GBM-NL-002`.
+> Demo clock is fixed at **23 Nov 2026** (`Session.demoToday`). Data is from `GBM-NL-2026-01`, three fictional sites.
+> Two tabs: **A = PI** (main flow), **B = Monitor** (last beat). Do not resize between tabs.
 
-### 3.1 Opening — 0:00–0:40
+### 4.1 Opening — 0:00–0:30
 
-**Slide:** Title — *"AI-assisted trial data capture — a synthetic working prototype"*.
-Subtitle: *Synthetic data · prototype · not for clinical use.*
+**Slide 1:** *"Clinical research, connected — a working platform slice"*. Subtitle: *Synthetic data · local · prototype · not for clinical use.*
 
-> "Thank you. In the last two days we built one workflow end to end. Everything you will see is invented: synthetic patients, synthetic documents, synthetic numbers. Nothing connects to a hospital, nothing calls a live model, and nothing here is for clinical use. [pause] Our question today is narrow: is this review loop the right first product?"
+> "Thank you. Yesterday you told us the last demo was a mock-up: a Flutter app reading a JSON file. You were right. So we rebuilt it. What you will see now runs on this laptop as a real platform: a synthetic hospital FHIR server, a database, a backend and the app. Everything is local. Every patient is synthetic. And none of it is a medical device. Ten minutes, then questions."
 
-*Why this opener:* the banner and the honesty frame remove the two objections that kill demos — "is this real data?" and "are you claiming too much?".
+*Why this opener:* it accepts the rejection in one sentence and sets the two boundaries (synthetic, local) before the first click.
 
-### 3.2 The problem — 0:40–1:45
+### 4.2 Login — 0:30–1:00
 
-**Slide 2 — The problem** (text in §4.2).
+**Click:** open tab A at `http://127.0.0.1:8080`. Click the **PI** role card → **Use demo account**. (The demo password is `demo`; the card fills it.)
 
-> "Rare-cancer trials fail on data, not on ideas. One hospital may see only dozens of eligible patients, so a study must run across many sites. Yamicc states the same problem publicly: data is scattered across hospitals, formats differ, and combining it is technically and legally hard [VERIFIED — yamicc.org/the-challenges].
->
-> The operational cost lands on research nurses and data managers. They read a pathology report and type the same values into an eCRF. That is the EHR-to-EDC gap, and it is not solved at scale: the i~HD oncology eSource task force concluded in 2025 that adoption is still limited by technical, regulatory and operational barriers, and that a common implementation framework was missing [VERIFIED — i~HD 2025, cited in 03 §1].
->
-> One number I will not give you: our source pack says rare cancers are about 20% of cases and 650,000 patients a year in the EU/UK. That figure is still unverified [CLAIMED-C, unverified]. Treat it as a claim, not a fact."
+> "We start at the front door. Three demo roles: research nurse, monitor, principal investigator. I sign in as PI, because export is a PI action in this build. The screen already knows the backend is healthy, and it names the stack: FHIR R4 and Postgres 16. The amber banner never goes away: synthetic data, prototype, not for clinical use."
 
-**Talking points if asked to expand (do not volunteer):**
-- Manual entry is not only slow; it is the main source of transcription errors and query loops between site, monitor and data manager [INFERRED — standard trial operations knowledge].
-- Existing EHR-to-EDC products exist (OpenClinica, Castor, IgniteData Archer and others), so the gap is not "nobody thought of this" [VERIFIED — openclinica.com/ehr-to-edc-integration; others GK, verify].
+**Audience should notice:** the amber banner; "Sign in"; three role cards with one-line scopes; "Local backend healthy · FHIR R4 · Postgres 16"; "SSO is disabled in the local demo. Demo password: demo."
 
-### 3.3 What we will show — 1:45–2:05
+**Recovery:** if the left panel says "Local backend is down", the backend is not running: do **not** debug on stage. Say "the local backend is not up; the app can show the last snapshot" and continue in the offline snapshot (read-only) for the dashboard and review story; skip sync/export and use the recording for those beats.
 
-**Switch to the live app at the dashboard.**
+### 4.3 Live dashboard — 1:00–1:40
 
-> "Three working screens and the audit trail. The study dashboard, one participant's visit, the review screen where AI proposals are accepted, corrected or deferred, and then the audit trail. Eight minutes of product, two minutes on what it is not."
+**Screen:** `/` — **Research dashboard**, signed in as PI.
 
-### 3.4 Study dashboard — 2:05–2:55
+> "This is live from Postgres, not from a bundled file. Eight participants, target twenty-four. Zero eCRF fields verified yet. Forty-six AI proposals waiting. Seven open queries. The connection pill shows the round-trip to the local API, and the date is the demo clock. The queue is sorted lowest confidence first, and the alert already points at the MGMT contradiction we will review. This is the nurse's morning."
 
-**Click:** app opens on `/` — the **Research dashboard** for one glioblastoma study across three sites.
+**Audience should notice:** "Connected · N ms" (a real latency, 1–50 ms locally); "Data as of 23 Nov 2026"; **Enrolled 8/24**; **eCRF verified 0 %** ("0 of 45 fields · verified only"); **Open queries 7**; **AI queue 46**; **AI acceptance —**; recruitment chart; three sites; alert "GBM-NL-002: AI MGMT proposal contradicts the pathology report."
 
-> "This screen answers one question for a coordinator: what needs my attention today? One synthetic glioblastoma study, three sites, recruitment against target, eCRF completeness, alerts, and the task list. It is deliberately thin: we are not rebuilding a CTMS dashboard; mature products already do that, and we should integrate, not duplicate.
->
-> The work queue is the **Tasks** card, further down. The MGMT alert points at the same problem as the task. That is the work this product removes from the nurse's evening."
+**Click next:** **Integrations** in the PLATFORM section of the sidebar.
 
-**Expected on screen:** "Research dashboard"; one card "ReDiReCCT-GB Demo (synthetic) · GBM-NL-2026-01 · phase II" with "Recruitment 8/24" and "eCRF completeness 71%"; sections "Alerts" (warning: "GBM-NL-002: AI MGMT proposal contradicts the pathology report."), "Sites", "Tasks", "Milestones". Task row: "Correct MGMT promoter value · Data manager (demo) · due 2026-11-24 · GBM-NL-002".
-**Click next:** scroll one notch to **Tasks**, click the **Correct MGMT promoter value** row → participant. (The task list is below the fold at 1440×900; the scroll is part of the script, not a failure.)
-**If the task row is not visible:** open **Participants** in the rail and click `GBM-NL-002`. Do not debug on stage.
+**Recovery:** if the numbers differ because the state is not a fresh reset, do not apologise and do not quote exact counts: say "the figures are live from the backend; the shape is what matters" and move on. The only count that must be exact on stage is the sync result.
 
-### 3.5 Participant workspace — 2:55–3:55
+### 4.4 FHIR sync — 1:40–2:45 (the missing backend, live)
 
-**Click:** the task row, or **Participants** in the navigation rail → `/participant/GBM-NL-002`.
+**Screen:** `/integrations`.
 
-> "This is the site nurse's home. A pseudonymised id, status, the study and site, age and sex, and the clinical summary. Notice what is not here: no name, no date of birth, no hospital record number. In a real deployment, identifiers stay in the hospital node; this workspace works on the pseudonymised record.
->
-> The visit timeline and eCRF status are further down; we do not need them today. The header button is our entry point: **Open AI review**."
+> "Now the part that was missing. Integrations. The hospital is a HAPI FHIR R4 server on this machine, standing in for the hospital EHR. It is green, and the platform has pseudonymised zero patients so far. The hospital has just received three new patients. I press Sync now."
 
-**Expected on screen:** "GBM-NL-002" and an "active" chip; "GBM-NL-2026-01 · SITE-02 · 64 y · M"; "Clinical summary"; "Visit timeline"; header button **Open AI review**.
-**Label note:** the build shows **Review AI values** only when an eCRF is `awaiting_review`; `GBM-NL-002` is `in progress`, so the label is **Open AI review**. Do not say "awaiting review".
-**Click next:** **Open AI review** in the header. The app passes `GBM-NL-002` to `/review` and filters the queue to that participant.
+**Click:** **Sync now** (leave **Full re-sync** unchecked). Wait for the result line (≈1.5 s). Then point at the run row.
 
-### 3.6 AI extraction review — 3:55–7:10 (centrepiece)
+> "It pulled the new records, pseudonymised them, de-duplicated the ten documents we already had, stored seven new reports, and queued seven AI extraction runs. Three new participants; eleven pseudonymised patients in total. The run took about a second and a half, and the run log keeps the counts, the mode and who triggered it."
 
-**Screen:** UI-005, live in the frozen build. Left: synthetic source document with the evidence span highlighted. Middle: proposed values. Right: target eCRF field.
-**Build facts:** toolbar reads "AI extraction review", filtered to `GBM-NL-002`; the queue has **16 pending** proposals (15 fields plus a duplicate `EXT` extent-of-resection row). The first card is **Subject identifier** — select a card before you click an action.
+**Audience should notice:**
+- Panel "Hospital EHR (FHIR R4)" · **Connected**; Endpoint `http://localhost:8090/fhir`; FHIR version **4.0.1**; Server **HAPI FHIR Server 8.12.0**.
+- **Pseudonymised patients 0 → 11** (E2E evidence: the sync output below).
+- Result line: **"Sync completed: 218 resources fetched, 7 new documents, 7 extraction runs queued."**
+- "Sync runs" table: Run **full**, Mode **full**, Status **Completed**, Created **7**, Duration **≈1500 ms**, By **pi**.
 
-**(a) Layout — 45 s**
+**Click next:** **Participants** in the sidebar.
 
-> "Three columns. On the left, the synthetic source document, with the AI's evidence highlighted so you can check it in one glance. In the middle, the proposed values: the value, the confidence, and the proposed standard code. On the right, the target eCRF field.
->
-> The value on the right is not research data yet. It is a proposal. Nothing is saved into the dataset until a person acts. Four actions: accept, correct, reject, defer."
+**Recovery:**
+- If the result says **0 new documents / 0 runs**, the arrivals were already synced. Say "this machine was synced during rehearsal; the run log shows the three arrivals" and point at the earlier run row. Then continue to review on the existing queue. Do **not** press Sync twice.
+- If the panel says **Unreachable**, the FHIR container is down. Say "the hospital endpoint is unreachable; the platform keeps the last synced data and keeps working" and skip to Participants. Restart `make up` only after the demo.
+- If **Sync now** is disabled, you are signed in as monitor (tab B). Switch to tab A (PI).
 
-**(b) Accept — 40 s**
+### 4.5 The new participant — 2:45–3:10
 
-**Click:** click the **Histology (central review)** card, then **Accept**.
-**Example:** `Glioblastoma, IDH-wildtype`, confidence 0.97, evidence span in the pathology report, code `ICD-O-3 9440/3 — Glioblastoma, NOS`.
+**Screen:** `/participants` → click row **GBM-NL-009**.
 
-> "Histology. Confidence 0.97. The highlighted sentence in the pathology report is the evidence. One click moves it from proposal to verified data — with the reviewer, the time and the source recorded. If the sentence did not support the value, we would not accept it, whatever the confidence says."
+> "Participants. We had eight; now eleven. GBM-NL-009 is one of the new arrivals: 58, female, right parietal, gross total resection. Three source documents. No name, no date of birth, no hospital number — only the pseudonymised study id. The next twenty-four hours of that patient's trial data will come from these documents."
 
-**(c) Correct — 50 s**
+**Audience should notice:** 11 rows; the three new ids at the bottom; the **GBM-NL-009** workspace: status chip, "58 y · F · SITE-01 · enrolled 22 Nov 2026", "Clinical summary", "Source documents · 3", and the header button **"Review AI (N)"**.
 
-**Click:** click the **MGMT promoter methylation** card, then **Correct**. Replace **Methylated** with **Unmethylated**. Click **Save correction**.
-**Example:** AI proposal `Methylated`, confidence 0.72; source span: `MGMT promoter is unmethylated`.
+**Click next:** **Review AI (N)** in the participant header (it passes 009 to the review screen).
 
-> "Now a harder one. The model proposes 'methylated' with confidence 0.72. The report says 'unmethylated'. The model was uncertain, and it was wrong. We replace the value and save. The record keeps the original proposal, the corrected value, the reviewer and the time, so the next reviewer can see exactly what changed.
->
-> This case is in the demo on purpose. A demo that only shows the model being right is not a demo of a safety mechanism."
+**Recovery:** if 009 is absent, the sync did not create it. Open the **AI review** rail item and continue on GBM-NL-002 (recovery from 4.4).
 
-**Do not claim a reason field on Correct.** The build records a before/after pair plus the reviewer; free-text reason capture is on the Reject path only. In the current build **Cancel** wraps below **Save correction**; both are visible.
+### 4.6 Live AI extraction — 3:10–3:55 (the centrepiece)
 
-**(d) Defer / reject — 40 s**
+**Screen:** `/review`, filtered to **GBM-NL-009** (the dropdown shows `GBM-NL-009`).
 
-**Click:** click the **Date of progression (RANO)** card, then **Defer**.
-**Example:** model abstains — "Not stated", confidence 0.00; source: "RANO assessment is not available for this timepoint." Accept is disabled.
+> "In the background, the local model is reading those reports now. It is a local Qwen 2.5 model, seven billion parameters, running on this laptop through Ollama. No data leaves the machine, no paid API. Here is what it produced for the pathology report: histology, IDH status, MGMT — unmethylated, which matches the report — and nine abstentions. The model does not guess what the document does not say. Every proposal carries its evidence span, a confidence, the model id and the prompt version, and the run and the proposal are in the audit chain."
 
-> "Third case: the MRI says the RANO assessment is not available. The model abstains: value 'Not stated', confidence 0.00, and Accept is disabled. It does not invent a value. We defer it, and it becomes an open task for the next visit instead of a silent gap in the dataset.
->
-> Reject exists for a different case: a proposal that is not in the source at all. It asks for a reason, and it is recorded, not deleted."
+**Audience should notice:**
+- Toolbar: "AI extraction review"; dropdown **GBM-NL-009**; progress counts the 009 proposals that have finished (15 when only the pathology report is done).
+- Left pane: **"SOURCE · pathology report · DOC-009-PATH"**, Dutch source text with the matched sentence highlighted.
+- Middle: cards with amber **"AI · Unverified"**, `conf 0.95`, and low-confidence flags where present; nine of the fifteen pathology proposals are grey **"AI abstained"**.
+- Right pane: **Model `qwen2.5:7b-instruct`**, **Prompt `extract_v4@1ef2060c673d`**, **Provider `ollama`**.
+- If you press **Run extraction**: the run bar reads "Extraction running · ollama…" and completes for three documents in ≈2–3 minutes. **Do not wait for it on stage.**
 
-**(e) Provenance — 20 s**
+**Timing note (measured):** Ollama takes **35–66 s per document** on this laptop (44 s for DOC-009-PATH); `rules` is <10 ms. Sync queues one run per document and the worker processes them sequentially. The first 009 proposals are usually ready 45–70 s after Sync, i.e. while you are on Participants.
 
-> "Every proposal carries the model id and the prompt version. When the model changes, the audit trail tells you which values came from which version. That is what makes an AI workflow reviewable in a regulated trial."
+**Recovery:**
+- If 009 shows **"Queue is empty"** at 3:10, the worker has not finished the first document. Say "the local model is still reading the three reports; the platform does not block on it — let us review the existing queue while it works", switch the dropdown to **GBM-NL-002**, and do 4.7–4.9 there. Return to 009 after the audit if proposals have arrived.
+- If no new proposals arrive at all, the AI worker is not running. Say "the local model service is not running in this snapshot; these proposals are the gold-set queue, and the live run is what we rehearsed" and continue. Do not start a terminal on stage.
+- If Ollama is slow, the service **falls back to `rules` automatically**; the proposals then show Provider `rules`. Same story, different provider: "the local model was slow, so the deterministic extractor took over; the review loop is identical."
 
-The target pane shows `Model demo-extractor v0.1 · prompt prompt-2026-11-21`; the MGMT code is a LOINC placeholder marked unverified.
+### 4.7 Accept — 3:55–4:30
 
-### 3.7 Audit trail — 7:10–8:00
+**Click:** click the **Histology (central review)** card in the middle column, then **Accept** (or press `A`).
 
-**Click:** **View audit trail** in the target pane (or **Audit** in the navigation rail) → `/audit`.
+> "AI review, filtered to GBM-NL-009. Three columns: the source on the left, proposals in the middle, the target eCRF field on the right. This one is histology, 0.95, with the sentence highlighted in the Dutch pathology report. It is still an AI proposal, not research data. I accept. One click, and it becomes a verified eCRF value with my name, the time, and the source extraction attached."
 
-> "The queue load wrote one AI extraction event for every proposed value: forty-six events. Our three human decisions are on top, newest first: defer, correct, accept.
->
-> Click **Human**. Three events. Who, what, when, before, after, and whether the source was AI or a human. The AI events carry the model and prompt version; the human events carry the reviewer.
->
-> Click the correction. Before 'methylated', after 'unmethylated', with the reviewer and time. The list is append-only: no edit and no delete. A monitor can reconstruct exactly what happened to every value, and why."
+**Audience should notice:** the card and target pane turn green **"Verified · Accepted"**; the target shows "Verified by pi"; a snackbar "Histology (central review) accepted — verified by pi"; the progress line increments; the **AI review** badge in the sidebar drops by one.
 
-**Point at:** the `Human` filter (count drops to "3 events"), then the **correct** row and its detail: `Methylated → Unmethylated`, actor `SYN-JD`, source `Human · verified`, model `demo-extractor v0.1`, prompt `prompt-2026-11-21`.
-**If the human events are missing:** the review actions did not persist — switch to the backup recording for 30 seconds, then continue on the next steps slide. The 46 AI rows alone are not evidence of review.
+**Recovery:** if **Accept** is disabled, the card has no valid evidence span (an abstention). Pick a proposed card (amber), not a grey one. If the write fails ("Could not save: …"), say "the local API rejected the write" and continue; the audit will show the truth.
 
-### 3.8 What this is / is not — 8:00–8:45
+### 4.8 Correct — 4:30–5:20 (the case that matters)
 
-**Slide 3** (text in §4.3). Read the five "is not" lines; do not paraphrase them into softer language.
+**Click:** set the participant dropdown to **GBM-NL-002**. Scroll the middle column to the **MGMT promoter methylation** card (13th of 16; two flicks). Click it → **Correct** (or `C`) → replace `Methylated` with `Unmethylated` → **Save correction**.
 
-> "So, plainly. It is a synthetic prototype of one workflow, with pre-computed AI output and a human review loop. It is not connected to anything. It is not a medical device, and we make no MDR claim. It is not validated and not clinically deployable. It is not an accuracy benchmark — we have not measured accuracy, and I will not give you a number today."
+> "Now the case that matters. GBM-NL-002, the MGMT promoter. The proposal says methylated at 0.72. The report says unmethylated. This is a scripted fixture from our synthetic gold set, injected on purpose: a demo that only shows the model being right is not a demo of a safety mechanism. I correct it and save. The eCRF now says unmethylated; the original proposal, the correction, the reviewer and the time are all kept."
 
-### 3.9 Next steps — 8:45–9:35
+**Audience should notice:** the proposal card `Methylated`, confidence **0.72**, **Low confidence** flag; the highlighted source sentence "MGMT promoter is unmethylated"; after saving, **"Verified · Corrected"** and "Unmethylated". The **Provider** row reads `fixture` for this gold-set case — say so if asked (see Q10); the live model's own proposals are on 009.
 
-**Slide 4** (text in §4.4).
+**Do not claim a reason field on Correct.** The build records the before/after value plus the reviewer; a free-text reason exists on **Reject** only. **Cancel** wraps below **Save correction**; both are visible.
 
-> "Two gates and two roadmap phases. Gate 1 is the evidence: a verified Yamicc analysis and a landscape and gap analysis. That research is running now. Gate 2 is the decision: MVP scope, roadmap and cost. This demo does not replace Gate 2; it gives you something concrete to judge.
->
-> Roadmap phase 1 is the technical proof of concept: architecture, synthetic FHIR, one end-to-end flow, automated tests. Phase 2 is the functional MVP: role workspaces, an external EDC integration, validation, audit, and a measured AI workflow.
->
-> The decision we ask for is not 'approve the product'. It is: keep this as the MVP B direction, and let us finish the Gate 1 evidence."
+**Recovery:** if the MGMT card is hard to find, type the participant filter `GBM-NL-002` and use the card's label; do not scroll blindly. If you cannot reach it in 20 s, skip the correction and go to 4.9 (the abstention already proves the safety story). Never cut the audit verify.
+
+### 4.9 Defer — 5:20–5:45
+
+**Click:** set the dropdown back to **GBM-NL-009**; click the **Date of progression (RANO)** card (grey, `Not stated`, conf 0.00); click **Defer** (or `D`).
+
+> "Third case. The RANO progression date. The model abstains: not stated, confidence zero, accept disabled. We defer it; it becomes an open task for the next visit, not a silent gap. Reject is for a proposal that is not in the source at all; it asks for a reason and records it."
+
+**Audience should notice:** **Accept** is disabled with "Accept is disabled: no evidence in source"; the card becomes grey **"Deferred"**; the source pane explains "No evidence span: the AI abstained."
+
+**Recovery:** if the defer write fails, continue to audit; the previous two decisions are enough to show the loop.
+
+### 4.10 Audit trail + hash-chain verify — 5:45–6:30
+
+**Click:** **View audit trail** in the target pane, or **Audit trail** in the sidebar. Click **Verify chain**. Then click the **Human** segment.
+
+> "Audit trail. Every proposal and every decision, append-only. Press Verify chain. [press] Chain verified: every event, no gaps and no edits, with the head hash. Filter to human actions. There are the three decisions, newest first — the defer, the correction, the accept — next to the eCRF writes they triggered. Open the correction: before methylated, after unmethylated, by whom, when, and which model and prompt proposed it. A monitor can reconstruct exactly what happened and why."
+
+**Click next:** click the `extraction.decision` row for the correction (Entity `EXT-0020`).
+
+**Audience should notice:**
+- Green banner: **"Chain verified · N events, no gaps or edits. Head …"** (N grows with the session; do not quote a fixed number).
+- `Human` filter: `extraction.decision` rows (defer, correct, accept) and `ecrf.value_set` rows, newest first; "Hide sign-ins" is on by default.
+- Detail panel: **BEFORE `{"reviewState":"pending"}` / AFTER `{… "decision":"correct" …}`**, actor, role, time, **Prompt** version, **Prev hash** and **Hash** (copyable).
+- The verify call is fast (≈30 ms locally).
+
+**Recovery:** if the human rows are missing, the review writes did not persist. Say "the review state did not persist in this run" and show the recording's audit segment; continue. If **Verify chain** returns red "Chain broken at event #…", stop the chain story, say "the demo database has been modified outside the app; this is exactly what the verifier is for", and move on. Do not debug.
+
+### 4.11 AI quality — 6:30–7:10
+
+**Click:** **AI quality** in the PLATFORM sidebar.
+
+> "AI quality. Precision, recall, F1 and abstention per field, for the local model and for the deterministic rules fallback. On our synthetic gold set — thirteen documents, fifty-seven annotations — the local model matched everything. I will not sell you that number: a hundred percent on a synthetic set proves the pipeline, not clinical accuracy. The hard cases are the point: the hedged wording at 0.38, the wrong MGMT, the abstention. Real evaluation comes with site data under approval."
+
+**Audience should notice:** segmented **ollama | rules**; metric strip **Precision 100 % · Recall 100 % · F1 100 % · Abstention 7 % · Documents 13**; subtitle "Precision and recall against the gold set, per field and provider. Quality is measured before it is trusted."; per-field table (Support, Precision, Recall, F1, Abstain, Mean conf.). **Scroll once** to the **Model registry** and **Prompt registry**: `rules` and `ollama` available and local; the active prompt is `extract_v4` with a SHA-256.
+
+**Recovery:** if the screen says "No evaluation results yet", the committed eval JSON is not present. Say "the eval harness output is not loaded in this build; the number we can defend is that the gold set has 13 documents and 57 annotations" and move on. Do not invent metrics.
+
+### 4.12 Export + FHIR write-back — 7:10–8:05
+
+**Click:** **Export** (PLATFORM). Format **CDISC ODM 1.3.2** → **Generate export**. Point at the XML. Then click the **FHIR R4 bundle** card; choose **GBM-NL-002** (it is preselected as the participant with verified values); **Generate export**; then **Push to FHIR server**.
+
+> "Export. Only human-verified values leave the platform; AI proposals never do. CDISC ODM one point three two: the study snapshot for sponsors and regulators, including the audit records. Generate — about ten kilobytes of XML. Then the FHIR bundle for GBM-NL-002: a QuestionnaireResponse, Provenance that separates AI from human, and the AuditEvents. And push it back to the hospital FHIR server. Six resources written. That is a full round trip: in over FHIR, out over FHIR, with evidence."
+
+**Audience should notice:**
+- Header line: "Only human-verified eCRF values leave the platform. AI proposals are never exported. Every export is audited."
+- Steps **1 Choose format · 2 Generate · 3 Download or push**.
+- ODM preview: `ODM 1.3.2` XML with `ItemData` for the verified values and `AuditRecord` elements (about 10 KB).
+- FHIR preview: `QuestionnaireResponse`, `Provenance`, `AuditEvent` entries (about 5 resources).
+- Push result: **"Pushed to the FHIR server: 6 resources written."** (the bundle carries the audit events; the push itself is audited). Generation under 0.3 s; push ≈3 s (HAPI writes history).
+- **Do not press Download on stage**; it opens a file dialog and breaks the flow.
+
+**Recovery:** if **Generate export** is disabled, you are on monitor/nurse or offline. Switch to tab A (PI). If the FHIR push fails (hospital server down), show the generated bundle and say "the export is valid; write-back needs the FHIR server, which is down in this run." If the ODM preview is truncated ("… more characters in the download"), that is by design (8 000-char preview), not an error.
+
+### 4.13 Monitor, read-only + SDV — 8:05–8:40
+
+**Click:** switch to **tab B** (Monitor, pre-signed in). Click **Participants** → **GBM-NL-002**. Scroll the eCRF table to **MGMT promoter methylation** (the corrected value); click **Mark SDV**.
+
+> "Last, the monitor. This is a second tab, signed in as monitor. Same data, read-only: the banner says so, and the write actions are disabled. On the participant's eCRF, the monitor marks source data verification. MGMT: SDV done. The monitor independently confirms the value the PI corrected. That is the role separation a sponsor expects."
+
+**Audience should notice:** blue banner **"Monitor role is read-only in this demo."**; the top bar role **Monitor**; on `/review`, Accept/Correct/Defer/Reject are disabled; on the participant eCRF, verified fields show **Verified** and a **Mark SDV** button; after the click, **"SDV done"** and the dashboard KPI "SDV done" increments.
+
+**Recovery:** if tab B is signed out or shows the offline snapshot, switch the role from tab A (avatar → **Switch demo role**) and sign in as Monitor; that takes about 10 s. If time is short, skip SDV and just show the read-only banner and disabled buttons.
+
+### 4.14 Is / is not + decision — 8:40–9:20
+
+**Slide 3 → 4.** Read the four "is not" lines; do not soften them.
+
+> "So, plainly. This is a connected, local slice of the platform on synthetic data. It is not real patient data, not a hospital connection beyond this laptop, not a medical device, and not validated. It is not an accuracy claim, and it is not a Gate 2 decision. What we ask is narrow: keep MVP B as the direction, and let us finish the Gate 1 evidence so Gate 2 can decide scope, roadmap and cost. Thank you."
+
+### 4.15 Stop — 9:20–10:00
+
+Stop talking. Leave the last slide up. Invite questions.
 
 ---
 
-## 4. Slide text (copy-paste)
+## 5. Slide text (copy-paste)
 
-### 4.1 Slide 1 — Title
+### 5.1 Slide 1 — Title
 
-> **AI-assisted trial data capture**
-> A synthetic working prototype
+> **Clinical research, connected**
+> A working platform slice — not a mock-up
 >
-> Synthetic data · prototype · not for clinical use
+> Synthetic data · everything local · prototype · not for clinical use
 >
 > *[Project name] · 23 November 2026*
 
-### 4.2 Slide 2 — The problem
+### 5.2 Slide 2 — The connected slice (one diagram, no bullets)
 
-> **The data is in the hospital. The eCRF is somewhere else.**
->
-> - Rare-cancer trials need many sites; each site sees few eligible patients. Data is scattered, formats differ, combining is hard. *(Yamicc, public problem statement — VERIFIED)*
-> - A nurse reads the record, then types the same values into the eCRF. That is the EHR-to-EDC gap.
-> - Adoption is still limited by technical, regulatory and operational barriers, with no common implementation framework. *(i~HD oncology eSource task force, 2025 — VERIFIED)*
->
-> **The gap is not "no software". The gap is production-grade, evidence-linked, human-verified capture.**
+```
+ Synthetic hospital EHR            Yammic platform (this laptop)                 Experience
+ ┌────────────────────┐  FHIR   ┌──────────────────────────────────────┐   REST   ┌───────────────────┐
+ │ HAPI FHIR R4       │ ──────▶ │ FastAPI · PostgreSQL 16              │ ◀──────▶ │ Flutter web/macOS │
+ │ 11 synthetic GBM   │  pull   │ ingest · pseudonymise · eCRF · review│          │ nurse · PI ·      │
+ │ patients, 17 docs  │         │ local AI (Ollama) · hash-chain audit │          │ monitor (read-only)│
+ └────────────────────┘         │ exports: CDISC ODM · FHIR QR+Prov.   │          └───────────────────┘
+                                └──────────────────────────────────────┘
+```
 
-### 4.3 Slide 3 — What this demo is / is not
+> **In:** FHIR R4 (mCODE-style) from a synthetic hospital. **Out:** CDISC ODM 1.3.2 and FHIR QuestionnaireResponse + Provenance. **Every value:** evidence span, confidence, model + prompt version, human decision, audit hash.
+
+### 5.3 Slide 3 — What this is / is not
 
 > **What this is**
-> - A synthetic-data Flutter prototype of one workflow: AI-proposed eCRF values, human review, append-only audit.
-> - Pre-computed AI output: evidence spans, confidence, abstention, model and prompt version.
-> - A test of the *review mechanism*, not of a model.
+> - A connected, local platform slice on **synthetic** data: FHIR ingest, pseudonymisation, live local AI extraction, human review, hash-chained audit, standards exports.
+> - Evidence-linked and human-verified: AI proposes, people decide, nothing is exported unverified.
+> - Reproducible on this laptop: `make reset && make demo` plus the two documented pre-steps.
 >
 > **What this is not**
-> - Not connected to an EHR, a backend, the internet or a live AI model.
+> - Not real patient data, and not a hospital connection beyond this machine.
 > - Not a medical device. No MDR claim. No clinical decision support.
-> - Not validated. Not clinically deployable. Not production software.
-> - Not an accuracy benchmark. No accuracy number exists yet.
-> - Not a Gate 2 decision, and not a build-budget commitment.
+> - Not validated, not production, not QMS-validated. No clinical accuracy claim; the only metrics are on a synthetic gold set.
+> - Not a Gate 2 decision and not a build-budget commitment. Gate 2 still decides the real MVP.
 
-### 4.4 Slide 4 — Next steps
+### 5.4 Slide 4 — Next steps
 
 > **Two gates before build spend**
 > - **Gate 1 — evidence:** verified Yamicc analysis, landscape, capability gap. *Research in progress.*
 > - **Gate 2 — decision:** MVP scope, roadmap, cost ranges.
 >
-> **Roadmap**
-> - **Phase 1 — technical PoC:** architecture, synthetic FHIR, one end-to-end flow, automated tests. *Exit: demo on synthetic data.*
-> - **Phase 2 — functional MVP:** role workspaces, external EDC integration, validation, audit, measured AI workflow. *Exit: internal acceptance tests pass.*
+> **What this demo changes**
+> - The platform path is real: connected ingest, local AI, review, audit, exports.
+> - The remaining work is engineering and validation, not a re-architecture.
 >
-> **Decision requested:** keep MVP B as the direction; approve finishing Gate 1. No build spend before Gate 2.
+> **Decision requested:** keep **MVP B** as the direction; approve finishing Gate 1. No build spend before Gate 2.
 
 ---
 
-## 5. Claims we may make and may not make
+## 6. Claims: safe to say, and not allowed
 
-### 5.1 Safe to say (with the label)
+### 6.1 Safe to say (with the label)
 
 | Claim | Label / source |
 |---|---|
-| Yamicc is an independent Dutch non-profit (ANBI, founded 2024) that coordinates rare-cancer research with IT and AI. | [VERIFIED] yamicc.org/about-us, yamicc.org |
-| Yamicc publicly describes a "Trial Execution Platform" with AI automation of repetitive work, automated data collection, FAIR data and "open standards" — the standards are not named on the site. | [VERIFIED] yamicc.org/what-we-do, /the-challenges |
-| The March 2026 Mendix demo showed case management (MxBlue/SUPERP), protocol AI (Cori Clinical), eCRF (ORTEC LogiqSuite) and a Datahub against a **mock-up EHR**; interoperability was not demonstrated. | [VERIFIED] partner LinkedIn posts, 02 §3b |
-| The stack is partner-dependent, and a Mendix base is likely (Mendix event, Mendix-partner integrator, Mendix co-founder as chair). | [INFERRED] 02 §3b — say "likely", not "is" |
-| EHR-to-EDC adoption is still limited by technical, regulatory and operational barriers; a unified framework was missing. | [VERIFIED] i~HD oncology eSource task force, Cambridge 2025, 03 §1 |
-| OpenClinica offers EHR-to-EDC via FHIR/HL7 with Epic/Cerner support, live since 2021, and claims 450+ sites. | [VERIFIED] openclinica.com/ehr-to-edc-integration (vendor claim) |
-| Castor is a Dutch EDC with a strong footprint in Dutch academic hospitals. | [GK] — say "widely used", do not give a count |
-| Data capture and admin automation for research generally falls outside MDR; matching and treatment recommendation may be a medical device under Rule 11. | [INFERRED] 07 §3, MDCG 2019-11 |
+| The demo runs locally: Flutter → FastAPI → PostgreSQL 16 → HAPI FHIR R4, all on this machine. | Verified in the rehearsal (§9) |
+| New patients arrive over FHIR R4 and are pseudonymised on ingest (keyed HMAC); raw MRN and name are not stored in the app tables. | `backend/app/ingest/`, security review §3 SEC-04 |
+| AI extraction uses a local open-weight model (`qwen2.5:7b-instruct`) behind one provider interface; `rules` is the deterministic fallback; every run logs model + prompt version. | `backend/app/ai/`, `/ai/providers`, `/ai/prompts` |
+| Every proposal must carry an evidence span that is re-located in the source; an unsupported value becomes an abstention. | `backend/app/ai/span.py`, `ollama.py` |
+| The audit is append-only and SHA-256 hash-chained; "Verify chain" checks the chain. | `backend/app/audit.py`, `/audit/verify` |
+| Exports: CDISC ODM 1.3.2 study XML with AuditRecords; FHIR QuestionnaireResponse + Provenance + AuditEvents, with write-back. | `backend/app/export/`; rehearsal §9 |
+| On the synthetic gold set (13 documents, 57 annotations) the local model scored 100 % precision and recall with 6.6 % abstention. | `backend/eval/results/latest.json` |
+| Standards named: FHIR R4 (+ mCODE-style), CDISC ODM; ICD-O-3 used; LOINC/SNOMED entries marked unverified where they are placeholders. | 06 §1; `study.json`; UI shows "placeholder, unverified" |
+| Yamicc is a credible Dutch rare-cancer ecosystem orchestrator; on public evidence no capability reaches Pilot. | `deliverables/D2_yamicc.md` §0, §4 |
+| EHR-to-EDC is a funded product category (OpenClinica, IgniteData, Medidata, Oracle, Castor Catalyst, Paradigm). | `deliverables/d3_competitive_landscape.md` §4.1 |
+| Research data capture/admin automation generally falls outside MDR; matching/recommendation may be a device under Rule 11. | 07 §3, MDCG 2019-11 [INFERRED] |
+| The security review found no Critical issue for this local demo and lists 3 High / 7 Medium / 9 Low to fix before any pilot. | `deliverables/security_review_demo_v3.md` §1 |
 
-### 5.2 Not allowed in the room
+### 6.2 Not allowed in the room
 
 | Do not say | Why |
 |---|---|
-| Any AI accuracy figure ("95% accurate", "saves 70% of time") | Not measured. FR-059 evaluation is future work. |
-| "Yamicc cannot do this" / "Yamicc is only a mock-up" | Overclaim. Say what the public demo showed, nothing more. |
-| "650,000 rare-cancer patients a year" as fact | [CLAIMED-C, unverified]; verify against RARECARE first. |
-| "MDR compliant", "MDR exempt", "GDPR compliant", "HIPAA compliant" | No legal or regulatory sign-off exists. |
-| "Clinically validated", "production-ready", "hospital-ready" | 08 §3: never claim a prototype is clinically deployable. |
-| "Open source" as a settled property | License not chosen; NFR-09 is a target only. |
-| "This replaces your EDC" | The design integrates external EDCs (FR-036), it does not replace them. |
+| Any clinical accuracy or time-saving figure ("95 % accurate", "saves 70 %") | Only a synthetic gold set exists; no clinical evidence. |
+| "Clinically validated", "production-ready", "hospital-ready", "MDR compliant", "GDPR compliant" | No validation, QMS, DPIA or legal sign-off. |
+| "Secure" without the qualifier | The security review lists High findings that must close before a pilot (SEC-01/02/03/04). Say "local demo; the gaps are documented". |
+| "Yamicc cannot do this" / "Yamicc is only a mock-up" | Overclaim. Say what public evidence shows, nothing more. |
+| "Yamicc's 650,000 patients / 20 %" as fact | [CLAIMED-C, unverified]; verify first. |
+| "This replaces your EDC" | The design integrates external EDCs (FR-036). |
+| "Open source" as settled | Licence not chosen; NFR-09 is a target. |
+| "The audit cannot be tampered with" | It detects edits in-app; the chain is unkeyed and un-anchored (SEC-02). Say "tamper-**evident** within the app; production adds HMAC + external anchoring". |
+| "All data stays in the hospital" | In this demo everything is on one laptop; the production trust boundary is a design, not a demonstrated deployment. |
 
 ---
 
-## 6. Likely questions and honest answers
+## 7. Q&A prep (honest answers, no invented numbers)
 
 **Q1. Is this real patient data?**
-No. Every patient, document and number is synthetic, and the data is bundled JSON inside the app. The banner is on every screen, by rule. There is no network connection during the demo.
+No. Every patient, document and number is synthetic. The FHIR server, the database and the model all run on this laptop. The banner is on every screen, by rule.
 
 **Q2. Is the AI live?**
-No. The output is pre-computed, versioned JSON with evidence spans. It uses the same fields a live model would return — value, span, confidence, code, model id, prompt version. We do this for stability, not because the model is unavailable.
+Yes. A local Qwen 2.5 7B model through Ollama read the new pathology report during the demo; you saw its proposals, its abstentions, and its model and prompt version. It took about 45 seconds for that document. `rules` is the deterministic fallback if the model is slow. No paid API, and no data leaves the machine.
 
-**Q3. How accurate is the extraction?**
-We do not know yet, and I will not guess. This demo shows the review mechanism, not model quality. The evaluation plan (FR-059) measures precision and recall per field, abstention rate, and reviewer burden — on synthetic data first, then pilot data under approval.
+**Q3. How accurate is it?**
+I will not give you a clinical accuracy number. On our synthetic gold set — 13 documents, 57 annotations — precision and recall are 100 %, with 6.6 % abstention. That proves the pipeline and the evaluation harness, not performance on Dutch hospital text. A 100 % result on a synthetic set is a warning sign, not a selling point. The evaluation plan is precision/recall per field, abstention, calibration and reviewer time, first on synthetic data and later on site data under approval.
 
-**Q4. Is this a medical device?**
-We make no MDR claim. Research data capture and admin automation generally fall outside MDR. Anything that recommends treatment or matches a patient to a drug needs a classification decision before we build it — that is explicitly deferred.
+**Q4. Why show a wrong value on purpose?**
+Because a safety mechanism shown only on easy cases is marketing. The wrong MGMT row is a scripted fixture from the gold set; the correction and the abstention are the two cases a regulated buyer cares about. The live model's own output is on the new patient; it abstained on nine fields rather than guess.
 
-**Q5. What happens when the AI is wrong?**
-That is the design. The evidence span lets a reviewer check the source in one glance; confidence is visible; the model can abstain; and no value becomes research data without a human accept or correct. The demo includes a wrong value and an abstention on purpose.
+**Q5. Is this a medical device?**
+We make no MDR claim. Research data capture and admin automation generally fall outside MDR; anything that recommends treatment or matches a patient to a drug may be a device under Rule 11. We deliberately did not build that. A classification decision precedes any such feature.
 
-**Q6. How is this different from Yamicc?**
-Carefully: they have partners, a clinical anchor and a public demo; we have a synthetic prototype. On the public record, their Datahub was shown with a mock-up EHR, so interoperability is not proven [VERIFIED — partner posts]. Our bet is an open, standards-first, evidence-linked review layer that integrates existing EDCs instead of locking the stack to one low-code vendor [INFERRED].
+**Q6. What happens when the AI is wrong?**
+The reviewer sees the evidence span in one glance, the confidence, and an abstention when the source does not support a value. No value becomes research data without a human accept or correct. Every step is in the audit chain, including the original proposal and the correction. The AI never writes to the EHR, and only human-verified values are exported.
 
-**Q7. Isn't this just Castor or OpenClinica?**
-Partly, and that is fine — we should integrate them, not rebuild them. The specific gap we target is Dutch-language, multi-source extraction with evidence spans, provenance and a review UI that fits site workflow. Whether that gap is big enough is exactly what Gate 1 and Gate 2 must test.
+**Q7. What is the architecture?**
+Flutter (web and macOS) → FastAPI → PostgreSQL 16 as the canonical store; HAPI FHIR R4 for ingest and write-back; a separate AI service that talks to the API, never the database; exports to CDISC ODM and FHIR. The canonical-model choice is a demo decision; the T-chain decision stays open (`deliverables/backend_architecture.md`, 06 §2).
 
-**Q8. Can it connect to Epic or HiX?**
-Not in this demo — there is no network by design. The architecture targets FHIR R4/mCODE with Dutch EHR adapters, and a connector conformance test is a Phase 2–3 deliverable. We have not connected to a real hospital, and we will not claim otherwise.
+**Q8. Which standards do you use?**
+FHIR R4 with mCODE-style resources in and out; CDISC ODM 1.3.2 out; ICD-O-3 for histology; LOINC/SNOMED where a code exists, and the UI marks placeholder codes as unverified. A terminology service and full mCODE conformance are Phase 2. Naming the standards publicly is a deliberate differentiator: Yamicc says "open standards" but names none in its primary sources (`deliverables/D2_yamicc.md` §0).
 
-**Q9. Where does the data live, and what about GDPR?**
-The architecture assumes a hospital data node, with only pseudonymised research data leaving where consent and agreements allow, and EU hosting. A DPIA and the controller/processor model are Phase 1–2 work with legal review. Nothing is solved yet.
+**Q9. Can I trust the audit trail?**
+Within the app, yes: it is append-only, SHA-256 hash-chained, and the verifier checks every link. But be precise: the chain is **unkeyed and not externally anchored**, so a database superuser could rewrite it (security review SEC-02). That is a documented High finding; production needs an HMAC key in a secret manager and an external anchor or WORM store. The demo proves the mechanism, not the production control.
 
-**Q10. What does a pilot cost, and when?**
-I will not invent a number. Phase 3 is a controlled single-hospital pilot; cost ranges come with D14 at Gate 2. The honest answer today is: the demo is cheap, the pilot is not, and Gate 2 decides whether we fund it.
+**Q10. Why does the corrected row say provider `fixture`?**
+Because that wrong-value case is a scripted fixture from the synthetic gold set, loaded through the backend on purpose. The live model's proposals on GBM-NL-009 carry provider `ollama`, model `qwen2.5:7b-instruct` and prompt `extract_v4`. We label provenance per proposal so a reviewer can always tell which came from which run.
 
-**Q11. Does the AI write back to the EHR?**
-No. Hard rule: AI never writes to the EHR, and it never makes a treatment decision. Values go to the research dataset only after human review.
+**Q11. Is it secure?**
+It is a local demo, not a secure deployment. The security review found no Critical issue for this scope, but it lists 3 High and 7 Medium findings: a committed default JWT secret, an unkeyed audit chain, an unauthenticated HAPI with known CVEs, and a default pseudonymisation key. All four are on the remediation list before any pilot, and the code must not be lifted into a hosted environment as is (`deliverables/security_review_demo_v3.md`).
 
-**Q12. Why Flutter?**
-One codebase for web and macOS, which keeps the demo stable on the presenting laptop. The Board set it as the product UI default. The frozen build uses Flutter with the Zeta design system for the visual layer. The trade-off is a smaller widget ecosystem than React; for this workflow that is acceptable.
+**Q12. What about GDPR and pseudonymisation?**
+Pseudonymisation here is a keyed HMAC of the hospital MRN; the raw MRN and name are not persisted in the app tables. Pseudonymised is not anonymous. A DPIA, the controller/processor model, the legal basis and EU-only hosting are Phase 1–2 work with legal review. Nothing is solved yet (07 §1).
 
-**Q13. What is still missing before a hospital could use it?**
-Authentication and roles, real connectors, terminology services, validation evidence, a QMS, security assessment and a DPIA. That is Phase 2–4, and it is the larger part of the work.
+**Q13. How is this different from Yamicc?**
+Carefully: Yamicc is a credible ecosystem orchestrator with partners, a clinical anchor and public demos. On the public record, no capability reaches Pilot: the Annual Report describes a paper prototype and an initial technical demonstration, and the 2026 demo components include a mock-up EHR [CLAIMED]. They name no interoperability standard publicly. Our wedge is a working, standards-first, evidence-linked review layer — and we should integrate, not disparage (`deliverables/D2_yamicc.md` §0, §3).
 
-**Q14. Why show a wrong value on purpose?**
-Because a safety mechanism that is only shown working on easy cases is marketing. The correction and the abstention are the two cases that matter for a regulated buyer.
+**Q14. Isn't this Castor Catalyst or IgniteData?**
+Partly, and that is fine. EHR-to-EDC is a funded category; Castor Catalyst is the closest commercial threat, and IgniteData/OpenClinica/Medidata already ship extraction with human acceptance. We integrate with EDCs rather than replace them. The remaining differentiation is narrow: Dutch-language documents, hospital-side processing, audit-grade review and a low-cost multi-site model — and whether that is enough is exactly what Gate 1 and Gate 2 must test (`deliverables/d3_competitive_landscape.md` §0, §4).
+
+**Q15. Can it connect to Epic or HiX?**
+Not in this demo. The target is FHIR R4 with Dutch EHR adapters; a connector conformance test is Phase 2–3. HAPI is a stand-in for the hospital endpoint, not a claim of an Epic/HiX integration.
+
+**Q16. What exactly is exported?**
+Two formats: a study-wide CDISC ODM 1.3.2 XML with the eCRF metadata, the verified values and audit records; and a per-participant FHIR bundle with a QuestionnaireResponse, Provenance (AI vs human) and AuditEvents, pushed back to the FHIR server. Only human-verified values leave the platform.
+
+**Q17. What do the roles do?**
+Demo JWT roles: research nurse (review and eCRF), monitor (read-only plus source data verification), PI (study actions and export). The monitor view is genuinely read-only: the API returns 403 on a decision and the UI disables the buttons. Production needs OIDC/SSO, MFA and site scoping (SEC-07).
+
+**Q18. Why local Ollama and not GPT/Claude?**
+Gate 3: no paid APIs, and no data may leave the machine. A local open-weight model keeps the data boundary and the cost at zero. The provider interface is pluggable; a hosted model is a decision for the Board, not a demo default.
+
+**Q19. What is still missing before a hospital could use it?**
+Real connectors and terminology services; an IdP with SSO/MFA and site scoping; audit anchoring and secret management; HAPI hardening and network isolation; validation evidence and a QMS; a DPIA and legal agreements; a penetration test. That is Phase 2–4 and the larger part of the work.
+
+**Q20. What does a pilot cost, and when?**
+I will not invent a number. Phase 3 is a controlled single-hospital pilot; cost ranges come with Gate 2. The demo is cheap; the pilot is not.
 
 **Answering rule:** if you do not know, say "we have not measured that" or "that is Gate 1 / Gate 2 work". Never fill a gap with a number.
 
 ---
 
-## 7. Failure plan
+## 8. Failure plan
 
 | Failure | Response |
 |---|---|
-| App does not start / "Data load failed" | Restart once. If it repeats, open the backup recording and present from it. |
-| A click does nothing | Do not click twice. Say "prototype", go to the next screen from the navigation rail, keep the story. |
-| Review screen shows no proposals | Go to the dashboard, reopen the participant, then review. If still empty, use the recording for the review segment. |
-| Audit shows 46 AI events but no human events | The review actions did not persist. Say "state is in memory in this build", show the recording's audit segment, continue. |
-| Projector or resolution breaks the layout | Switch to the macOS build, or use the recording at 1440×900. |
+| Backend down / "Local backend is down" | Continue in the offline snapshot (read-only banner). Say "the app keeps the last snapshot; writes need the local backend". Use the recording for sync/export. |
+| FHIR panel "Unreachable" | Skip the sync beat; go to Participants and use the existing queue. Say "the hospital endpoint is down; the platform keeps the last synced data". |
+| Sync returns 0 created | Already synced. Point at the previous run row and continue; never press twice. |
+| No live proposals for 009 | Worker slow/absent. Review GBM-NL-002's queue; say "the model runs in the background; the review loop does not block on it". |
+| Ollama slow | The service falls back to `rules` automatically; the proposals show Provider `rules`. Same story. |
+| Review write fails | Say "the local API rejected the write"; go to audit and show what did persist. |
+| Audit human rows missing | The writes did not persist; use the recording's audit segment; continue. |
+| "Chain broken" | Say "the database was modified outside the app; this is what the verifier is for"; move on. |
+| Export 403 / disabled | You are on nurse or monitor; switch to tab A (PI). |
+| Push fails | Show the generated bundle; say write-back needs the FHIR server. |
+| Layout breaks on the projector | Switch to the macOS app, or use the recording at 1440×900. |
 | Question you cannot answer | "We have not verified that; it goes on the open-questions list." Write it down. |
 
-**Never:** install something, open a terminal, or debug in front of the audience.
+**Never:** install anything, open a terminal, restart containers, or debug in front of the audience. The only exception is switching to the backup recording.
 
 ---
 
-## 8. Click-path verification against the frozen build
+## 9. Rehearsal log (against the real build)
 
-Rehearsal 2026-11-21 10:30 CET. Frozen build `caf122c` on `dev` (DEMO-1/5 + DEMO-2 data + DEMO-7 Zeta, plus two hotfixes found in this rehearsal: `a5083e2` ZetaProvider startup contrast, `caf122c` correction-button Wrap). Working tree clean except other teams' untracked `deliverables/` drafts.
+Rehearsed **2026-11-21 14:00–14:40 CET** on `dev` at `a8e397f` (W7 connected app, after the W7 screenshots). The shared stack was being exercised by QA at the same time, so the timed flow was re-run against a **private scratch database** on port `8011` seeded with the same migrations and seed (`yammic_rehearsal`), with the shared HAPI FHIR server (11 patients after loading `--set arrivals`). This avoids stealing or corrupting another agent's run. The scratch database and backend were removed afterwards.
 
-**Checks run on `caf122c`**
-- `~/flutter/bin/flutter analyze` → "No issues found".
-- `~/flutter/bin/flutter test` → 8 of 8 passed (data contract, review/audit, smoke).
-- `~/flutter/bin/flutter build web --release` → success.
-- `~/flutter/bin/flutter build macos` → success; the macOS app launches (QA CEL-1757).
-- Scripted click path through the real widget tree (app root with `ZetaProvider`, 1440×900): all taps resolved; no dead click. Audit: 49 events (46 AI extraction + 3 human), `Human` filter = 3 events, correction detail shows `Methylated → Unmethylated`, actor `SYN-JD`, source `Human · verified`, model `demo-extractor v0.1`, prompt `prompt-2026-11-21`.
-- Banner `Synthetic data — prototype, not for clinical use` rendered on `/`, `/participant/GBM-NL-002`, `/review` and `/audit` (one `Shell`, hard rule).
+**What was verified, with commands**
 
-| Step | Route | Exact on-screen label | Result |
+| Check | Command / method | Result |
+|---|---|---|
+| Stack healthy | `make health STRICT=1` | Postgres 16.16, HAPI 8.12.0, backend `/health` ok, web serving |
+| Clean seed | `uv run python -m app.seed --reset` (scratch DB) | 8 participants, 46 fixture proposals, 7 open queries, 45 eCRF fields, 3 sites, audit 47 events |
+| Arrivals staged | `python3 fhir-seed/load.py --set arrivals` | HAPI 11 patients (baseline 8 + arrivals 3); platform still 8 |
+| FHIR sync | `POST /integrations/fhir/sync` (PI) | **1.47 s**; participants created 3 / existing 8; documents created 7 / existing 10; extraction runs queued 7; 218 resources fetched |
+| Pseudonymisation count | `GET /integrations` after sync | `pseudonymisedPatients: 11` |
+| Live extraction (Ollama) | `python -m app.ai --run-id 11 --provider ollama` on `DOC-009-PATH` | **44.2 s**; 15 proposals (6 proposed, 9 abstained); model `qwen2.5:7b-instruct`; prompt `extract_v4@1ef2060c673d` |
+| Per-document model latency | provider timed on all 7 arrival documents | **35–66 s** (mean ≈45 s); `rules` < 10 ms |
+| Accept | `POST /extractions/EXT-0018/decision {"decision":"accept"}` | 200 in **71 ms**; eCRF value written |
+| Correct | `POST /extractions/EXT-0020/decision {"decision":"correct","correctedValue":"Unmethylated"}` | 200 in **21 ms**; `reviewState=corrected`; before/after recorded |
+| Defer | `POST /extractions/EXT-0023/decision {"decision":"defer"}` | 200 in **27 ms** |
+| Audit verify | `GET /audit/verify` | `ok: true` in **33 ms**, head hash returned |
+| Human audit filter | `GET /audit?source=human` | `extraction.decision` rows for defer/correct/accept + `ecrf.value_set` rows |
+| ODM export | `GET /studies/GBM-NL-2026-01/export/odm` (PI) | 200 in **204 ms**, **9 694–10 525 bytes**, `ItemData` for verified values, `AuditRecord` present |
+| FHIR export | `GET /participants/GBM-NL-002/export/fhir` (PI) | 200 in **43 ms**, 4 779 bytes, resources `QuestionnaireResponse`, `Provenance`, `AuditEvent`×3 |
+| FHIR push | `POST /participants/GBM-NL-002/export/fhir/push` (PI) | 200 in **3.3 s**, **6 resources** written with `_history` |
+| Monitor is read-only | `POST /extractions/EXT-0020/decision` as monitor | **403** "Role 'monitor' may not do this (needs nurse, pi)" |
+| Monitor SDV | `POST /participants/GBM-NL-002/ecrf/MGMTPROM/sdv` (and `HISTOLOGY`) | 200; value now has `sdvBy: monitor`, `sdvAt`; UI shows "SDV done" |
+| Seed 404 guard | SDV on a not-yet-verified field | 404 (expected; SDV needs a verified value) |
+| AI eval data | `GET /ai/eval` | 13 documents, 57 TP, 0 FP/FN, precision/recall/F1 1.0, abstention 6.6 %, provider ollama, prompt `extract_v4` |
+| UI labels and layout | W7 screenshots `deliverables/design/w7_after/` (1440×900, real build) + source review of every screen | Labels in §4 match the build; review/monitor/audit/export states confirmed |
+
+**What was not verified by this agent (honest limits)**
+- No browser or GUI control in this session, so the click path was not driven with a mouse. QA (CEL-1781) owns the interactive web + macOS click path ×3; W7's screenshots and the widget tests cover rendering. A human must do one full dress rehearsal before Monday (see Remaining below).
+- Timings for the spoken text were measured with `say -r 140` (see below), not the presenter's voice.
+- The shared QA run was mutating the main database during this rehearsal; that is why exact counts in §4.3/§4.10 are labelled "fresh reset" or omitted.
+
+**Spoken-text timing (`say -r 140`, measured) and click budget**
+
+| Segment | Spoken (`say -r 140`) | Clicks | Planned window |
 |---|---|---|---|
-| Dashboard | `/` | "Research dashboard"; "ReDiReCCT-GB Demo (synthetic) · GBM-NL-2026-01 · phase II" | Works |
-| Tasks row | `/` | "Correct MGMT promoter value · Data manager (demo) · due 2026-11-24 · GBM-NL-002" | Works; row is below the fold — scroll one notch |
-| Participant | `/participant/GBM-NL-002` | "GBM-NL-002", "active", "Clinical summary", header **Open AI review** | Works; eCRF/quality sections are below the fold |
-| Review | `/review` (filtered) | "AI extraction review", "16 pending", `SOURCE · pathology report · DOC-002-PATH` | Works |
-| Accept | review | **Histology (central review)** card + **Accept** → "Verified · Accepted" | Works |
-| Correct | review | **MGMT promoter methylation** + **Correct** → **Save correction** → "Verified · Corrected" | Works; overflow found on `d807681`, fixed in `caf122c`; Cancel wraps below Save |
-| Defer | review | **Date of progression (RANO)** + **Defer** → "Deferred"; Accept disabled | Works |
-| Audit | `/audit` | **Human** filter → "3 events"; correction detail with before/after | Works |
+| 4.1 Opening | 0:26 | — | 0:30 |
+| 4.2 Login | 0:25 | 0:05 | 0:30 |
+| 4.3 Dashboard | 0:28 | 0:04 | 0:40 |
+| 4.4 Sync | 0:40 | 0:08 | 1:05 |
+| 4.5 Participant | 0:25 | 0:05 | 0:25 |
+| 4.6 Live extraction | 0:38 | 0:05 | 0:45 |
+| 4.7 Accept | 0:31 | 0:05 | 0:35 |
+| 4.8 Correct | 0:32 | 0:18 | 0:50 |
+| 4.9 Defer | 0:20 | 0:05 | 0:25 |
+| 4.10 Audit | 0:35 | 0:10 | 0:45 |
+| 4.11 AI quality | 0:35 | 0:05 | 0:40 |
+| 4.12 Export | 0:41 | 0:14 | 0:55 |
+| 4.13 Monitor | 0:21 | 0:10 | 0:35 |
+| 4.14 Is / is not | 0:29 | 0:05 | 0:40 |
+| **Total** | **7:04** | **≈1:25** | **9:20** |
 
-**Deviations found and fixed in the script (v1.1)**
-- Participant id `SYN-0001` → `GBM-NL-002`. The accept, correct and defer cases all exist on `GBM-NL-002`; `GBM-NL-001` has no wrong-MGMT case.
-- Entry is the second task row, **Correct MGMT promoter value**, not the first ("Review AI extractions for TMZ cycle 5" → `GBM-NL-001`).
-- Header button is **Open AI review** (002's eCRF is `in progress`, not `awaiting_review`).
-- Confidences are 0.97 (accept), 0.72 (correct), 0.00 (abstain); code is `ICD-O-3 9440/3 — Glioblastoma, NOS`.
-- Correct has no reason field; the build records a before/after pair plus the reviewer.
-- Correction-mode controls overflowed by 53 px on `d807681`; fixed in `caf122c` (`Row` → `Wrap`) and re-verified clean at 1440×900.
-- The audit is 49 events (46 AI + 3 human), not four. Click **Human** to show the three decisions, newest first: defer, correct, accept.
-- Dashboard Tasks is below the fold; the participant eCRF/quality cards are below the fold. The script now scrolls once and does not claim those cards are visible.
-- Run sheet rebalanced: the problem needs 1:05 and next steps 0:50; total spoken text is 6:38.
+Content ends at **~8:35–9:20** in practice; the 10:00 slot leaves **40 s of deliberate silence plus 1:20–1:40 of buffer** for a hostile question or a slow local model. If the human read is slower than 140 wpm, cut in this order: AI-quality per-field detail, dashboard alert detail, participant summary.
 
-**Open risks**
-- Two hotfixes landed during the rehearsal (`a5083e2`, `caf122c`). The app is feature-frozen, but `dev` is not commit-frozen until Sunday 20:00. If anything else lands after `caf122c`, repeat this checklist; the Zeta work changed colours only, not labels or routes.
-- The timed read used TTS at 140 wpm, not the presenter's voice. Do one human read before Monday (§9).
-- Data note: `GBM-NL-002` has two `EXTRES` proposals (conf 0.38 and 0.93). The script does not touch them; do not accept both on stage.
+**Presenter card (print this)**
+`0:00 open · 0:30 PI login · 1:00 dashboard (8/24, 46 queue) · 1:40 integrations → Sync now (3 patients, 7 docs, 7 runs) · 2:45 Participants → GBM-NL-009 · 3:10 review 009 (ollama, abstains) · 3:55 accept histology · 4:30 002 → correct MGMT · 5:20 009 → defer RANO · 5:45 audit → Verify chain → Human → EXT-0020 · 6:30 AI quality (100 % synthetic, say why) · 7:10 ODM → FHIR 002 → Push (6 resources) · 8:05 tab B monitor → 002 → Mark SDV · 8:40 is/is not + ask · 9:20 stop`
+
+**Remaining for the human/engineer before Monday**
+1. **`make demo` does not start the AI worker** (`backend/app/ai`). The pre-flight starts it manually. DevOps should add it to `make demo` (and to `ops/RUNBOOK.md`), or the live extraction beat depends on a manual step. Code freeze is Sunday 20:00; if it is not fixed, keep the pre-flight.
+2. **`make seed` loads the FHIR baseline only.** The arrivals are a documented manual step (`fhir-seed/load.py --set arrivals`). Keep it in the pre-flight, or add `make stage-arrivals`.
+3. **`deliverables/demo_script.md` must be re-pointed at the freeze commit** on Sunday 20:00 (record `git rev-parse --short HEAD` in §2 and §9).
+4. **Record the 2–3 minute backup** of silent clicks on the frozen build, then play it once from local disk.
+5. **One full dress rehearsal in the presenter's voice** with a listener; take two hostile questions from §7. If the human read is slower than 140 wpm, cut in this order: AI-quality per-field detail → dashboard alert detail → participant summary. **Never cut** the sync result, the correction, the abstention, the audit verify, or the "is not" slide.
+6. **Confirm the two-tab setup at 1440×900** on the presenting laptop (tab A PI, tab B monitor) and that the monitor tab is already signed in before the talk.
 
 ---
 
-## 9. Rehearsal log and plan
+## 10. Open items and risks
 
-**Run 1 — scripted click run, 2026-11-21, frozen `caf122c`:** one full pass through dashboard → participant → review (accept, correct, defer) → audit. Every tap resolved; banner present on all four screens; audit assertions passed. One layout exception in correction mode on `d807681` was fixed in `caf122c` and re-verified clean at 1440×900. No dead click.
-
-**Run 2 — timed read, 2026-11-21:** the exact spoken text was rendered at 140 words per minute with macOS `say -r 140` and measured: **6:38**. Click budget: 8 mouse actions in the review segment plus ~10 typed characters (≈23 s at 2 s/action), 7 s in audit, 9 s for dashboard/participant navigation, 6 s for slide changes = **0:48**. Planned full run: **7:30–8:10 of 10:00**, including stage pauses.
-
-| Segment | Spoken (measured) | Clicks | Budget |
+| # | Item | Owner | Effect on the demo |
 |---|---|---|---|
-| 3.1 Opening | 0:22 | — | 0:40 |
-| 3.2 The problem | 1:02 | — | 1:05 |
-| 3.3 What we will show | 0:16 | 0:04 | 0:20 |
-| 3.4 Study dashboard | 0:35 | 0:04 | 0:39 |
-| 3.5 Participant | 0:31 | 0:04 | 0:35 |
-| 3.6 Review | 2:02 | 0:23 | 2:25 |
-| 3.7 Audit | 0:40 | 0:07 | 0:47 |
-| 3.8 Is / is not | 0:24 | 0:02 | 0:26 |
-| 3.9 Next steps | 0:48 | 0:02 | 0:50 |
-| **Total** | **6:38** | **0:48** | **7:47** |
-
-**Remaining for a human (10 minutes)**
-1. One full dress rehearsal in the presenter's own voice with a listener; take two hostile questions from §6.
-2. Confirm `Save correction` and `Cancel` are both visible in correction mode (`Cancel` wraps below `Save`).
-3. Record the 2-minute backup (silent clicks) on the frozen build, then play it once from local disk.
-4. If the human read is slower than 140 wpm, cut in this order: audit provenance detail → dashboard alert detail → participant summary detail. Never cut the Correct step, the abstention, or the "is not" slide.
-
-**Presenter card (one page, printed)**
-`0:00 open · 0:40 problem · 1:45 map · 2:05 dashboard (scroll to Tasks) · 2:55 participant · 3:55 review (accept 4:45 · correct 5:25 · defer 6:20 · provenance 6:55) · 7:10 audit (Human filter, correction row) · 8:00 is/is not · 8:45 next steps · 9:35 stop talking · 10:00 end`
+| R1 | `make demo` starts backend + web but **not** the AI worker; live extraction needs `uv run python -m app.ai --provider auto` | DevOps / Engineer | Pre-flight starts it manually; if it dies on stage, no live proposals (recovery §8) |
+| R2 | Arrivals are a manual FHIR loader step, not part of `make reset`/`make seed` | DevOps / Junior Engineer | Pre-flight step 2; without it the sync creates 0 participants |
+| R3 | Ollama is a single local server; QA + demo workers share it, and concurrent runs serialise | Engineer | Live extraction is treated as background; never wait on stage |
+| R4 | Security High findings (SEC-01 JWT default, SEC-02 unkeyed audit, SEC-03 HAPI auth/CVEs, SEC-04 pseudonym key) | CTO / Security | Say "local demo"; do not claim "secure"; fix before any pilot |
+| R5 | `Session.demoToday` is fixed at 2026-11-23; after Monday the UI date is stale | Engineer | Cosmetic; keep the clock for the demo |
+| R6 | AI quality shows 100 % on the synthetic set; a Board member may read it as marketing | PM | The script pre-empts it (§4.11, Q3) |
+| R7 | The `/ai/eval` screen hint says "Run `make eval`", but there is no `make eval` target | Engineer / DevOps | Cosmetic; do not show the empty state on stage |
+| R8 | No browser in this session; the interactive click path is QA/human-owned | QA / PM | QA CEL-1781 + the dress rehearsal cover it |
 
 ---
 
-## 10. Appendix — sources and labels
+## 11. Appendix — sources and labels
 
-Access date for all web sources: 2026-11-21.
+Access date for all web sources: 2026-11-21. Labels: [VERIFIED] primary source; [INFERRED] reasoned; [CLAIMED] single/non-stable source; [GK] general knowledge.
 
 | ID | Source | Label |
 |---|---|---|
-| A1 | https://yamicc.org/about-us/ | [VERIFIED] |
-| A2 | https://yamicc.org/what-we-do/ | [VERIFIED] |
-| A3 | https://yamicc.org/the-challenges/ | [VERIFIED] |
-| A4 | Partner LinkedIn posts on the 26 March 2026 Mendix Zorg Connect demo (links in 02 §3b) | [VERIFIED] |
-| A5 | https://openclinica.com/ehr-to-edc-integration | [VERIFIED — vendor claim] |
-| A6 | i~HD oncology eSource task force, Cambridge 2025 (03 §1) | [VERIFIED] |
-| A7 | 02 §3b — component table, Datahub mock-up EHR | [VERIFIED]; Mendix base [INFERRED] |
-| A8 | 07 §3 — MDR / MDCG 2019-11 Rule 11 analysis | [INFERRED] |
-| A9 | 08 §3 — roadmap phases and exit criteria | Source pack |
-| A10 | Rare-cancer "20% / 650,000 per year" | [CLAIMED-C, unverified] — do not present as fact |
+| A1 | `deliverables/D2_yamicc.md` — verified Yamicc analysis (organisation, funding, platform status, maturity) | Internal research |
+| A2 | `deliverables/d3_competitive_landscape.md` — vendor profiles and cross-cutting findings | Internal research |
+| A3 | `deliverables/security_review_demo_v3.md` — audit, pseudonymisation, authz, containers | Internal review |
+| A4 | `deliverables/backend_architecture.md` — backend architecture and data model | Internal |
+| A5 | `deliverables/D7b_visual_direction.md` — visual direction v2 and screen specs | Internal |
+| A6 | `deliverables/D5_users_workflows.md` — user journeys and roles | Internal research |
+| A7 | `deliverables/design/w7_after/` — real-build screenshots, 1440×900 | Evidence |
+| A8 | `06_ARCHITECTURE_STANDARDS_AI.md` — standards, stack, AI architecture and evaluation | Source pack |
+| A9 | `07_REGULATORY_SECURITY.md` — MDR/AI Act, GDPR, security, validation | Source pack |
+| A10 | `fhir-seed/README.md` — synthetic hospital inventory and the arrivals story | Source pack |
+| A11 | `ops/RUNBOOK.md` — local stack, recovery, cold start | Source pack |
+| A12 | yamicc.org/about-us, /what-we-do, /the-challenges (via D2) | [VERIFIED] |
+| A13 | i~HD oncology eSource task force, Cambridge 2025 (via 03 §1) | [VERIFIED] |
+| A14 | Rare-cancer "20 % / 650,000 per year" | [CLAIMED-C, unverified] — do not present as fact |
 
-**Definition of done for this script:** every spoken claim carries a label or is framed as opinion; the click path matches journey 1 and the frozen routes; the "is not" slide is read without softening; the Q&A avoids invented numbers. Final build cross-check is DEMO-4b.
+**Definition of done for this script:** every spoken claim carries a label or is framed as opinion; every step names the click, the line, what the audience should notice and a recovery; the "is not" slide is read without softening; the Q&A cites the research deliverables and never invents a number; the run was rehearsed against the real connected build and the timings are recorded above.
