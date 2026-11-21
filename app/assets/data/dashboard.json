@@ -1,5 +1,100 @@
-{"studies":[{"id":"ST-01","title":"Synthetic Cardio Study","phase":"II","target":40,"enrolled":3,"completeness":0.62}],
-"sites":[{"id":"SITE-A","name":"Site A (synthetic)","studyId":"ST-01","target":20,"enrolled":2,"openQueries":3}],
-"milestones":[{"studyId":"ST-01","name":"Database lock","date":"2027-03-01","done":false}],
-"alerts":[{"studyId":"ST-01","severity":"warning","message":"Sample alert"}],
-"tasks":[{"studyId":"ST-01","title":"Review AI extractions","due":"2026-11-24","assignee":"Nurse A","participantId":"SYN-0001"}]}
+{
+  "synthetic": true,
+  "disclaimer": "Synthetic data — prototype, not for clinical use",
+  "studies": [
+    {
+      "id": "GBM-NL-2026-01",
+      "title": "ReDiReCCT-GB Demo (synthetic)",
+      "phase": "II",
+      "target": 24,
+      "enrolled": 8,
+      "completeness": 0.71
+    }
+  ],
+  "sites": [
+    {
+      "id": "SITE-01",
+      "name": "FUMC Zuidhaven (fictional)",
+      "studyId": "GBM-NL-2026-01",
+      "target": 10,
+      "enrolled": 3,
+      "openQueries": 4
+    },
+    {
+      "id": "SITE-02",
+      "name": "FUMC Noordhaven (fictional)",
+      "studyId": "GBM-NL-2026-01",
+      "target": 8,
+      "enrolled": 3,
+      "openQueries": 3
+    },
+    {
+      "id": "SITE-03",
+      "name": "Westpark (fictional)",
+      "studyId": "GBM-NL-2026-01",
+      "target": 6,
+      "enrolled": 2,
+      "openQueries": 2
+    }
+  ],
+  "milestones": [
+    {
+      "studyId": "GBM-NL-2026-01",
+      "name": "First patient in",
+      "date": "2026-06-05",
+      "done": true
+    },
+    {
+      "studyId": "GBM-NL-2026-01",
+      "name": "Interim safety review",
+      "date": "2026-12-15",
+      "done": false
+    },
+    {
+      "studyId": "GBM-NL-2026-01",
+      "name": "Database lock",
+      "date": "2027-06-30",
+      "done": false
+    }
+  ],
+  "alerts": [
+    {
+      "studyId": "GBM-NL-2026-01",
+      "severity": "warning",
+      "message": "GBM-NL-002: AI MGMT proposal contradicts the pathology report."
+    },
+    {
+      "studyId": "GBM-NL-2026-01",
+      "severity": "warning",
+      "message": "GBM-NL-002: resection extent differs between MRI and operative note."
+    },
+    {
+      "studyId": "GBM-NL-2026-01",
+      "severity": "info",
+      "message": "3 extractions are low-confidence or abstained and need review."
+    }
+  ],
+  "tasks": [
+    {
+      "studyId": "GBM-NL-2026-01",
+      "title": "Review AI extractions for TMZ cycle 5",
+      "due": "2026-11-24",
+      "assignee": "Research nurse (demo)",
+      "participantId": "GBM-NL-001"
+    },
+    {
+      "studyId": "GBM-NL-2026-01",
+      "title": "Correct MGMT promoter value",
+      "due": "2026-11-24",
+      "assignee": "Data manager (demo)",
+      "participantId": "GBM-NL-002"
+    },
+    {
+      "studyId": "GBM-NL-2026-01",
+      "title": "Check screening eligibility",
+      "due": "2026-11-25",
+      "assignee": "Research nurse (demo)",
+      "participantId": "GBM-NL-004"
+    }
+  ]
+}

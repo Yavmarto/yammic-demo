@@ -1,0 +1,546 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-11-21T10:30:00+01:00",
+  "synthetic": true,
+  "disclaimer": "Synthetic data — prototype, not for clinical use",
+  "study": {
+    "id": "GBM-NL-2026-01",
+    "shortName": "ReDiReCCT-GB Demo (synthetic)",
+    "title": "A fictional phase II study of standard chemoradiotherapy with biomarker follow-up in newly diagnosed glioblastoma, IDH-wildtype",
+    "registryId": "NL-DEMO-0000 (fictional, not a real registry entry)",
+    "phase": "II",
+    "indication": "Glioblastoma, IDH-wildtype (WHO CNS5, 2021)",
+    "sponsor": "Stichting Fictieve Neuro-Oncologie (fictional)",
+    "coordinatingSite": "SITE-01",
+    "protocolVersion": "1.0 (2026-11-21)",
+    "protocolStatus": "approved (fictional)",
+    "status": "recruiting",
+    "targetEnrolment": 24,
+    "currentEnrolment": 8,
+    "enrolmentOpenedOn": "2026-06-01",
+    "plannedLastPatientIn": "2027-03-31",
+    "primaryEndpoint": "Progression-free survival at 6 months by RANO criteria (fictional).",
+    "secondaryEndpoints": [
+      "Overall survival (fictional).",
+      "eCRF data completeness after AI-assisted extraction (fictional).",
+      "Reviewer time per extracted field (fictional, simulated)."
+    ],
+    "eligibilitySummary": [
+      "Age 18 years or older (fictional).",
+      "Histologically confirmed glioblastoma, IDH-wildtype (fictional).",
+      "Karnofsky Performance Status 60 or higher (fictional).",
+      "No prior radiotherapy to the brain (fictional)."
+    ],
+    "dataProvenance": {
+      "kind": "synthetic_fixture",
+      "realPatients": false,
+      "liveModelCalls": false,
+      "networkCalls": false,
+      "note": "All participants, sites, documents and AI extractions are fictional fixtures."
+    }
+  },
+  "sites": [
+    {
+      "id": "SITE-01",
+      "name": "Fictief Universitair Medisch Centrum Zuidhaven",
+      "shortName": "FUMC Zuidhaven (fictional)",
+      "city": "Zuidhaven",
+      "country": "NL",
+      "principalInvestigator": "Dr. A. Voorbeeld (fictional)",
+      "status": "open",
+      "targetEnrolment": 10,
+      "currentEnrolment": 3,
+      "openQueries": 4
+    },
+    {
+      "id": "SITE-02",
+      "name": "Fictief Universitair Medisch Centrum Noordhaven",
+      "shortName": "FUMC Noordhaven (fictional)",
+      "city": "Noordhaven",
+      "country": "NL",
+      "principalInvestigator": "Dr. B. Voorbeeld (fictional)",
+      "status": "open",
+      "targetEnrolment": 8,
+      "currentEnrolment": 3,
+      "openQueries": 3
+    },
+    {
+      "id": "SITE-03",
+      "name": "Fictief Streekziekenhuis Westpark",
+      "shortName": "Westpark (fictional)",
+      "city": "Westpark",
+      "country": "NL",
+      "principalInvestigator": "Dr. C. Voorbeeld (fictional)",
+      "status": "open",
+      "targetEnrolment": 6,
+      "currentEnrolment": 2,
+      "openQueries": 2
+    }
+  ],
+  "visitSchedule": [
+    {
+      "visitId": "V0",
+      "name": "Screening",
+      "dayFrom": -14,
+      "dayTo": 0,
+      "windowDays": 0,
+      "repeating": false
+    },
+    {
+      "visitId": "V1",
+      "name": "Baseline",
+      "dayFrom": 0,
+      "dayTo": 0,
+      "windowDays": 0,
+      "repeating": false
+    },
+    {
+      "visitId": "V2",
+      "name": "Radiotherapy start",
+      "dayFrom": 14,
+      "dayTo": 14,
+      "windowDays": 7,
+      "repeating": false
+    },
+    {
+      "visitId": "V3",
+      "name": "Radiotherapy end",
+      "dayFrom": 56,
+      "dayTo": 56,
+      "windowDays": 7,
+      "repeating": false
+    },
+    {
+      "visitId": "V4",
+      "name": "TMZ cycle 1",
+      "dayFrom": 63,
+      "dayTo": 63,
+      "windowDays": 7,
+      "repeating": false
+    },
+    {
+      "visitId": "V5",
+      "name": "TMZ cycle 2",
+      "dayFrom": 91,
+      "dayTo": 91,
+      "windowDays": 7,
+      "repeating": false
+    },
+    {
+      "visitId": "V6",
+      "name": "TMZ cycle 3",
+      "dayFrom": 119,
+      "dayTo": 119,
+      "windowDays": 7,
+      "repeating": false
+    },
+    {
+      "visitId": "V7",
+      "name": "TMZ cycle 4",
+      "dayFrom": 147,
+      "dayTo": 147,
+      "windowDays": 7,
+      "repeating": false
+    },
+    {
+      "visitId": "V8",
+      "name": "TMZ cycle 5",
+      "dayFrom": 175,
+      "dayTo": 175,
+      "windowDays": 7,
+      "repeating": false
+    },
+    {
+      "visitId": "V9",
+      "name": "TMZ cycle 6",
+      "dayFrom": 203,
+      "dayTo": 203,
+      "windowDays": 7,
+      "repeating": false
+    },
+    {
+      "visitId": "V10",
+      "name": "End of treatment",
+      "dayFrom": 231,
+      "dayTo": 238,
+      "windowDays": 14,
+      "repeating": false
+    },
+    {
+      "visitId": "V11",
+      "name": "Follow-up (8-weekly)",
+      "dayFrom": 287,
+      "dayTo": 287,
+      "windowDays": 14,
+      "repeating": true
+    },
+    {
+      "visitId": "V12",
+      "name": "Survival follow-up (12-weekly)",
+      "dayFrom": 371,
+      "dayTo": 371,
+      "windowDays": 28,
+      "repeating": true
+    }
+  ],
+  "ecrf": {
+    "formId": "ECRF-GBM-BASELINE",
+    "formVersion": "1.0",
+    "label": "Glioblastoma baseline eCRF",
+    "fieldsRequired": 13,
+    "sections": [
+      {
+        "id": "identification",
+        "label": "Identification"
+      },
+      {
+        "id": "demographics",
+        "label": "Demographics"
+      },
+      {
+        "id": "diagnosis",
+        "label": "Diagnosis"
+      },
+      {
+        "id": "clinical_status",
+        "label": "Clinical status"
+      },
+      {
+        "id": "surgery",
+        "label": "Surgery"
+      },
+      {
+        "id": "treatment",
+        "label": "Treatment"
+      },
+      {
+        "id": "safety",
+        "label": "Safety"
+      },
+      {
+        "id": "outcome",
+        "label": "Outcome"
+      }
+    ],
+    "fields": [
+      {
+        "id": "SUBJID",
+        "label": "Subject identifier",
+        "section": "identification",
+        "valueType": "string",
+        "required": true,
+        "cdiscDomain": "DM",
+        "cdiscVariable": "SUBJID",
+        "cdiscVerified": true,
+        "unit": null,
+        "terminology": null,
+        "help": "Pseudonymised participant code. Never a real name or hospital number."
+      },
+      {
+        "id": "SITEID",
+        "label": "Site identifier",
+        "section": "identification",
+        "valueType": "string",
+        "required": true,
+        "cdiscDomain": "DM",
+        "cdiscVariable": "SITEID",
+        "cdiscVerified": true,
+        "unit": null,
+        "terminology": null,
+        "help": "Fictional trial site code."
+      },
+      {
+        "id": "SEX",
+        "label": "Sex at birth",
+        "section": "demographics",
+        "valueType": "coded",
+        "required": true,
+        "cdiscDomain": "DM",
+        "cdiscVariable": "SEX",
+        "cdiscVerified": true,
+        "unit": null,
+        "terminology": null,
+        "allowedValues": [
+          {
+            "value": "F",
+            "label": "Female",
+            "code": {
+              "system": "SNOMED CT",
+              "code": "248152002",
+              "display": "Female",
+              "codeVerified": true
+            }
+          },
+          {
+            "value": "M",
+            "label": "Male",
+            "code": {
+              "system": "SNOMED CT",
+              "code": "248153007",
+              "display": "Male",
+              "codeVerified": true
+            }
+          }
+        ],
+        "help": "Synthetic sex value; no relation to any real person."
+      },
+      {
+        "id": "AGE",
+        "label": "Age at diagnosis (years)",
+        "section": "demographics",
+        "valueType": "integer",
+        "required": true,
+        "cdiscDomain": "DM",
+        "cdiscVariable": "AGE",
+        "cdiscVerified": true,
+        "unit": "years",
+        "terminology": null,
+        "min": 18,
+        "max": 100,
+        "help": "Whole years at the fictional diagnosis date."
+      },
+      {
+        "id": "MHSTDAT",
+        "label": "Date of diagnosis",
+        "section": "diagnosis",
+        "valueType": "date",
+        "required": true,
+        "cdiscDomain": "MH",
+        "cdiscVariable": "MHSTDAT",
+        "cdiscVerified": true,
+        "unit": null,
+        "terminology": null,
+        "help": "ISO 8601 date (yyyy-mm-dd) of the fictional histological diagnosis."
+      },
+      {
+        "id": "HISTOLOGY",
+        "label": "Histology (central review)",
+        "section": "diagnosis",
+        "valueType": "coded",
+        "required": true,
+        "cdiscDomain": "MH",
+        "cdiscVariable": "MHTERM",
+        "cdiscVerified": true,
+        "unit": null,
+        "terminology": {
+          "system": "ICD-O-3",
+          "code": "9440/3",
+          "display": "Glioblastoma, NOS",
+          "codeVerified": true,
+          "equivalent": [
+            {
+              "system": "SNOMED CT",
+              "code": "393563007",
+              "display": "Glioblastoma (morphologic abnormality)",
+              "codeVerified": false
+            }
+          ]
+        },
+        "help": "ICD-O-3 morphology 9440/3. SNOMED CT equivalent not verified for demo."
+      },
+      {
+        "id": "IDHSTAT",
+        "label": "IDH1/2 mutation status",
+        "section": "diagnosis",
+        "valueType": "coded",
+        "required": true,
+        "cdiscDomain": "LB",
+        "cdiscVariable": "LBORRES",
+        "cdiscVerified": true,
+        "unit": null,
+        "terminology": {
+          "system": "SNOMED CT",
+          "code": "445048000",
+          "display": "IDH1 wild type",
+          "codeVerified": false
+        },
+        "allowedValues": [
+          {
+            "value": "wildtype",
+            "label": "IDH-wildtype"
+          },
+          {
+            "value": "mutant",
+            "label": "IDH-mutant"
+          },
+          {
+            "value": "indeterminate",
+            "label": "Indeterminate / not assessable"
+          }
+        ],
+        "help": "Placeholder SNOMED CT code; marked unverified on purpose."
+      },
+      {
+        "id": "MGMTPROM",
+        "label": "MGMT promoter methylation",
+        "section": "diagnosis",
+        "valueType": "coded",
+        "required": true,
+        "cdiscDomain": "LB",
+        "cdiscVariable": "LBORRES",
+        "cdiscVerified": true,
+        "unit": null,
+        "terminology": {
+          "system": "LOINC",
+          "code": "88199-1",
+          "display": "MGMT promoter methylation [Presence] in Tissue",
+          "codeVerified": false
+        },
+        "allowedValues": [
+          {
+            "value": "methylated",
+            "label": "Methylated"
+          },
+          {
+            "value": "unmethylated",
+            "label": "Unmethylated"
+          },
+          {
+            "value": "indeterminate",
+            "label": "Indeterminate / failed"
+          }
+        ],
+        "help": "Placeholder LOINC code; marked unverified on purpose."
+      },
+      {
+        "id": "KPS",
+        "label": "Karnofsky Performance Status",
+        "section": "clinical_status",
+        "valueType": "integer",
+        "required": true,
+        "cdiscDomain": "QS",
+        "cdiscVariable": "QSORRES",
+        "cdiscVerified": false,
+        "unit": "%",
+        "terminology": {
+          "system": "LOINC",
+          "code": "89261-2",
+          "display": "Karnofsky Performance Status score",
+          "codeVerified": false
+        },
+        "min": 0,
+        "max": 100,
+        "help": "KPS in steps of 10. Placeholder LOINC code, unverified."
+      },
+      {
+        "id": "EXTRES",
+        "label": "Extent of resection",
+        "section": "surgery",
+        "valueType": "coded",
+        "required": true,
+        "cdiscDomain": "PR",
+        "cdiscVariable": "PRTRT",
+        "cdiscVerified": false,
+        "unit": null,
+        "terminology": {
+          "system": "SNOMED CT",
+          "code": "262143007",
+          "display": "Extent of surgical resection",
+          "codeVerified": false
+        },
+        "allowedValues": [
+          {
+            "value": "gross_total",
+            "label": "Gross total resection"
+          },
+          {
+            "value": "subtotal",
+            "label": "Subtotal resection"
+          },
+          {
+            "value": "biopsy",
+            "label": "Biopsy only"
+          },
+          {
+            "value": "not_assessable",
+            "label": "Not assessable"
+          }
+        ],
+        "help": "Surgeon/radiology wording. Placeholder SNOMED CT code, unverified."
+      },
+      {
+        "id": "RTDOSE",
+        "label": "Radiotherapy total dose",
+        "section": "treatment",
+        "valueType": "number",
+        "required": true,
+        "cdiscDomain": "EX",
+        "cdiscVariable": "EXDOSE",
+        "cdiscVerified": true,
+        "unit": "Gy",
+        "terminology": {
+          "system": "UCUM",
+          "code": "Gy",
+          "display": "gray",
+          "codeVerified": true
+        },
+        "min": 0,
+        "max": 80,
+        "help": "Total dose in gray, Stupp-style 60 Gy."
+      },
+      {
+        "id": "RTFRAC",
+        "label": "Radiotherapy fractions",
+        "section": "treatment",
+        "valueType": "integer",
+        "required": true,
+        "cdiscDomain": "EX",
+        "cdiscVariable": "EXDOSFRQ",
+        "cdiscVerified": false,
+        "unit": "fractions",
+        "terminology": null,
+        "min": 1,
+        "max": 40,
+        "help": "Number of fractions. CDISC variable is a demo approximation."
+      },
+      {
+        "id": "TMZPLNC",
+        "label": "Planned adjuvant temozolomide cycles",
+        "section": "treatment",
+        "valueType": "integer",
+        "required": true,
+        "cdiscDomain": "EX",
+        "cdiscVariable": "EXDOSTOT",
+        "cdiscVerified": false,
+        "unit": "cycles",
+        "terminology": {
+          "system": "ATC",
+          "code": "L01AX03",
+          "display": "temozolomide",
+          "codeVerified": true
+        },
+        "min": 0,
+        "max": 12,
+        "help": "Planned adjuvant cycles after chemoradiotherapy."
+      },
+      {
+        "id": "AEGRADE",
+        "label": "Maximum adverse event grade (CTCAE v5.0)",
+        "section": "safety",
+        "valueType": "integer",
+        "required": false,
+        "cdiscDomain": "AE",
+        "cdiscVariable": "AETOXGR",
+        "cdiscVerified": true,
+        "unit": "grade",
+        "terminology": null,
+        "min": 0,
+        "max": 5,
+        "help": "0 = no adverse event recorded; 1-5 = CTCAE v5.0 grade."
+      },
+      {
+        "id": "PROGDAT",
+        "label": "Date of progression (RANO)",
+        "section": "outcome",
+        "valueType": "date",
+        "required": false,
+        "cdiscDomain": "RS",
+        "cdiscVariable": "RSDTC",
+        "cdiscVerified": true,
+        "unit": null,
+        "terminology": null,
+        "help": "Leave blank until a RANO assessment documents progression."
+      }
+    ]
+  }
+}

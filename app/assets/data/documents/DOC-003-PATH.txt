@@ -1,0 +1,14 @@
+SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK
+Fictief Streekziekenhuis Westpark - Laboratorium Pathologie
+
+PATIENTCODE: GBM-NL-003
+DATUM ONTVANGST: 2026-08-19
+DATUM VERSLAG: 2026-08-22
+ONDERZOEK: Resectiepreparaat, links parietaal
+
+MICROSCOPIE
+Hooggradig astrocytair glioom met necrose. IDH1 R132H negatief.
+MGMT-promotermethylering: niet gemethyleerd.
+
+CONCLUSIE
+Glioblastoom, IDH-wildtype (WHO CNS5), ICD-O-3 9440/3.

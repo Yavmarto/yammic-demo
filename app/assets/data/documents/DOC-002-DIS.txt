@@ -1,0 +1,20 @@
+SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE
+Fictional University Medical Center Northhaven - Department of Neuro-Oncology
+
+SUBJECT CODE: GBM-NL-002
+SEX: male
+AGE AT DIAGNOSIS: 64 years
+ADMISSION DATE: 2026-05-04
+DISCHARGE DATE: 2026-05-09
+
+DISCHARGE SUMMARY
+The patient underwent a left temporal craniotomy with subtotal resection of a
+glioblastoma, IDH-wildtype. Post-operative course was uneventful.
+
+FUNCTIONAL STATUS
+Karnofsky Performance Status at discharge: 70%.
+
+PLAN
+Adjuvant radiotherapy 60 Gy in 30 fractions with concurrent temozolomide,
+followed by 6 planned adjuvant temozolomide cycles. No adverse events above
+grade 1 fatigue have been recorded.

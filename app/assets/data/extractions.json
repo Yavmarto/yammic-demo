@@ -1,0 +1,1733 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-11-21T10:30:00+01:00",
+  "synthetic": true,
+  "disclaimer": "Synthetic data — prototype, not for clinical use",
+  "generator": {
+    "modelId": "demo-extractor v0.1",
+    "promptVersion": "prompt-2026-11-21",
+    "runId": "demo-fixture-2026-11-21",
+    "liveModelCalls": false,
+    "note": "Pre-computed fixture that imitates an extractor. No model was called."
+  },
+  "seededDemoCases": {
+    "lowConfidence": {
+      "extractionId": "EXT-0022",
+      "documentId": "DOC-002-MRI",
+      "field": "EXTRES",
+      "confidence": 0.38,
+      "whatToShow": "Hedged wording ('probably subtotal') gives a low-confidence proposal that needs reviewer verification."
+    },
+    "wrongValue": {
+      "extractionId": "EXT-0020",
+      "documentId": "DOC-002-PATH",
+      "field": "MGMTPROM",
+      "proposedValue": "methylated",
+      "expectedCorrectValue": "unmethylated",
+      "whatToShow": "The AI says 'methylated' but the highlighted source text says 'unmethylated'. The reviewer corrects it."
+    },
+    "abstention": {
+      "extractionId": "EXT-0008",
+      "documentId": "DOC-003-MRI",
+      "field": "PROGDAT",
+      "whatToShow": "The extractor abstains ('not stated') because no RANO assessment exists yet."
+    }
+  },
+  "documents": [
+    {
+      "documentId": "DOC-001-PATH",
+      "proposedFields": 6,
+      "abstainedFields": 0,
+      "extractionIds": [
+        "EXT-0001",
+        "EXT-0002",
+        "EXT-0003",
+        "EXT-0004",
+        "EXT-0005",
+        "EXT-0006"
+      ]
+    },
+    {
+      "documentId": "DOC-001-MRI",
+      "proposedFields": 1,
+      "abstainedFields": 1,
+      "extractionIds": [
+        "EXT-0007",
+        "EXT-0008"
+      ]
+    },
+    {
+      "documentId": "DOC-001-DIS",
+      "proposedFields": 7,
+      "abstainedFields": 0,
+      "extractionIds": [
+        "EXT-0009",
+        "EXT-0010",
+        "EXT-0011",
+        "EXT-0012",
+        "EXT-0013",
+        "EXT-0014",
+        "EXT-0015"
+      ]
+    },
+    {
+      "documentId": "DOC-002-PATH",
+      "proposedFields": 6,
+      "abstainedFields": 0,
+      "extractionIds": [
+        "EXT-0016",
+        "EXT-0017",
+        "EXT-0018",
+        "EXT-0019",
+        "EXT-0020",
+        "EXT-0021"
+      ]
+    },
+    {
+      "documentId": "DOC-002-MRI",
+      "proposedFields": 1,
+      "abstainedFields": 1,
+      "extractionIds": [
+        "EXT-0022",
+        "EXT-0023"
+      ]
+    },
+    {
+      "documentId": "DOC-002-SURG",
+      "proposedFields": 1,
+      "abstainedFields": 0,
+      "extractionIds": [
+        "EXT-0024"
+      ]
+    },
+    {
+      "documentId": "DOC-002-DIS",
+      "proposedFields": 7,
+      "abstainedFields": 0,
+      "extractionIds": [
+        "EXT-0025",
+        "EXT-0026",
+        "EXT-0027",
+        "EXT-0028",
+        "EXT-0029",
+        "EXT-0030",
+        "EXT-0031"
+      ]
+    },
+    {
+      "documentId": "DOC-003-PATH",
+      "proposedFields": 6,
+      "abstainedFields": 0,
+      "extractionIds": [
+        "EXT-0032",
+        "EXT-0033",
+        "EXT-0034",
+        "EXT-0035",
+        "EXT-0036",
+        "EXT-0037"
+      ]
+    },
+    {
+      "documentId": "DOC-003-MRI",
+      "proposedFields": 1,
+      "abstainedFields": 1,
+      "extractionIds": [
+        "EXT-0038",
+        "EXT-0039"
+      ]
+    },
+    {
+      "documentId": "DOC-003-DIS",
+      "proposedFields": 7,
+      "abstainedFields": 0,
+      "extractionIds": [
+        "EXT-0040",
+        "EXT-0041",
+        "EXT-0042",
+        "EXT-0043",
+        "EXT-0044",
+        "EXT-0045",
+        "EXT-0046"
+      ]
+    }
+  ],
+  "extractions": [
+    {
+      "id": "EXT-0001",
+      "documentId": "DOC-001-PATH",
+      "documentType": "pathology_report",
+      "documentDate": "2026-06-05",
+      "participantId": "GBM-NL-001",
+      "field": "SUBJID",
+      "fieldLabel": "Subject identifier",
+      "status": "proposed",
+      "value": "GBM-NL-001",
+      "normalizedValue": "GBM-NL-001",
+      "unit": null,
+      "confidence": 0.99,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-001-PATH.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Universitair Medisch Centrum Zuidhaven\nAfdeling Pathologie\nProf. dr. J. Voorbeeld (fictief)\n\nPATIENTCODE: GBM-NL-001\nDATUM ONTVANGST: 2026-06-02\nDATUM VERSLAG: 2026-06-05\nONDERZOEK: Resectiepreparaat, rechter frontaal\n\nKLINISCHE GEGEVENS\nRuimte-innemende laesie rechts frontaal, verdacht voor hooggradig glioom.\nVerwijzend neurochirurg: dr. M. Voorbeeld (fictief).\n\nMACROSCOPIE\nMeerdere fragmenten van grijs-wit weefsel, tesamen 24 gram.\n\nMICROSCOPIE\nHypercellulair glioom met duidelijke nucleaire atypie, mitosen en\nmicrovasculaire proliferatie. Gebieden met pseudopalisadering en necrose.\nImmunohistochemie: GFAP positief. IDH1 R132H negatief. ATRX behouden.\nMGMT-promotermethylering: methylatie aangetoond (MS-PCR).\n\nCONCLUSIE\n1. Glioblastoom, IDH-wildtype (WHO CNS5). ICD-O-3 morfologiecode 9440/3.\n2. MGMT-promoter is gemethyleerd.\n",
+      "spanStart": 174,
+      "spanEnd": 184,
+      "evidence": [
+        {
+          "start": 174,
+          "end": 184,
+          "text": "GBM-NL-001"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0002",
+      "documentId": "DOC-001-PATH",
+      "documentType": "pathology_report",
+      "documentDate": "2026-06-05",
+      "participantId": "GBM-NL-001",
+      "field": "SITEID",
+      "fieldLabel": "Site identifier",
+      "status": "proposed",
+      "value": "SITE-01",
+      "normalizedValue": "SITE-01",
+      "unit": null,
+      "confidence": 0.98,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-001-PATH.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Universitair Medisch Centrum Zuidhaven\nAfdeling Pathologie\nProf. dr. J. Voorbeeld (fictief)\n\nPATIENTCODE: GBM-NL-001\nDATUM ONTVANGST: 2026-06-02\nDATUM VERSLAG: 2026-06-05\nONDERZOEK: Resectiepreparaat, rechter frontaal\n\nKLINISCHE GEGEVENS\nRuimte-innemende laesie rechts frontaal, verdacht voor hooggradig glioom.\nVerwijzend neurochirurg: dr. M. Voorbeeld (fictief).\n\nMACROSCOPIE\nMeerdere fragmenten van grijs-wit weefsel, tesamen 24 gram.\n\nMICROSCOPIE\nHypercellulair glioom met duidelijke nucleaire atypie, mitosen en\nmicrovasculaire proliferatie. Gebieden met pseudopalisadering en necrose.\nImmunohistochemie: GFAP positief. IDH1 R132H negatief. ATRX behouden.\nMGMT-promotermethylering: methylatie aangetoond (MS-PCR).\n\nCONCLUSIE\n1. Glioblastoom, IDH-wildtype (WHO CNS5). ICD-O-3 morfologiecode 9440/3.\n2. MGMT-promoter is gemethyleerd.\n",
+      "spanStart": 60,
+      "spanEnd": 106,
+      "evidence": [
+        {
+          "start": 60,
+          "end": 106,
+          "text": "Fictief Universitair Medisch Centrum Zuidhaven"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0003",
+      "documentId": "DOC-001-PATH",
+      "documentType": "pathology_report",
+      "documentDate": "2026-06-05",
+      "participantId": "GBM-NL-001",
+      "field": "HISTOLOGY",
+      "fieldLabel": "Histology (central review)",
+      "status": "proposed",
+      "value": "Glioblastoma, IDH-wildtype",
+      "normalizedValue": "glioblastoma_idh_wildtype",
+      "unit": null,
+      "confidence": 0.98,
+      "proposedCode": {
+        "system": "ICD-O-3",
+        "code": "9440/3",
+        "display": "Glioblastoma, NOS",
+        "codeVerified": true,
+        "equivalent": [
+          {
+            "system": "SNOMED CT",
+            "code": "393563007",
+            "display": "Glioblastoma (morphologic abnormality)",
+            "codeVerified": false
+          }
+        ]
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-001-PATH.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Universitair Medisch Centrum Zuidhaven\nAfdeling Pathologie\nProf. dr. J. Voorbeeld (fictief)\n\nPATIENTCODE: GBM-NL-001\nDATUM ONTVANGST: 2026-06-02\nDATUM VERSLAG: 2026-06-05\nONDERZOEK: Resectiepreparaat, rechter frontaal\n\nKLINISCHE GEGEVENS\nRuimte-innemende laesie rechts frontaal, verdacht voor hooggradig glioom.\nVerwijzend neurochirurg: dr. M. Voorbeeld (fictief).\n\nMACROSCOPIE\nMeerdere fragmenten van grijs-wit weefsel, tesamen 24 gram.\n\nMICROSCOPIE\nHypercellulair glioom met duidelijke nucleaire atypie, mitosen en\nmicrovasculaire proliferatie. Gebieden met pseudopalisadering en necrose.\nImmunohistochemie: GFAP positief. IDH1 R132H negatief. ATRX behouden.\nMGMT-promotermethylering: methylatie aangetoond (MS-PCR).\n\nCONCLUSIE\n1. Glioblastoom, IDH-wildtype (WHO CNS5). ICD-O-3 morfologiecode 9440/3.\n2. MGMT-promoter is gemethyleerd.\n",
+      "spanStart": 801,
+      "spanEnd": 827,
+      "evidence": [
+        {
+          "start": 801,
+          "end": 827,
+          "text": "Glioblastoom, IDH-wildtype"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0004",
+      "documentId": "DOC-001-PATH",
+      "documentType": "pathology_report",
+      "documentDate": "2026-06-05",
+      "participantId": "GBM-NL-001",
+      "field": "IDHSTAT",
+      "fieldLabel": "IDH1/2 mutation status",
+      "status": "proposed",
+      "value": "IDH-wildtype",
+      "normalizedValue": "wildtype",
+      "unit": null,
+      "confidence": 0.96,
+      "proposedCode": {
+        "system": "SNOMED CT",
+        "code": "445048000",
+        "display": "IDH1 wild type",
+        "codeVerified": false
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-001-PATH.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Universitair Medisch Centrum Zuidhaven\nAfdeling Pathologie\nProf. dr. J. Voorbeeld (fictief)\n\nPATIENTCODE: GBM-NL-001\nDATUM ONTVANGST: 2026-06-02\nDATUM VERSLAG: 2026-06-05\nONDERZOEK: Resectiepreparaat, rechter frontaal\n\nKLINISCHE GEGEVENS\nRuimte-innemende laesie rechts frontaal, verdacht voor hooggradig glioom.\nVerwijzend neurochirurg: dr. M. Voorbeeld (fictief).\n\nMACROSCOPIE\nMeerdere fragmenten van grijs-wit weefsel, tesamen 24 gram.\n\nMICROSCOPIE\nHypercellulair glioom met duidelijke nucleaire atypie, mitosen en\nmicrovasculaire proliferatie. Gebieden met pseudopalisadering en necrose.\nImmunohistochemie: GFAP positief. IDH1 R132H negatief. ATRX behouden.\nMGMT-promotermethylering: methylatie aangetoond (MS-PCR).\n\nCONCLUSIE\n1. Glioblastoom, IDH-wildtype (WHO CNS5). ICD-O-3 morfologiecode 9440/3.\n2. MGMT-promoter is gemethyleerd.\n",
+      "spanStart": 693,
+      "spanEnd": 712,
+      "evidence": [
+        {
+          "start": 693,
+          "end": 712,
+          "text": "IDH1 R132H negatief"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0005",
+      "documentId": "DOC-001-PATH",
+      "documentType": "pathology_report",
+      "documentDate": "2026-06-05",
+      "participantId": "GBM-NL-001",
+      "field": "MGMTPROM",
+      "fieldLabel": "MGMT promoter methylation",
+      "status": "proposed",
+      "value": "Methylated",
+      "normalizedValue": "methylated",
+      "unit": null,
+      "confidence": 0.93,
+      "proposedCode": {
+        "system": "LOINC",
+        "code": "88199-1",
+        "display": "MGMT promoter methylation [Presence] in Tissue",
+        "codeVerified": false
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-001-PATH.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Universitair Medisch Centrum Zuidhaven\nAfdeling Pathologie\nProf. dr. J. Voorbeeld (fictief)\n\nPATIENTCODE: GBM-NL-001\nDATUM ONTVANGST: 2026-06-02\nDATUM VERSLAG: 2026-06-05\nONDERZOEK: Resectiepreparaat, rechter frontaal\n\nKLINISCHE GEGEVENS\nRuimte-innemende laesie rechts frontaal, verdacht voor hooggradig glioom.\nVerwijzend neurochirurg: dr. M. Voorbeeld (fictief).\n\nMACROSCOPIE\nMeerdere fragmenten van grijs-wit weefsel, tesamen 24 gram.\n\nMICROSCOPIE\nHypercellulair glioom met duidelijke nucleaire atypie, mitosen en\nmicrovasculaire proliferatie. Gebieden met pseudopalisadering en necrose.\nImmunohistochemie: GFAP positief. IDH1 R132H negatief. ATRX behouden.\nMGMT-promotermethylering: methylatie aangetoond (MS-PCR).\n\nCONCLUSIE\n1. Glioblastoom, IDH-wildtype (WHO CNS5). ICD-O-3 morfologiecode 9440/3.\n2. MGMT-promoter is gemethyleerd.\n",
+      "spanStart": 755,
+      "spanEnd": 785,
+      "evidence": [
+        {
+          "start": 755,
+          "end": 785,
+          "text": "methylatie aangetoond (MS-PCR)"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0006",
+      "documentId": "DOC-001-PATH",
+      "documentType": "pathology_report",
+      "documentDate": "2026-06-05",
+      "participantId": "GBM-NL-001",
+      "field": "MHSTDAT",
+      "fieldLabel": "Date of diagnosis",
+      "status": "proposed",
+      "value": "2026-06-02",
+      "normalizedValue": "2026-06-02",
+      "unit": null,
+      "confidence": 0.91,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-001-PATH.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Universitair Medisch Centrum Zuidhaven\nAfdeling Pathologie\nProf. dr. J. Voorbeeld (fictief)\n\nPATIENTCODE: GBM-NL-001\nDATUM ONTVANGST: 2026-06-02\nDATUM VERSLAG: 2026-06-05\nONDERZOEK: Resectiepreparaat, rechter frontaal\n\nKLINISCHE GEGEVENS\nRuimte-innemende laesie rechts frontaal, verdacht voor hooggradig glioom.\nVerwijzend neurochirurg: dr. M. Voorbeeld (fictief).\n\nMACROSCOPIE\nMeerdere fragmenten van grijs-wit weefsel, tesamen 24 gram.\n\nMICROSCOPIE\nHypercellulair glioom met duidelijke nucleaire atypie, mitosen en\nmicrovasculaire proliferatie. Gebieden met pseudopalisadering en necrose.\nImmunohistochemie: GFAP positief. IDH1 R132H negatief. ATRX behouden.\nMGMT-promotermethylering: methylatie aangetoond (MS-PCR).\n\nCONCLUSIE\n1. Glioblastoom, IDH-wildtype (WHO CNS5). ICD-O-3 morfologiecode 9440/3.\n2. MGMT-promoter is gemethyleerd.\n",
+      "spanStart": 185,
+      "spanEnd": 212,
+      "evidence": [
+        {
+          "start": 185,
+          "end": 212,
+          "text": "DATUM ONTVANGST: 2026-06-02"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0007",
+      "documentId": "DOC-001-MRI",
+      "documentType": "radiology_report",
+      "documentDate": "2026-06-06",
+      "participantId": "GBM-NL-001",
+      "field": "EXTRES",
+      "fieldLabel": "Extent of resection",
+      "status": "proposed",
+      "value": "Gross total resection",
+      "normalizedValue": "gross_total",
+      "unit": null,
+      "confidence": 0.91,
+      "proposedCode": {
+        "system": "SNOMED CT",
+        "code": "262143007",
+        "display": "Extent of surgical resection",
+        "codeVerified": false
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-001-MRI.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Universitair Medisch Centrum Zuidhaven - Afdeling Radiologie\n\nPATIENTCODE: GBM-NL-001\nONDERZOEK: MRI hersenen met contrast (postoperatief)\nDATUM: 2026-06-06\nAANVRAAG: postoperatieve staudevaluatie\n\nVERSLAG\nStatus na rechter frontale craniotomie. Er is een reseptiecaviteit zichtbaar\nzonder aantoonbaar residueel aankleurend tumorweefsel. Beoordeling: gross total\nresectie. Geen nieuwe laesies. Geen tekenen van hydrocephalus.\n\nEr is geen baseline RANO-meting van voor de operatie beschikbaar.\nProgressie kan met dit onderzoek niet worden vastgesteld.\n",
+      "spanStart": 419,
+      "spanEnd": 439,
+      "evidence": [
+        {
+          "start": 419,
+          "end": 439,
+          "text": "gross total\nresectie"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0008",
+      "documentId": "DOC-001-MRI",
+      "documentType": "radiology_report",
+      "documentDate": "2026-06-06",
+      "participantId": "GBM-NL-001",
+      "field": "PROGDAT",
+      "fieldLabel": "Date of progression (RANO)",
+      "status": "abstained",
+      "value": "Not stated",
+      "normalizedValue": null,
+      "unit": null,
+      "confidence": 0.0,
+      "proposedCode": null,
+      "abstentionReason": "not_stated",
+      "sourceDocument": "assets/data/documents/DOC-001-MRI.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Universitair Medisch Centrum Zuidhaven - Afdeling Radiologie\n\nPATIENTCODE: GBM-NL-001\nONDERZOEK: MRI hersenen met contrast (postoperatief)\nDATUM: 2026-06-06\nAANVRAAG: postoperatieve staudevaluatie\n\nVERSLAG\nStatus na rechter frontale craniotomie. Er is een reseptiecaviteit zichtbaar\nzonder aantoonbaar residueel aankleurend tumorweefsel. Beoordeling: gross total\nresectie. Geen nieuwe laesies. Geen tekenen van hydrocephalus.\n\nEr is geen baseline RANO-meting van voor de operatie beschikbaar.\nProgressie kan met dit onderzoek niet worden vastgesteld.\n",
+      "spanStart": 561,
+      "spanEnd": 618,
+      "evidence": [
+        {
+          "start": 561,
+          "end": 618,
+          "text": "Progressie kan met dit onderzoek niet worden vastgesteld."
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": {
+        "kind": "abstention",
+        "note": "No RANO progression assessment exists in this document."
+      }
+    },
+    {
+      "id": "EXT-0009",
+      "documentId": "DOC-001-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-06-08",
+      "participantId": "GBM-NL-001",
+      "field": "SEX",
+      "fieldLabel": "Sex at birth",
+      "status": "proposed",
+      "value": "Female",
+      "normalizedValue": "F",
+      "unit": null,
+      "confidence": 0.99,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-001-DIS.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Universitair Medisch Centrum Zuidhaven - Afdeling Neuro-oncologie\n\nPATIENTCODE: GBM-NL-001\nGESLACHT: vrouw\nLEEFTIJD BIJ DIAGNOSE: 57 jaar\nDATUM OPNAME: 2026-06-01\nDATUM ONTSLAG: 2026-06-08\n\nONTSLAGBRIEF\nPatient werd opgenomen voor een rechter frontale craniotomie. Histopathologisch\nonderzoek toonde een glioblastoom, IDH-wildtype. Postoperatief beloop ongecompliceerd.\n\nFUNCTIONELE STATUS\nKarnofsky Performance Status bij ontslag: 80%.\n\nBELEID\nAdjuvante radiotherapie 60 Gy in 30 fracties met gelijktijdig temozolomide,\ngevolgd door 6 geplande cycli adjuvante temozolomide. De eerste cyclus start\nin week 5. Er zijn tot nu toe geen bijwerkingen van graad 3 of hoger opgetreden;\nmaximaal graad 2 vermoeidheid.\n",
+      "spanStart": 159,
+      "spanEnd": 174,
+      "evidence": [
+        {
+          "start": 159,
+          "end": 174,
+          "text": "GESLACHT: vrouw"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0010",
+      "documentId": "DOC-001-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-06-08",
+      "participantId": "GBM-NL-001",
+      "field": "AGE",
+      "fieldLabel": "Age at diagnosis (years)",
+      "status": "proposed",
+      "value": "57",
+      "normalizedValue": 57,
+      "unit": "years",
+      "confidence": 0.97,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-001-DIS.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Universitair Medisch Centrum Zuidhaven - Afdeling Neuro-oncologie\n\nPATIENTCODE: GBM-NL-001\nGESLACHT: vrouw\nLEEFTIJD BIJ DIAGNOSE: 57 jaar\nDATUM OPNAME: 2026-06-01\nDATUM ONTSLAG: 2026-06-08\n\nONTSLAGBRIEF\nPatient werd opgenomen voor een rechter frontale craniotomie. Histopathologisch\nonderzoek toonde een glioblastoom, IDH-wildtype. Postoperatief beloop ongecompliceerd.\n\nFUNCTIONELE STATUS\nKarnofsky Performance Status bij ontslag: 80%.\n\nBELEID\nAdjuvante radiotherapie 60 Gy in 30 fracties met gelijktijdig temozolomide,\ngevolgd door 6 geplande cycli adjuvante temozolomide. De eerste cyclus start\nin week 5. Er zijn tot nu toe geen bijwerkingen van graad 3 of hoger opgetreden;\nmaximaal graad 2 vermoeidheid.\n",
+      "spanStart": 175,
+      "spanEnd": 205,
+      "evidence": [
+        {
+          "start": 175,
+          "end": 205,
+          "text": "LEEFTIJD BIJ DIAGNOSE: 57 jaar"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0011",
+      "documentId": "DOC-001-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-06-08",
+      "participantId": "GBM-NL-001",
+      "field": "KPS",
+      "fieldLabel": "Karnofsky Performance Status",
+      "status": "proposed",
+      "value": "80",
+      "normalizedValue": 80,
+      "unit": "%",
+      "confidence": 0.9,
+      "proposedCode": {
+        "system": "LOINC",
+        "code": "89261-2",
+        "display": "Karnofsky Performance Status score",
+        "codeVerified": false
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-001-DIS.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Universitair Medisch Centrum Zuidhaven - Afdeling Neuro-oncologie\n\nPATIENTCODE: GBM-NL-001\nGESLACHT: vrouw\nLEEFTIJD BIJ DIAGNOSE: 57 jaar\nDATUM OPNAME: 2026-06-01\nDATUM ONTSLAG: 2026-06-08\n\nONTSLAGBRIEF\nPatient werd opgenomen voor een rechter frontale craniotomie. Histopathologisch\nonderzoek toonde een glioblastoom, IDH-wildtype. Postoperatief beloop ongecompliceerd.\n\nFUNCTIONELE STATUS\nKarnofsky Performance Status bij ontslag: 80%.\n\nBELEID\nAdjuvante radiotherapie 60 Gy in 30 fracties met gelijktijdig temozolomide,\ngevolgd door 6 geplande cycli adjuvante temozolomide. De eerste cyclus start\nin week 5. Er zijn tot nu toe geen bijwerkingen van graad 3 of hoger opgetreden;\nmaximaal graad 2 vermoeidheid.\n",
+      "spanStart": 458,
+      "spanEnd": 503,
+      "evidence": [
+        {
+          "start": 458,
+          "end": 503,
+          "text": "Karnofsky Performance Status bij ontslag: 80%"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0012",
+      "documentId": "DOC-001-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-06-08",
+      "participantId": "GBM-NL-001",
+      "field": "RTDOSE",
+      "fieldLabel": "Radiotherapy total dose",
+      "status": "proposed",
+      "value": "60",
+      "normalizedValue": 60,
+      "unit": "Gy",
+      "confidence": 0.96,
+      "proposedCode": {
+        "system": "UCUM",
+        "code": "Gy",
+        "display": "gray",
+        "codeVerified": true
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-001-DIS.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Universitair Medisch Centrum Zuidhaven - Afdeling Neuro-oncologie\n\nPATIENTCODE: GBM-NL-001\nGESLACHT: vrouw\nLEEFTIJD BIJ DIAGNOSE: 57 jaar\nDATUM OPNAME: 2026-06-01\nDATUM ONTSLAG: 2026-06-08\n\nONTSLAGBRIEF\nPatient werd opgenomen voor een rechter frontale craniotomie. Histopathologisch\nonderzoek toonde een glioblastoom, IDH-wildtype. Postoperatief beloop ongecompliceerd.\n\nFUNCTIONELE STATUS\nKarnofsky Performance Status bij ontslag: 80%.\n\nBELEID\nAdjuvante radiotherapie 60 Gy in 30 fracties met gelijktijdig temozolomide,\ngevolgd door 6 geplande cycli adjuvante temozolomide. De eerste cyclus start\nin week 5. Er zijn tot nu toe geen bijwerkingen van graad 3 of hoger opgetreden;\nmaximaal graad 2 vermoeidheid.\n",
+      "spanStart": 537,
+      "spanEnd": 557,
+      "evidence": [
+        {
+          "start": 537,
+          "end": 557,
+          "text": "60 Gy in 30 fracties"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0013",
+      "documentId": "DOC-001-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-06-08",
+      "participantId": "GBM-NL-001",
+      "field": "RTFRAC",
+      "fieldLabel": "Radiotherapy fractions",
+      "status": "proposed",
+      "value": "30",
+      "normalizedValue": 30,
+      "unit": "fractions",
+      "confidence": 0.96,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-001-DIS.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Universitair Medisch Centrum Zuidhaven - Afdeling Neuro-oncologie\n\nPATIENTCODE: GBM-NL-001\nGESLACHT: vrouw\nLEEFTIJD BIJ DIAGNOSE: 57 jaar\nDATUM OPNAME: 2026-06-01\nDATUM ONTSLAG: 2026-06-08\n\nONTSLAGBRIEF\nPatient werd opgenomen voor een rechter frontale craniotomie. Histopathologisch\nonderzoek toonde een glioblastoom, IDH-wildtype. Postoperatief beloop ongecompliceerd.\n\nFUNCTIONELE STATUS\nKarnofsky Performance Status bij ontslag: 80%.\n\nBELEID\nAdjuvante radiotherapie 60 Gy in 30 fracties met gelijktijdig temozolomide,\ngevolgd door 6 geplande cycli adjuvante temozolomide. De eerste cyclus start\nin week 5. Er zijn tot nu toe geen bijwerkingen van graad 3 of hoger opgetreden;\nmaximaal graad 2 vermoeidheid.\n",
+      "spanStart": 546,
+      "spanEnd": 557,
+      "evidence": [
+        {
+          "start": 546,
+          "end": 557,
+          "text": "30 fracties"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0014",
+      "documentId": "DOC-001-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-06-08",
+      "participantId": "GBM-NL-001",
+      "field": "TMZPLNC",
+      "fieldLabel": "Planned adjuvant temozolomide cycles",
+      "status": "proposed",
+      "value": "6",
+      "normalizedValue": 6,
+      "unit": "cycles",
+      "confidence": 0.89,
+      "proposedCode": {
+        "system": "ATC",
+        "code": "L01AX03",
+        "display": "temozolomide",
+        "codeVerified": true
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-001-DIS.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Universitair Medisch Centrum Zuidhaven - Afdeling Neuro-oncologie\n\nPATIENTCODE: GBM-NL-001\nGESLACHT: vrouw\nLEEFTIJD BIJ DIAGNOSE: 57 jaar\nDATUM OPNAME: 2026-06-01\nDATUM ONTSLAG: 2026-06-08\n\nONTSLAGBRIEF\nPatient werd opgenomen voor een rechter frontale craniotomie. Histopathologisch\nonderzoek toonde een glioblastoom, IDH-wildtype. Postoperatief beloop ongecompliceerd.\n\nFUNCTIONELE STATUS\nKarnofsky Performance Status bij ontslag: 80%.\n\nBELEID\nAdjuvante radiotherapie 60 Gy in 30 fracties met gelijktijdig temozolomide,\ngevolgd door 6 geplande cycli adjuvante temozolomide. De eerste cyclus start\nin week 5. Er zijn tot nu toe geen bijwerkingen van graad 3 of hoger opgetreden;\nmaximaal graad 2 vermoeidheid.\n",
+      "spanStart": 602,
+      "spanEnd": 618,
+      "evidence": [
+        {
+          "start": 602,
+          "end": 618,
+          "text": "6 geplande cycli"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0015",
+      "documentId": "DOC-001-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-06-08",
+      "participantId": "GBM-NL-001",
+      "field": "AEGRADE",
+      "fieldLabel": "Maximum adverse event grade (CTCAE v5.0)",
+      "status": "proposed",
+      "value": "2",
+      "normalizedValue": 2,
+      "unit": "grade",
+      "confidence": 0.84,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-001-DIS.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Universitair Medisch Centrum Zuidhaven - Afdeling Neuro-oncologie\n\nPATIENTCODE: GBM-NL-001\nGESLACHT: vrouw\nLEEFTIJD BIJ DIAGNOSE: 57 jaar\nDATUM OPNAME: 2026-06-01\nDATUM ONTSLAG: 2026-06-08\n\nONTSLAGBRIEF\nPatient werd opgenomen voor een rechter frontale craniotomie. Histopathologisch\nonderzoek toonde een glioblastoom, IDH-wildtype. Postoperatief beloop ongecompliceerd.\n\nFUNCTIONELE STATUS\nKarnofsky Performance Status bij ontslag: 80%.\n\nBELEID\nAdjuvante radiotherapie 60 Gy in 30 fracties met gelijktijdig temozolomide,\ngevolgd door 6 geplande cycli adjuvante temozolomide. De eerste cyclus start\nin week 5. Er zijn tot nu toe geen bijwerkingen van graad 3 of hoger opgetreden;\nmaximaal graad 2 vermoeidheid.\n",
+      "spanStart": 747,
+      "spanEnd": 776,
+      "evidence": [
+        {
+          "start": 747,
+          "end": 776,
+          "text": "maximaal graad 2 vermoeidheid"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0016",
+      "documentId": "DOC-002-PATH",
+      "documentType": "pathology_report",
+      "documentDate": "2026-05-08",
+      "participantId": "GBM-NL-002",
+      "field": "SUBJID",
+      "fieldLabel": "Subject identifier",
+      "status": "proposed",
+      "value": "GBM-NL-002",
+      "normalizedValue": "GBM-NL-002",
+      "unit": null,
+      "confidence": 0.99,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-002-PATH.txt",
+      "sourceText": "SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE\nFictional University Medical Center Northhaven - Department of Pathology\nReported by: Dr. R. Example (fictional)\n\nSUBJECT CODE: GBM-NL-002\nSPECIMEN RECEIVED: 2026-05-06\nREPORT DATE: 2026-05-08\nPROCEDURE: Resection specimen, left temporal lobe\n\nMICROSCOPY\nInfiltrating high-grade astrocytic tumour with necrosis and microvascular\nproliferation. IDH1 R132H immunohistochemistry is negative; sequencing shows\nno IDH1 or IDH2 mutation. MGMT promoter is unmethylated by pyrosequencing.\nATRX expression retained.\n\nDIAGNOSIS\nGlioblastoma, IDH-wildtype (WHO CNS5). ICD-O-3 morphology code 9440/3.\nMGMT promoter: unmethylated.\n",
+      "spanStart": 182,
+      "spanEnd": 192,
+      "evidence": [
+        {
+          "start": 182,
+          "end": 192,
+          "text": "GBM-NL-002"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0017",
+      "documentId": "DOC-002-PATH",
+      "documentType": "pathology_report",
+      "documentDate": "2026-05-08",
+      "participantId": "GBM-NL-002",
+      "field": "SITEID",
+      "fieldLabel": "Site identifier",
+      "status": "proposed",
+      "value": "SITE-02",
+      "normalizedValue": "SITE-02",
+      "unit": null,
+      "confidence": 0.98,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-002-PATH.txt",
+      "sourceText": "SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE\nFictional University Medical Center Northhaven - Department of Pathology\nReported by: Dr. R. Example (fictional)\n\nSUBJECT CODE: GBM-NL-002\nSPECIMEN RECEIVED: 2026-05-06\nREPORT DATE: 2026-05-08\nPROCEDURE: Resection specimen, left temporal lobe\n\nMICROSCOPY\nInfiltrating high-grade astrocytic tumour with necrosis and microvascular\nproliferation. IDH1 R132H immunohistochemistry is negative; sequencing shows\nno IDH1 or IDH2 mutation. MGMT promoter is unmethylated by pyrosequencing.\nATRX expression retained.\n\nDIAGNOSIS\nGlioblastoma, IDH-wildtype (WHO CNS5). ICD-O-3 morphology code 9440/3.\nMGMT promoter: unmethylated.\n",
+      "spanStart": 54,
+      "spanEnd": 100,
+      "evidence": [
+        {
+          "start": 54,
+          "end": 100,
+          "text": "Fictional University Medical Center Northhaven"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0018",
+      "documentId": "DOC-002-PATH",
+      "documentType": "pathology_report",
+      "documentDate": "2026-05-08",
+      "participantId": "GBM-NL-002",
+      "field": "HISTOLOGY",
+      "fieldLabel": "Histology (central review)",
+      "status": "proposed",
+      "value": "Glioblastoma, IDH-wildtype",
+      "normalizedValue": "glioblastoma_idh_wildtype",
+      "unit": null,
+      "confidence": 0.97,
+      "proposedCode": {
+        "system": "ICD-O-3",
+        "code": "9440/3",
+        "display": "Glioblastoma, NOS",
+        "codeVerified": true,
+        "equivalent": [
+          {
+            "system": "SNOMED CT",
+            "code": "393563007",
+            "display": "Glioblastoma (morphologic abnormality)",
+            "codeVerified": false
+          }
+        ]
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-002-PATH.txt",
+      "sourceText": "SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE\nFictional University Medical Center Northhaven - Department of Pathology\nReported by: Dr. R. Example (fictional)\n\nSUBJECT CODE: GBM-NL-002\nSPECIMEN RECEIVED: 2026-05-06\nREPORT DATE: 2026-05-08\nPROCEDURE: Resection specimen, left temporal lobe\n\nMICROSCOPY\nInfiltrating high-grade astrocytic tumour with necrosis and microvascular\nproliferation. IDH1 R132H immunohistochemistry is negative; sequencing shows\nno IDH1 or IDH2 mutation. MGMT promoter is unmethylated by pyrosequencing.\nATRX expression retained.\n\nDIAGNOSIS\nGlioblastoma, IDH-wildtype (WHO CNS5). ICD-O-3 morphology code 9440/3.\nMGMT promoter: unmethylated.\n",
+      "spanStart": 572,
+      "spanEnd": 598,
+      "evidence": [
+        {
+          "start": 572,
+          "end": 598,
+          "text": "Glioblastoma, IDH-wildtype"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0019",
+      "documentId": "DOC-002-PATH",
+      "documentType": "pathology_report",
+      "documentDate": "2026-05-08",
+      "participantId": "GBM-NL-002",
+      "field": "IDHSTAT",
+      "fieldLabel": "IDH1/2 mutation status",
+      "status": "proposed",
+      "value": "IDH-wildtype",
+      "normalizedValue": "wildtype",
+      "unit": null,
+      "confidence": 0.95,
+      "proposedCode": {
+        "system": "SNOMED CT",
+        "code": "445048000",
+        "display": "IDH1 wild type",
+        "codeVerified": false
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-002-PATH.txt",
+      "sourceText": "SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE\nFictional University Medical Center Northhaven - Department of Pathology\nReported by: Dr. R. Example (fictional)\n\nSUBJECT CODE: GBM-NL-002\nSPECIMEN RECEIVED: 2026-05-06\nREPORT DATE: 2026-05-08\nPROCEDURE: Resection specimen, left temporal lobe\n\nMICROSCOPY\nInfiltrating high-grade astrocytic tumour with necrosis and microvascular\nproliferation. IDH1 R132H immunohistochemistry is negative; sequencing shows\nno IDH1 or IDH2 mutation. MGMT promoter is unmethylated by pyrosequencing.\nATRX expression retained.\n\nDIAGNOSIS\nGlioblastoma, IDH-wildtype (WHO CNS5). ICD-O-3 morphology code 9440/3.\nMGMT promoter: unmethylated.\n",
+      "spanStart": 398,
+      "spanEnd": 441,
+      "evidence": [
+        {
+          "start": 398,
+          "end": 441,
+          "text": "IDH1 R132H immunohistochemistry is negative"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0020",
+      "documentId": "DOC-002-PATH",
+      "documentType": "pathology_report",
+      "documentDate": "2026-05-08",
+      "participantId": "GBM-NL-002",
+      "field": "MGMTPROM",
+      "fieldLabel": "MGMT promoter methylation",
+      "status": "proposed",
+      "value": "Methylated",
+      "normalizedValue": "methylated",
+      "unit": null,
+      "confidence": 0.72,
+      "proposedCode": {
+        "system": "LOINC",
+        "code": "88199-1",
+        "display": "MGMT promoter methylation [Presence] in Tissue",
+        "codeVerified": false
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-002-PATH.txt",
+      "sourceText": "SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE\nFictional University Medical Center Northhaven - Department of Pathology\nReported by: Dr. R. Example (fictional)\n\nSUBJECT CODE: GBM-NL-002\nSPECIMEN RECEIVED: 2026-05-06\nREPORT DATE: 2026-05-08\nPROCEDURE: Resection specimen, left temporal lobe\n\nMICROSCOPY\nInfiltrating high-grade astrocytic tumour with necrosis and microvascular\nproliferation. IDH1 R132H immunohistochemistry is negative; sequencing shows\nno IDH1 or IDH2 mutation. MGMT promoter is unmethylated by pyrosequencing.\nATRX expression retained.\n\nDIAGNOSIS\nGlioblastoma, IDH-wildtype (WHO CNS5). ICD-O-3 morphology code 9440/3.\nMGMT promoter: unmethylated.\n",
+      "spanStart": 486,
+      "spanEnd": 515,
+      "evidence": [
+        {
+          "start": 486,
+          "end": 515,
+          "text": "MGMT promoter is unmethylated"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": {
+        "kind": "wrong_value",
+        "expectedCorrectValue": "unmethylated",
+        "expectedCorrectDisplay": "Unmethylated",
+        "note": "Deliberate demo case: the proposal contradicts the highlighted evidence. Reviewer must correct it to unmethylated."
+      }
+    },
+    {
+      "id": "EXT-0021",
+      "documentId": "DOC-002-PATH",
+      "documentType": "pathology_report",
+      "documentDate": "2026-05-08",
+      "participantId": "GBM-NL-002",
+      "field": "MHSTDAT",
+      "fieldLabel": "Date of diagnosis",
+      "status": "proposed",
+      "value": "2026-05-06",
+      "normalizedValue": "2026-05-06",
+      "unit": null,
+      "confidence": 0.92,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-002-PATH.txt",
+      "sourceText": "SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE\nFictional University Medical Center Northhaven - Department of Pathology\nReported by: Dr. R. Example (fictional)\n\nSUBJECT CODE: GBM-NL-002\nSPECIMEN RECEIVED: 2026-05-06\nREPORT DATE: 2026-05-08\nPROCEDURE: Resection specimen, left temporal lobe\n\nMICROSCOPY\nInfiltrating high-grade astrocytic tumour with necrosis and microvascular\nproliferation. IDH1 R132H immunohistochemistry is negative; sequencing shows\nno IDH1 or IDH2 mutation. MGMT promoter is unmethylated by pyrosequencing.\nATRX expression retained.\n\nDIAGNOSIS\nGlioblastoma, IDH-wildtype (WHO CNS5). ICD-O-3 morphology code 9440/3.\nMGMT promoter: unmethylated.\n",
+      "spanStart": 193,
+      "spanEnd": 222,
+      "evidence": [
+        {
+          "start": 193,
+          "end": 222,
+          "text": "SPECIMEN RECEIVED: 2026-05-06"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0022",
+      "documentId": "DOC-002-MRI",
+      "documentType": "radiology_report",
+      "documentDate": "2026-05-12",
+      "participantId": "GBM-NL-002",
+      "field": "EXTRES",
+      "fieldLabel": "Extent of resection",
+      "status": "proposed",
+      "value": "Subtotal resection",
+      "normalizedValue": "subtotal",
+      "unit": null,
+      "confidence": 0.38,
+      "proposedCode": {
+        "system": "SNOMED CT",
+        "code": "262143007",
+        "display": "Extent of surgical resection",
+        "codeVerified": false
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-002-MRI.txt",
+      "sourceText": "SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE\nFictional University Medical Center Northhaven - Department of Radiology\n\nSUBJECT CODE: GBM-NL-002\nEXAMINATION: MRI brain with contrast (post-operative)\nDATE: 2026-05-12\n\nFINDINGS\nStatus post left temporal craniotomy. There is a thin rim of enhancement along\nthe resection cavity. The extent of resection is probably subtotal; a small\nresidual area may be present, although post-surgical change cannot be excluded.\n\nNo hydrocephalus. No new distant lesions.\n\nIMPRESSION\nProbable subtotal resection. RANO assessment is not available for this timepoint.\n",
+      "spanStart": 362,
+      "spanEnd": 379,
+      "evidence": [
+        {
+          "start": 362,
+          "end": 379,
+          "text": "probably subtotal"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": {
+        "kind": "low_confidence",
+        "note": "Hedged wording ('probably subtotal'). Reviewer must verify against the operative note."
+      }
+    },
+    {
+      "id": "EXT-0023",
+      "documentId": "DOC-002-MRI",
+      "documentType": "radiology_report",
+      "documentDate": "2026-05-12",
+      "participantId": "GBM-NL-002",
+      "field": "PROGDAT",
+      "fieldLabel": "Date of progression (RANO)",
+      "status": "abstained",
+      "value": "Not stated",
+      "normalizedValue": null,
+      "unit": null,
+      "confidence": 0.0,
+      "proposedCode": null,
+      "abstentionReason": "not_stated",
+      "sourceDocument": "assets/data/documents/DOC-002-MRI.txt",
+      "sourceText": "SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE\nFictional University Medical Center Northhaven - Department of Radiology\n\nSUBJECT CODE: GBM-NL-002\nEXAMINATION: MRI brain with contrast (post-operative)\nDATE: 2026-05-12\n\nFINDINGS\nStatus post left temporal craniotomy. There is a thin rim of enhancement along\nthe resection cavity. The extent of resection is probably subtotal; a small\nresidual area may be present, although post-surgical change cannot be excluded.\n\nNo hydrocephalus. No new distant lesions.\n\nIMPRESSION\nProbable subtotal resection. RANO assessment is not available for this timepoint.\n",
+      "spanStart": 553,
+      "spanEnd": 605,
+      "evidence": [
+        {
+          "start": 553,
+          "end": 605,
+          "text": "RANO assessment is not available for this timepoint."
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": {
+        "kind": "abstention",
+        "note": "No RANO progression assessment in this report."
+      }
+    },
+    {
+      "id": "EXT-0024",
+      "documentId": "DOC-002-SURG",
+      "documentType": "operative_report",
+      "documentDate": "2026-05-05",
+      "participantId": "GBM-NL-002",
+      "field": "EXTRES",
+      "fieldLabel": "Extent of resection",
+      "status": "proposed",
+      "value": "Subtotal resection",
+      "normalizedValue": "subtotal",
+      "unit": null,
+      "confidence": 0.93,
+      "proposedCode": {
+        "system": "SNOMED CT",
+        "code": "262143007",
+        "display": "Extent of surgical resection",
+        "codeVerified": false
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-002-SURG.txt",
+      "sourceText": "SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE\nFictional University Medical Center Northhaven - Department of Neurosurgery\n\nSUBJECT CODE: GBM-NL-002\nPROCEDURE: Left temporal craniotomy and tumour resection\nDATE: 2026-05-05\n\nOPERATIVE NOTE\nNeuronavigation was used. Macroscopically, a subtotal resection was achieved\nbecause the tumour involved the eloquent cortex. Residual tumour was left in\nplace intentionally. Estimated blood loss 250 mL. No intra-operative\ncomplications.\n",
+      "spanStart": 291,
+      "spanEnd": 322,
+      "evidence": [
+        {
+          "start": 291,
+          "end": 322,
+          "text": "subtotal resection was achieved"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0025",
+      "documentId": "DOC-002-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-05-09",
+      "participantId": "GBM-NL-002",
+      "field": "SEX",
+      "fieldLabel": "Sex at birth",
+      "status": "proposed",
+      "value": "Male",
+      "normalizedValue": "M",
+      "unit": null,
+      "confidence": 0.99,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-002-DIS.txt",
+      "sourceText": "SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE\nFictional University Medical Center Northhaven - Department of Neuro-Oncology\n\nSUBJECT CODE: GBM-NL-002\nSEX: male\nAGE AT DIAGNOSIS: 64 years\nADMISSION DATE: 2026-05-04\nDISCHARGE DATE: 2026-05-09\n\nDISCHARGE SUMMARY\nThe patient underwent a left temporal craniotomy with subtotal resection of a\nglioblastoma, IDH-wildtype. Post-operative course was uneventful.\n\nFUNCTIONAL STATUS\nKarnofsky Performance Status at discharge: 70%.\n\nPLAN\nAdjuvant radiotherapy 60 Gy in 30 fractions with concurrent temozolomide,\nfollowed by 6 planned adjuvant temozolomide cycles. No adverse events above\ngrade 1 fatigue have been recorded.\n",
+      "spanStart": 158,
+      "spanEnd": 167,
+      "evidence": [
+        {
+          "start": 158,
+          "end": 167,
+          "text": "SEX: male"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0026",
+      "documentId": "DOC-002-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-05-09",
+      "participantId": "GBM-NL-002",
+      "field": "AGE",
+      "fieldLabel": "Age at diagnosis (years)",
+      "status": "proposed",
+      "value": "64",
+      "normalizedValue": 64,
+      "unit": "years",
+      "confidence": 0.97,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-002-DIS.txt",
+      "sourceText": "SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE\nFictional University Medical Center Northhaven - Department of Neuro-Oncology\n\nSUBJECT CODE: GBM-NL-002\nSEX: male\nAGE AT DIAGNOSIS: 64 years\nADMISSION DATE: 2026-05-04\nDISCHARGE DATE: 2026-05-09\n\nDISCHARGE SUMMARY\nThe patient underwent a left temporal craniotomy with subtotal resection of a\nglioblastoma, IDH-wildtype. Post-operative course was uneventful.\n\nFUNCTIONAL STATUS\nKarnofsky Performance Status at discharge: 70%.\n\nPLAN\nAdjuvant radiotherapy 60 Gy in 30 fractions with concurrent temozolomide,\nfollowed by 6 planned adjuvant temozolomide cycles. No adverse events above\ngrade 1 fatigue have been recorded.\n",
+      "spanStart": 168,
+      "spanEnd": 194,
+      "evidence": [
+        {
+          "start": 168,
+          "end": 194,
+          "text": "AGE AT DIAGNOSIS: 64 years"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0027",
+      "documentId": "DOC-002-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-05-09",
+      "participantId": "GBM-NL-002",
+      "field": "KPS",
+      "fieldLabel": "Karnofsky Performance Status",
+      "status": "proposed",
+      "value": "70",
+      "normalizedValue": 70,
+      "unit": "%",
+      "confidence": 0.9,
+      "proposedCode": {
+        "system": "LOINC",
+        "code": "89261-2",
+        "display": "Karnofsky Performance Status score",
+        "codeVerified": false
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-002-DIS.txt",
+      "sourceText": "SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE\nFictional University Medical Center Northhaven - Department of Neuro-Oncology\n\nSUBJECT CODE: GBM-NL-002\nSEX: male\nAGE AT DIAGNOSIS: 64 years\nADMISSION DATE: 2026-05-04\nDISCHARGE DATE: 2026-05-09\n\nDISCHARGE SUMMARY\nThe patient underwent a left temporal craniotomy with subtotal resection of a\nglioblastoma, IDH-wildtype. Post-operative course was uneventful.\n\nFUNCTIONAL STATUS\nKarnofsky Performance Status at discharge: 70%.\n\nPLAN\nAdjuvant radiotherapy 60 Gy in 30 fractions with concurrent temozolomide,\nfollowed by 6 planned adjuvant temozolomide cycles. No adverse events above\ngrade 1 fatigue have been recorded.\n",
+      "spanStart": 431,
+      "spanEnd": 477,
+      "evidence": [
+        {
+          "start": 431,
+          "end": 477,
+          "text": "Karnofsky Performance Status at discharge: 70%"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0028",
+      "documentId": "DOC-002-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-05-09",
+      "participantId": "GBM-NL-002",
+      "field": "RTDOSE",
+      "fieldLabel": "Radiotherapy total dose",
+      "status": "proposed",
+      "value": "60",
+      "normalizedValue": 60,
+      "unit": "Gy",
+      "confidence": 0.96,
+      "proposedCode": {
+        "system": "UCUM",
+        "code": "Gy",
+        "display": "gray",
+        "codeVerified": true
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-002-DIS.txt",
+      "sourceText": "SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE\nFictional University Medical Center Northhaven - Department of Neuro-Oncology\n\nSUBJECT CODE: GBM-NL-002\nSEX: male\nAGE AT DIAGNOSIS: 64 years\nADMISSION DATE: 2026-05-04\nDISCHARGE DATE: 2026-05-09\n\nDISCHARGE SUMMARY\nThe patient underwent a left temporal craniotomy with subtotal resection of a\nglioblastoma, IDH-wildtype. Post-operative course was uneventful.\n\nFUNCTIONAL STATUS\nKarnofsky Performance Status at discharge: 70%.\n\nPLAN\nAdjuvant radiotherapy 60 Gy in 30 fractions with concurrent temozolomide,\nfollowed by 6 planned adjuvant temozolomide cycles. No adverse events above\ngrade 1 fatigue have been recorded.\n",
+      "spanStart": 507,
+      "spanEnd": 528,
+      "evidence": [
+        {
+          "start": 507,
+          "end": 528,
+          "text": "60 Gy in 30 fractions"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0029",
+      "documentId": "DOC-002-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-05-09",
+      "participantId": "GBM-NL-002",
+      "field": "RTFRAC",
+      "fieldLabel": "Radiotherapy fractions",
+      "status": "proposed",
+      "value": "30",
+      "normalizedValue": 30,
+      "unit": "fractions",
+      "confidence": 0.96,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-002-DIS.txt",
+      "sourceText": "SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE\nFictional University Medical Center Northhaven - Department of Neuro-Oncology\n\nSUBJECT CODE: GBM-NL-002\nSEX: male\nAGE AT DIAGNOSIS: 64 years\nADMISSION DATE: 2026-05-04\nDISCHARGE DATE: 2026-05-09\n\nDISCHARGE SUMMARY\nThe patient underwent a left temporal craniotomy with subtotal resection of a\nglioblastoma, IDH-wildtype. Post-operative course was uneventful.\n\nFUNCTIONAL STATUS\nKarnofsky Performance Status at discharge: 70%.\n\nPLAN\nAdjuvant radiotherapy 60 Gy in 30 fractions with concurrent temozolomide,\nfollowed by 6 planned adjuvant temozolomide cycles. No adverse events above\ngrade 1 fatigue have been recorded.\n",
+      "spanStart": 516,
+      "spanEnd": 528,
+      "evidence": [
+        {
+          "start": 516,
+          "end": 528,
+          "text": "30 fractions"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0030",
+      "documentId": "DOC-002-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-05-09",
+      "participantId": "GBM-NL-002",
+      "field": "TMZPLNC",
+      "fieldLabel": "Planned adjuvant temozolomide cycles",
+      "status": "proposed",
+      "value": "6",
+      "normalizedValue": 6,
+      "unit": "cycles",
+      "confidence": 0.88,
+      "proposedCode": {
+        "system": "ATC",
+        "code": "L01AX03",
+        "display": "temozolomide",
+        "codeVerified": true
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-002-DIS.txt",
+      "sourceText": "SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE\nFictional University Medical Center Northhaven - Department of Neuro-Oncology\n\nSUBJECT CODE: GBM-NL-002\nSEX: male\nAGE AT DIAGNOSIS: 64 years\nADMISSION DATE: 2026-05-04\nDISCHARGE DATE: 2026-05-09\n\nDISCHARGE SUMMARY\nThe patient underwent a left temporal craniotomy with subtotal resection of a\nglioblastoma, IDH-wildtype. Post-operative course was uneventful.\n\nFUNCTIONAL STATUS\nKarnofsky Performance Status at discharge: 70%.\n\nPLAN\nAdjuvant radiotherapy 60 Gy in 30 fractions with concurrent temozolomide,\nfollowed by 6 planned adjuvant temozolomide cycles. No adverse events above\ngrade 1 fatigue have been recorded.\n",
+      "spanStart": 571,
+      "spanEnd": 609,
+      "evidence": [
+        {
+          "start": 571,
+          "end": 609,
+          "text": "6 planned adjuvant temozolomide cycles"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0031",
+      "documentId": "DOC-002-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-05-09",
+      "participantId": "GBM-NL-002",
+      "field": "AEGRADE",
+      "fieldLabel": "Maximum adverse event grade (CTCAE v5.0)",
+      "status": "proposed",
+      "value": "1",
+      "normalizedValue": 1,
+      "unit": "grade",
+      "confidence": 0.82,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-002-DIS.txt",
+      "sourceText": "SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE\nFictional University Medical Center Northhaven - Department of Neuro-Oncology\n\nSUBJECT CODE: GBM-NL-002\nSEX: male\nAGE AT DIAGNOSIS: 64 years\nADMISSION DATE: 2026-05-04\nDISCHARGE DATE: 2026-05-09\n\nDISCHARGE SUMMARY\nThe patient underwent a left temporal craniotomy with subtotal resection of a\nglioblastoma, IDH-wildtype. Post-operative course was uneventful.\n\nFUNCTIONAL STATUS\nKarnofsky Performance Status at discharge: 70%.\n\nPLAN\nAdjuvant radiotherapy 60 Gy in 30 fractions with concurrent temozolomide,\nfollowed by 6 planned adjuvant temozolomide cycles. No adverse events above\ngrade 1 fatigue have been recorded.\n",
+      "spanStart": 635,
+      "spanEnd": 650,
+      "evidence": [
+        {
+          "start": 635,
+          "end": 650,
+          "text": "grade 1 fatigue"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0032",
+      "documentId": "DOC-003-PATH",
+      "documentType": "pathology_report",
+      "documentDate": "2026-08-22",
+      "participantId": "GBM-NL-003",
+      "field": "SUBJID",
+      "fieldLabel": "Subject identifier",
+      "status": "proposed",
+      "value": "GBM-NL-003",
+      "normalizedValue": "GBM-NL-003",
+      "unit": null,
+      "confidence": 0.99,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-003-PATH.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Streekziekenhuis Westpark - Laboratorium Pathologie\n\nPATIENTCODE: GBM-NL-003\nDATUM ONTVANGST: 2026-08-19\nDATUM VERSLAG: 2026-08-22\nONDERZOEK: Resectiepreparaat, links parietaal\n\nMICROSCOPIE\nHooggradig astrocytair glioom met necrose. IDH1 R132H negatief.\nMGMT-promotermethylering: niet gemethyleerd.\n\nCONCLUSIE\nGlioblastoom, IDH-wildtype (WHO CNS5), ICD-O-3 9440/3.\n",
+      "spanStart": 134,
+      "spanEnd": 144,
+      "evidence": [
+        {
+          "start": 134,
+          "end": 144,
+          "text": "GBM-NL-003"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0033",
+      "documentId": "DOC-003-PATH",
+      "documentType": "pathology_report",
+      "documentDate": "2026-08-22",
+      "participantId": "GBM-NL-003",
+      "field": "SITEID",
+      "fieldLabel": "Site identifier",
+      "status": "proposed",
+      "value": "SITE-03",
+      "normalizedValue": "SITE-03",
+      "unit": null,
+      "confidence": 0.98,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-003-PATH.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Streekziekenhuis Westpark - Laboratorium Pathologie\n\nPATIENTCODE: GBM-NL-003\nDATUM ONTVANGST: 2026-08-19\nDATUM VERSLAG: 2026-08-22\nONDERZOEK: Resectiepreparaat, links parietaal\n\nMICROSCOPIE\nHooggradig astrocytair glioom met necrose. IDH1 R132H negatief.\nMGMT-promotermethylering: niet gemethyleerd.\n\nCONCLUSIE\nGlioblastoom, IDH-wildtype (WHO CNS5), ICD-O-3 9440/3.\n",
+      "spanStart": 60,
+      "spanEnd": 93,
+      "evidence": [
+        {
+          "start": 60,
+          "end": 93,
+          "text": "Fictief Streekziekenhuis Westpark"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0034",
+      "documentId": "DOC-003-PATH",
+      "documentType": "pathology_report",
+      "documentDate": "2026-08-22",
+      "participantId": "GBM-NL-003",
+      "field": "HISTOLOGY",
+      "fieldLabel": "Histology (central review)",
+      "status": "proposed",
+      "value": "Glioblastoma, IDH-wildtype",
+      "normalizedValue": "glioblastoma_idh_wildtype",
+      "unit": null,
+      "confidence": 0.95,
+      "proposedCode": {
+        "system": "ICD-O-3",
+        "code": "9440/3",
+        "display": "Glioblastoma, NOS",
+        "codeVerified": true,
+        "equivalent": [
+          {
+            "system": "SNOMED CT",
+            "code": "393563007",
+            "display": "Glioblastoma (morphologic abnormality)",
+            "codeVerified": false
+          }
+        ]
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-003-PATH.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Streekziekenhuis Westpark - Laboratorium Pathologie\n\nPATIENTCODE: GBM-NL-003\nDATUM ONTVANGST: 2026-08-19\nDATUM VERSLAG: 2026-08-22\nONDERZOEK: Resectiepreparaat, links parietaal\n\nMICROSCOPIE\nHooggradig astrocytair glioom met necrose. IDH1 R132H negatief.\nMGMT-promotermethylering: niet gemethyleerd.\n\nCONCLUSIE\nGlioblastoom, IDH-wildtype (WHO CNS5), ICD-O-3 9440/3.\n",
+      "spanStart": 378,
+      "spanEnd": 404,
+      "evidence": [
+        {
+          "start": 378,
+          "end": 404,
+          "text": "Glioblastoom, IDH-wildtype"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0035",
+      "documentId": "DOC-003-PATH",
+      "documentType": "pathology_report",
+      "documentDate": "2026-08-22",
+      "participantId": "GBM-NL-003",
+      "field": "IDHSTAT",
+      "fieldLabel": "IDH1/2 mutation status",
+      "status": "proposed",
+      "value": "IDH-wildtype",
+      "normalizedValue": "wildtype",
+      "unit": null,
+      "confidence": 0.9,
+      "proposedCode": {
+        "system": "SNOMED CT",
+        "code": "445048000",
+        "display": "IDH1 wild type",
+        "codeVerified": false
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-003-PATH.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Streekziekenhuis Westpark - Laboratorium Pathologie\n\nPATIENTCODE: GBM-NL-003\nDATUM ONTVANGST: 2026-08-19\nDATUM VERSLAG: 2026-08-22\nONDERZOEK: Resectiepreparaat, links parietaal\n\nMICROSCOPIE\nHooggradig astrocytair glioom met necrose. IDH1 R132H negatief.\nMGMT-promotermethylering: niet gemethyleerd.\n\nCONCLUSIE\nGlioblastoom, IDH-wildtype (WHO CNS5), ICD-O-3 9440/3.\n",
+      "spanStart": 301,
+      "spanEnd": 320,
+      "evidence": [
+        {
+          "start": 301,
+          "end": 320,
+          "text": "IDH1 R132H negatief"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0036",
+      "documentId": "DOC-003-PATH",
+      "documentType": "pathology_report",
+      "documentDate": "2026-08-22",
+      "participantId": "GBM-NL-003",
+      "field": "MGMTPROM",
+      "fieldLabel": "MGMT promoter methylation",
+      "status": "proposed",
+      "value": "Unmethylated",
+      "normalizedValue": "unmethylated",
+      "unit": null,
+      "confidence": 0.88,
+      "proposedCode": {
+        "system": "LOINC",
+        "code": "88199-1",
+        "display": "MGMT promoter methylation [Presence] in Tissue",
+        "codeVerified": false
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-003-PATH.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Streekziekenhuis Westpark - Laboratorium Pathologie\n\nPATIENTCODE: GBM-NL-003\nDATUM ONTVANGST: 2026-08-19\nDATUM VERSLAG: 2026-08-22\nONDERZOEK: Resectiepreparaat, links parietaal\n\nMICROSCOPIE\nHooggradig astrocytair glioom met necrose. IDH1 R132H negatief.\nMGMT-promotermethylering: niet gemethyleerd.\n\nCONCLUSIE\nGlioblastoom, IDH-wildtype (WHO CNS5), ICD-O-3 9440/3.\n",
+      "spanStart": 348,
+      "spanEnd": 365,
+      "evidence": [
+        {
+          "start": 348,
+          "end": 365,
+          "text": "niet gemethyleerd"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0037",
+      "documentId": "DOC-003-PATH",
+      "documentType": "pathology_report",
+      "documentDate": "2026-08-22",
+      "participantId": "GBM-NL-003",
+      "field": "MHSTDAT",
+      "fieldLabel": "Date of diagnosis",
+      "status": "proposed",
+      "value": "2026-08-19",
+      "normalizedValue": "2026-08-19",
+      "unit": null,
+      "confidence": 0.9,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-003-PATH.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Streekziekenhuis Westpark - Laboratorium Pathologie\n\nPATIENTCODE: GBM-NL-003\nDATUM ONTVANGST: 2026-08-19\nDATUM VERSLAG: 2026-08-22\nONDERZOEK: Resectiepreparaat, links parietaal\n\nMICROSCOPIE\nHooggradig astrocytair glioom met necrose. IDH1 R132H negatief.\nMGMT-promotermethylering: niet gemethyleerd.\n\nCONCLUSIE\nGlioblastoom, IDH-wildtype (WHO CNS5), ICD-O-3 9440/3.\n",
+      "spanStart": 145,
+      "spanEnd": 172,
+      "evidence": [
+        {
+          "start": 145,
+          "end": 172,
+          "text": "DATUM ONTVANGST: 2026-08-19"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0038",
+      "documentId": "DOC-003-MRI",
+      "documentType": "radiology_report",
+      "documentDate": "2026-08-25",
+      "participantId": "GBM-NL-003",
+      "field": "EXTRES",
+      "fieldLabel": "Extent of resection",
+      "status": "proposed",
+      "value": "Subtotal resection",
+      "normalizedValue": "subtotal",
+      "unit": null,
+      "confidence": 0.87,
+      "proposedCode": {
+        "system": "SNOMED CT",
+        "code": "262143007",
+        "display": "Extent of surgical resection",
+        "codeVerified": false
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-003-MRI.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Streekziekenhuis Westpark - Afdeling Radiologie\n\nPATIENTCODE: GBM-NL-003\nONDERZOEK: MRI hersenen met contrast\nDATUM: 2026-08-25\n\nVERSLAG\nPostoperatieve situatie na links parietale craniotomie. Subtotale resectie met\neen klein residueel contrast-aankleurend gebied. Geen tekenen van progressie.\nEen RANO-beoordeling is voor dit tijdstip nog niet verricht.\n",
+      "spanStart": 261,
+      "spanEnd": 279,
+      "evidence": [
+        {
+          "start": 261,
+          "end": 279,
+          "text": "Subtotale resectie"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0039",
+      "documentId": "DOC-003-MRI",
+      "documentType": "radiology_report",
+      "documentDate": "2026-08-25",
+      "participantId": "GBM-NL-003",
+      "field": "PROGDAT",
+      "fieldLabel": "Date of progression (RANO)",
+      "status": "abstained",
+      "value": "Not stated",
+      "normalizedValue": null,
+      "unit": null,
+      "confidence": 0.0,
+      "proposedCode": null,
+      "abstentionReason": "not_stated",
+      "sourceDocument": "assets/data/documents/DOC-003-MRI.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Streekziekenhuis Westpark - Afdeling Radiologie\n\nPATIENTCODE: GBM-NL-003\nONDERZOEK: MRI hersenen met contrast\nDATUM: 2026-08-25\n\nVERSLAG\nPostoperatieve situatie na links parietale craniotomie. Subtotale resectie met\neen klein residueel contrast-aankleurend gebied. Geen tekenen van progressie.\nEen RANO-beoordeling is voor dit tijdstip nog niet verricht.\n",
+      "spanStart": 362,
+      "spanEnd": 422,
+      "evidence": [
+        {
+          "start": 362,
+          "end": 422,
+          "text": "Een RANO-beoordeling is voor dit tijdstip nog niet verricht."
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": {
+        "kind": "abstention",
+        "note": "Primary demo abstention: no RANO assessment has been performed yet."
+      }
+    },
+    {
+      "id": "EXT-0040",
+      "documentId": "DOC-003-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-08-26",
+      "participantId": "GBM-NL-003",
+      "field": "SEX",
+      "fieldLabel": "Sex at birth",
+      "status": "proposed",
+      "value": "Male",
+      "normalizedValue": "M",
+      "unit": null,
+      "confidence": 0.99,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-003-DIS.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Streekziekenhuis Westpark - Afdeling Neurologie\n\nPATIENTCODE: GBM-NL-003\nGESLACHT: man\nLEEFTIJD BIJ DIAGNOSE: 61 jaar\nDATUM OPNAME: 2026-08-18\nDATUM ONTSLAG: 2026-08-26\n\nONTSLAGBRIEF\nOpname voor links parietale craniotomie. Histologie: glioblastoom, IDH-wildtype.\nPostoperatief beloop zonder complicaties.\n\nFUNCTIONELE STATUS\nKarnofsky Performance Status bij ontslag: 90%.\n\nBELEID\nRadiotherapie 60 Gy in 30 fracties met gelijktijdig temozolomide. Aansluitend\n6 geplande cycli adjuvante temozolomide. Tijdens opname graad 1 hoofdpijn,\ngeen graad 3 of hoger.\n",
+      "spanStart": 141,
+      "spanEnd": 154,
+      "evidence": [
+        {
+          "start": 141,
+          "end": 154,
+          "text": "GESLACHT: man"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0041",
+      "documentId": "DOC-003-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-08-26",
+      "participantId": "GBM-NL-003",
+      "field": "AGE",
+      "fieldLabel": "Age at diagnosis (years)",
+      "status": "proposed",
+      "value": "61",
+      "normalizedValue": 61,
+      "unit": "years",
+      "confidence": 0.97,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-003-DIS.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Streekziekenhuis Westpark - Afdeling Neurologie\n\nPATIENTCODE: GBM-NL-003\nGESLACHT: man\nLEEFTIJD BIJ DIAGNOSE: 61 jaar\nDATUM OPNAME: 2026-08-18\nDATUM ONTSLAG: 2026-08-26\n\nONTSLAGBRIEF\nOpname voor links parietale craniotomie. Histologie: glioblastoom, IDH-wildtype.\nPostoperatief beloop zonder complicaties.\n\nFUNCTIONELE STATUS\nKarnofsky Performance Status bij ontslag: 90%.\n\nBELEID\nRadiotherapie 60 Gy in 30 fracties met gelijktijdig temozolomide. Aansluitend\n6 geplande cycli adjuvante temozolomide. Tijdens opname graad 1 hoofdpijn,\ngeen graad 3 of hoger.\n",
+      "spanStart": 155,
+      "spanEnd": 185,
+      "evidence": [
+        {
+          "start": 155,
+          "end": 185,
+          "text": "LEEFTIJD BIJ DIAGNOSE: 61 jaar"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0042",
+      "documentId": "DOC-003-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-08-26",
+      "participantId": "GBM-NL-003",
+      "field": "KPS",
+      "fieldLabel": "Karnofsky Performance Status",
+      "status": "proposed",
+      "value": "90",
+      "normalizedValue": 90,
+      "unit": "%",
+      "confidence": 0.86,
+      "proposedCode": {
+        "system": "LOINC",
+        "code": "89261-2",
+        "display": "Karnofsky Performance Status score",
+        "codeVerified": false
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-003-DIS.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Streekziekenhuis Westpark - Afdeling Neurologie\n\nPATIENTCODE: GBM-NL-003\nGESLACHT: man\nLEEFTIJD BIJ DIAGNOSE: 61 jaar\nDATUM OPNAME: 2026-08-18\nDATUM ONTSLAG: 2026-08-26\n\nONTSLAGBRIEF\nOpname voor links parietale craniotomie. Histologie: glioblastoom, IDH-wildtype.\nPostoperatief beloop zonder complicaties.\n\nFUNCTIONELE STATUS\nKarnofsky Performance Status bij ontslag: 90%.\n\nBELEID\nRadiotherapie 60 Gy in 30 fracties met gelijktijdig temozolomide. Aansluitend\n6 geplande cycli adjuvante temozolomide. Tijdens opname graad 1 hoofdpijn,\ngeen graad 3 of hoger.\n",
+      "spanStart": 394,
+      "spanEnd": 439,
+      "evidence": [
+        {
+          "start": 394,
+          "end": 439,
+          "text": "Karnofsky Performance Status bij ontslag: 90%"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0043",
+      "documentId": "DOC-003-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-08-26",
+      "participantId": "GBM-NL-003",
+      "field": "RTDOSE",
+      "fieldLabel": "Radiotherapy total dose",
+      "status": "proposed",
+      "value": "60",
+      "normalizedValue": 60,
+      "unit": "Gy",
+      "confidence": 0.95,
+      "proposedCode": {
+        "system": "UCUM",
+        "code": "Gy",
+        "display": "gray",
+        "codeVerified": true
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-003-DIS.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Streekziekenhuis Westpark - Afdeling Neurologie\n\nPATIENTCODE: GBM-NL-003\nGESLACHT: man\nLEEFTIJD BIJ DIAGNOSE: 61 jaar\nDATUM OPNAME: 2026-08-18\nDATUM ONTSLAG: 2026-08-26\n\nONTSLAGBRIEF\nOpname voor links parietale craniotomie. Histologie: glioblastoom, IDH-wildtype.\nPostoperatief beloop zonder complicaties.\n\nFUNCTIONELE STATUS\nKarnofsky Performance Status bij ontslag: 90%.\n\nBELEID\nRadiotherapie 60 Gy in 30 fracties met gelijktijdig temozolomide. Aansluitend\n6 geplande cycli adjuvante temozolomide. Tijdens opname graad 1 hoofdpijn,\ngeen graad 3 of hoger.\n",
+      "spanStart": 463,
+      "spanEnd": 483,
+      "evidence": [
+        {
+          "start": 463,
+          "end": 483,
+          "text": "60 Gy in 30 fracties"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0044",
+      "documentId": "DOC-003-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-08-26",
+      "participantId": "GBM-NL-003",
+      "field": "RTFRAC",
+      "fieldLabel": "Radiotherapy fractions",
+      "status": "proposed",
+      "value": "30",
+      "normalizedValue": 30,
+      "unit": "fractions",
+      "confidence": 0.95,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-003-DIS.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Streekziekenhuis Westpark - Afdeling Neurologie\n\nPATIENTCODE: GBM-NL-003\nGESLACHT: man\nLEEFTIJD BIJ DIAGNOSE: 61 jaar\nDATUM OPNAME: 2026-08-18\nDATUM ONTSLAG: 2026-08-26\n\nONTSLAGBRIEF\nOpname voor links parietale craniotomie. Histologie: glioblastoom, IDH-wildtype.\nPostoperatief beloop zonder complicaties.\n\nFUNCTIONELE STATUS\nKarnofsky Performance Status bij ontslag: 90%.\n\nBELEID\nRadiotherapie 60 Gy in 30 fracties met gelijktijdig temozolomide. Aansluitend\n6 geplande cycli adjuvante temozolomide. Tijdens opname graad 1 hoofdpijn,\ngeen graad 3 of hoger.\n",
+      "spanStart": 472,
+      "spanEnd": 483,
+      "evidence": [
+        {
+          "start": 472,
+          "end": 483,
+          "text": "30 fracties"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0045",
+      "documentId": "DOC-003-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-08-26",
+      "participantId": "GBM-NL-003",
+      "field": "TMZPLNC",
+      "fieldLabel": "Planned adjuvant temozolomide cycles",
+      "status": "proposed",
+      "value": "6",
+      "normalizedValue": 6,
+      "unit": "cycles",
+      "confidence": 0.88,
+      "proposedCode": {
+        "system": "ATC",
+        "code": "L01AX03",
+        "display": "temozolomide",
+        "codeVerified": true
+      },
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-003-DIS.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Streekziekenhuis Westpark - Afdeling Neurologie\n\nPATIENTCODE: GBM-NL-003\nGESLACHT: man\nLEEFTIJD BIJ DIAGNOSE: 61 jaar\nDATUM OPNAME: 2026-08-18\nDATUM ONTSLAG: 2026-08-26\n\nONTSLAGBRIEF\nOpname voor links parietale craniotomie. Histologie: glioblastoom, IDH-wildtype.\nPostoperatief beloop zonder complicaties.\n\nFUNCTIONELE STATUS\nKarnofsky Performance Status bij ontslag: 90%.\n\nBELEID\nRadiotherapie 60 Gy in 30 fracties met gelijktijdig temozolomide. Aansluitend\n6 geplande cycli adjuvante temozolomide. Tijdens opname graad 1 hoofdpijn,\ngeen graad 3 of hoger.\n",
+      "spanStart": 527,
+      "spanEnd": 543,
+      "evidence": [
+        {
+          "start": 527,
+          "end": 543,
+          "text": "6 geplande cycli"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    },
+    {
+      "id": "EXT-0046",
+      "documentId": "DOC-003-DIS",
+      "documentType": "discharge_letter",
+      "documentDate": "2026-08-26",
+      "participantId": "GBM-NL-003",
+      "field": "AEGRADE",
+      "fieldLabel": "Maximum adverse event grade (CTCAE v5.0)",
+      "status": "proposed",
+      "value": "1",
+      "normalizedValue": 1,
+      "unit": "grade",
+      "confidence": 0.8,
+      "proposedCode": null,
+      "abstentionReason": null,
+      "sourceDocument": "assets/data/documents/DOC-003-DIS.txt",
+      "sourceText": "SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK\nFictief Streekziekenhuis Westpark - Afdeling Neurologie\n\nPATIENTCODE: GBM-NL-003\nGESLACHT: man\nLEEFTIJD BIJ DIAGNOSE: 61 jaar\nDATUM OPNAME: 2026-08-18\nDATUM ONTSLAG: 2026-08-26\n\nONTSLAGBRIEF\nOpname voor links parietale craniotomie. Histologie: glioblastoom, IDH-wildtype.\nPostoperatief beloop zonder complicaties.\n\nFUNCTIONELE STATUS\nKarnofsky Performance Status bij ontslag: 90%.\n\nBELEID\nRadiotherapie 60 Gy in 30 fracties met gelijktijdig temozolomide. Aansluitend\n6 geplande cycli adjuvante temozolomide. Tijdens opname graad 1 hoofdpijn,\ngeen graad 3 of hoger.\n",
+      "spanStart": 583,
+      "spanEnd": 600,
+      "evidence": [
+        {
+          "start": 583,
+          "end": 600,
+          "text": "graad 1 hoofdpijn"
+        }
+      ],
+      "model": "demo-extractor v0.1",
+      "promptVersion": "prompt-2026-11-21",
+      "reviewState": "pending",
+      "seededIssue": null
+    }
+  ]
+}

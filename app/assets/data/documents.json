@@ -1,0 +1,129 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-11-21T10:30:00+01:00",
+  "synthetic": true,
+  "disclaimer": "Synthetic data — prototype, not for clinical use",
+  "note": "Document text lives in the listed .txt files. Extractions embed a copy as sourceText; validate_data.py checks both copies and every evidence span.",
+  "documents": [
+    {
+      "id": "DOC-001-PATH",
+      "participantId": "GBM-NL-001",
+      "type": "pathology_report",
+      "title": "Pathologieverslag — stereotactisch resectiepreparaat (fictief)",
+      "language": "nl",
+      "documentDate": "2026-06-05",
+      "assetPath": "assets/data/documents/DOC-001-PATH.txt",
+      "charLength": 905,
+      "sha256": "92c929ca07bee0b8d250163d6b688f32c37d48976a0d76c3dc8cf6c3b5ffe5e3",
+      "synthetic": true
+    },
+    {
+      "id": "DOC-001-MRI",
+      "participantId": "GBM-NL-001",
+      "type": "radiology_report",
+      "title": "MRI-verslag hersenen, postoperatief (fictief)",
+      "language": "nl",
+      "documentDate": "2026-06-06",
+      "assetPath": "assets/data/documents/DOC-001-MRI.txt",
+      "charLength": 619,
+      "sha256": "1bc06fe86e7743ba0c6011456cbdf7355d1cb8abcf6b4450273bf2b5e959a19a",
+      "synthetic": true
+    },
+    {
+      "id": "DOC-001-DIS",
+      "participantId": "GBM-NL-001",
+      "type": "discharge_letter",
+      "title": "Ontslagbrief neuro-oncologie (fictief)",
+      "language": "nl",
+      "documentDate": "2026-06-08",
+      "assetPath": "assets/data/documents/DOC-001-DIS.txt",
+      "charLength": 778,
+      "sha256": "8fafea353ee0851ed65e8656d87188ee25e6d1d8364a4c33191ef7947a27f094",
+      "synthetic": true
+    },
+    {
+      "id": "DOC-002-PATH",
+      "participantId": "GBM-NL-002",
+      "type": "pathology_report",
+      "title": "Pathology report — stereotactic biopsy (fictional)",
+      "language": "en",
+      "documentDate": "2026-05-08",
+      "assetPath": "assets/data/documents/DOC-002-PATH.txt",
+      "charLength": 672,
+      "sha256": "b8d2e8e105238817010e05b2cd221c252c4ae990ac4b2edc53132b27ae46a25b",
+      "synthetic": true
+    },
+    {
+      "id": "DOC-002-MRI",
+      "participantId": "GBM-NL-002",
+      "type": "radiology_report",
+      "title": "MRI report, post-operative (fictional)",
+      "language": "en",
+      "documentDate": "2026-05-12",
+      "assetPath": "assets/data/documents/DOC-002-MRI.txt",
+      "charLength": 606,
+      "sha256": "11d0e12cd1ceff98232c21620b47670fea3eeff716364ff4fbbac107eb2b637b",
+      "synthetic": true
+    },
+    {
+      "id": "DOC-002-SURG",
+      "participantId": "GBM-NL-002",
+      "type": "operative_report",
+      "title": "Operative note — left temporal craniotomy (fictional)",
+      "language": "en",
+      "documentDate": "2026-05-05",
+      "assetPath": "assets/data/documents/DOC-002-SURG.txt",
+      "charLength": 484,
+      "sha256": "814e182d5419c4662638bc48d31bcdfc12b6505df6cc2302effba3fcb97201a1",
+      "synthetic": true
+    },
+    {
+      "id": "DOC-002-DIS",
+      "participantId": "GBM-NL-002",
+      "type": "discharge_letter",
+      "title": "Discharge summary, neuro-oncology (fictional)",
+      "language": "en",
+      "documentDate": "2026-05-09",
+      "assetPath": "assets/data/documents/DOC-002-DIS.txt",
+      "charLength": 671,
+      "sha256": "d6e502e5634eb1d4de7efd2d41deea46e93b9ffbc54ad762dc6e4ff7d5230d4b",
+      "synthetic": true
+    },
+    {
+      "id": "DOC-003-PATH",
+      "participantId": "GBM-NL-003",
+      "type": "pathology_report",
+      "title": "Pathologieverslag — resectiepreparaat (fictief)",
+      "language": "nl",
+      "documentDate": "2026-08-22",
+      "assetPath": "assets/data/documents/DOC-003-PATH.txt",
+      "charLength": 433,
+      "sha256": "50a3ab73bfb8741a7e305d7d39576b5359db33830258645647af03da9df4cf11",
+      "synthetic": true
+    },
+    {
+      "id": "DOC-003-MRI",
+      "participantId": "GBM-NL-003",
+      "type": "radiology_report",
+      "title": "MRI-verslag hersenen, postoperatief (fictief)",
+      "language": "nl",
+      "documentDate": "2026-08-25",
+      "assetPath": "assets/data/documents/DOC-003-MRI.txt",
+      "charLength": 423,
+      "sha256": "a734c3e93e563df982185c84c3a269ad139b4518d00d9cf89afa09fb7a3a9e42",
+      "synthetic": true
+    },
+    {
+      "id": "DOC-003-DIS",
+      "participantId": "GBM-NL-003",
+      "type": "discharge_letter",
+      "title": "Ontslagbrief neurologie (fictief)",
+      "language": "nl",
+      "documentDate": "2026-08-26",
+      "assetPath": "assets/data/documents/DOC-003-DIS.txt",
+      "charLength": 625,
+      "sha256": "446896116c45e282c72211ddbb50c5c89dced21238b3abf248a0d22bbe20c025",
+      "synthetic": true
+    }
+  ]
+}

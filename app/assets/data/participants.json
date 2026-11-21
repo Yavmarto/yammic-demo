@@ -1,6 +1,663 @@
-{"participants":[{"id":"SYN-0001","studyId":"ST-01","siteId":"SITE-A","status":"active","age":58,"sex":"F","summary":"Sample synthetic participant.",
-"visits":[{"name":"Baseline","date":"2026-10-01","status":"completed","note":""},{"name":"Week 4","date":"2026-11-26","status":"scheduled"}],
-"ecrfs":[{"form":"Vitals","status":"awaiting_review","completePct":80}],
-"issues":[{"severity":"medium","message":"Missing weight","field":"weight_kg"}],
-"treatments":[{"name":"Drug X (synthetic)","dose":"10 mg","start":"2026-10-01"}]},
-{"id":"SYN-0002","studyId":"ST-01","siteId":"SITE-A","status":"screening","age":64,"sex":"M","summary":"Placeholder; replaced by data task.","visits":[],"ecrfs":[],"issues":[],"treatments":[]}]}
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-11-21T10:30:00+01:00",
+  "synthetic": true,
+  "disclaimer": "Synthetic data — prototype, not for clinical use",
+  "studyId": "GBM-NL-2026-01",
+  "participants": [
+    {
+      "id": "GBM-NL-001",
+      "studyId": "GBM-NL-2026-01",
+      "siteId": "SITE-01",
+      "status": "active",
+      "statusDetail": "on_treatment",
+      "age": 57,
+      "sex": "F",
+      "summary": "Fictional participant: glioblastoma, IDH-wildtype, right frontal. Gross total resection 2026-06-01. Chemoradiotherapy completed 2026-07-31; adjuvant temozolomide cycle 4 of 6 done, cycle 5 due 2026-11-27.",
+      "diagnosisDate": "2026-06-02",
+      "enrolledDate": "2026-06-05",
+      "documentIds": [
+        "DOC-001-PATH",
+        "DOC-001-MRI",
+        "DOC-001-DIS"
+      ],
+      "visits": [
+        {
+          "name": "Screening (V0)",
+          "date": "2026-05-22",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Baseline (V1)",
+          "date": "2026-06-05",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Radiotherapy start (V2)",
+          "date": "2026-06-19",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Radiotherapy end (V3)",
+          "date": "2026-07-31",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "TMZ cycle 1 (V4)",
+          "date": "2026-08-07",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "TMZ cycle 2 (V5)",
+          "date": "2026-09-04",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "TMZ cycle 3 (V6)",
+          "date": "2026-10-02",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "TMZ cycle 4 (V7)",
+          "date": "2026-10-30",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "TMZ cycle 5 (V8)",
+          "date": "2026-11-27",
+          "status": "scheduled",
+          "note": "eCRF pre-populated, awaiting review"
+        }
+      ],
+      "ecrfs": [
+        {
+          "form": "Baseline (V1)",
+          "status": "complete",
+          "completePct": 100
+        },
+        {
+          "form": "TMZ cycle 5 (V8)",
+          "status": "awaiting_review",
+          "completePct": 80
+        }
+      ],
+      "issues": [
+        {
+          "severity": "medium",
+          "message": "MGMT value awaits human confirmation of the AI proposal.",
+          "field": "MGMTPROM"
+        },
+        {
+          "severity": "low",
+          "message": "Progression date is not stated in any uploaded document.",
+          "field": "PROGDAT"
+        }
+      ],
+      "treatments": [
+        {
+          "name": "Temozolomide (concurrent)",
+          "dose": "75 mg/m2 daily",
+          "start": "2026-06-19",
+          "end": "2026-07-31"
+        },
+        {
+          "name": "Radiotherapy",
+          "dose": "60 Gy / 30 fractions",
+          "start": "2026-06-19",
+          "end": "2026-07-31"
+        },
+        {
+          "name": "Temozolomide (adjuvant)",
+          "dose": "200 mg/m2 days 1-5, 28-day cycle",
+          "start": "2026-08-07",
+          "end": null
+        }
+      ]
+    },
+    {
+      "id": "GBM-NL-002",
+      "studyId": "GBM-NL-2026-01",
+      "siteId": "SITE-02",
+      "status": "active",
+      "statusDetail": "on_treatment",
+      "age": 64,
+      "sex": "M",
+      "summary": "Fictional participant: glioblastoma, IDH-wildtype, left temporal. Subtotal resection 2026-05-05. Chemoradiotherapy completed 2026-07-13; adjuvant temozolomide cycle 5 of 6 done.",
+      "diagnosisDate": "2026-05-06",
+      "enrolledDate": "2026-05-15",
+      "documentIds": [
+        "DOC-002-PATH",
+        "DOC-002-MRI",
+        "DOC-002-SURG",
+        "DOC-002-DIS"
+      ],
+      "visits": [
+        {
+          "name": "Screening (V0)",
+          "date": "2026-05-01",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Baseline (V1)",
+          "date": "2026-05-15",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Radiotherapy start (V2)",
+          "date": "2026-06-01",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Radiotherapy end (V3)",
+          "date": "2026-07-13",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "TMZ cycle 1 (V4)",
+          "date": "2026-07-20",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "TMZ cycle 2 (V5)",
+          "date": "2026-08-17",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "TMZ cycle 3 (V6)",
+          "date": "2026-09-14",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "TMZ cycle 4 (V7)",
+          "date": "2026-10-12",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "TMZ cycle 5 (V8)",
+          "date": "2026-11-09",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "TMZ cycle 6 (V9)",
+          "date": "2026-12-07",
+          "status": "scheduled",
+          "note": ""
+        }
+      ],
+      "ecrfs": [
+        {
+          "form": "Baseline (V1)",
+          "status": "complete",
+          "completePct": 100
+        },
+        {
+          "form": "TMZ cycle 5 (V8)",
+          "status": "in_progress",
+          "completePct": 60
+        }
+      ],
+      "issues": [
+        {
+          "severity": "high",
+          "message": "AI proposed 'methylated' but the pathology report states 'unmethylated'.",
+          "field": "MGMTPROM"
+        },
+        {
+          "severity": "medium",
+          "message": "Extent of resection differs in wording between MRI and operative note.",
+          "field": "EXTRES"
+        }
+      ],
+      "treatments": [
+        {
+          "name": "Temozolomide (concurrent)",
+          "dose": "75 mg/m2 daily",
+          "start": "2026-06-01",
+          "end": "2026-07-13"
+        },
+        {
+          "name": "Radiotherapy",
+          "dose": "60 Gy / 30 fractions",
+          "start": "2026-06-01",
+          "end": "2026-07-13"
+        },
+        {
+          "name": "Temozolomide (adjuvant)",
+          "dose": "200 mg/m2 days 1-5, 28-day cycle",
+          "start": "2026-07-20",
+          "end": null
+        }
+      ]
+    },
+    {
+      "id": "GBM-NL-003",
+      "studyId": "GBM-NL-2026-01",
+      "siteId": "SITE-03",
+      "status": "active",
+      "statusDetail": "on_treatment",
+      "age": 61,
+      "sex": "M",
+      "summary": "Fictional participant: glioblastoma, IDH-wildtype, left parietal. Subtotal resection 2026-08-18. Chemoradiotherapy completed 2026-10-27; adjuvant temozolomide cycle 1 of 6 done. No RANO progression assessment yet.",
+      "diagnosisDate": "2026-08-19",
+      "enrolledDate": "2026-09-01",
+      "documentIds": [
+        "DOC-003-PATH",
+        "DOC-003-MRI",
+        "DOC-003-DIS"
+      ],
+      "visits": [
+        {
+          "name": "Screening (V0)",
+          "date": "2026-08-14",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Baseline (V1)",
+          "date": "2026-09-01",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Radiotherapy start (V2)",
+          "date": "2026-09-15",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Radiotherapy end (V3)",
+          "date": "2026-10-27",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "TMZ cycle 1 (V4)",
+          "date": "2026-11-03",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "TMZ cycle 2 (V5)",
+          "date": "2026-12-01",
+          "status": "scheduled",
+          "note": ""
+        }
+      ],
+      "ecrfs": [
+        {
+          "form": "Baseline (V1)",
+          "status": "complete",
+          "completePct": 100
+        },
+        {
+          "form": "TMZ cycle 1 (V4)",
+          "status": "awaiting_review",
+          "completePct": 73
+        }
+      ],
+      "issues": [
+        {
+          "severity": "low",
+          "message": "Progression date not yet applicable; no RANO assessment performed.",
+          "field": "PROGDAT"
+        }
+      ],
+      "treatments": [
+        {
+          "name": "Temozolomide (concurrent)",
+          "dose": "75 mg/m2 daily",
+          "start": "2026-09-15",
+          "end": "2026-10-27"
+        },
+        {
+          "name": "Radiotherapy",
+          "dose": "60 Gy / 30 fractions",
+          "start": "2026-09-15",
+          "end": "2026-10-27"
+        },
+        {
+          "name": "Temozolomide (adjuvant)",
+          "dose": "200 mg/m2 days 1-5, 28-day cycle",
+          "start": "2026-11-03",
+          "end": null
+        }
+      ]
+    },
+    {
+      "id": "GBM-NL-004",
+      "studyId": "GBM-NL-2026-01",
+      "siteId": "SITE-01",
+      "status": "screening",
+      "statusDetail": "screening",
+      "age": 52,
+      "sex": "F",
+      "summary": "Fictional participant: screening in progress after MRI showed a right frontal lesion. Histology and biomarker results are pending.",
+      "diagnosisDate": null,
+      "enrolledDate": null,
+      "documentIds": [],
+      "visits": [
+        {
+          "name": "Screening (V0)",
+          "date": "2026-11-24",
+          "status": "scheduled",
+          "note": "Screening visit planned"
+        }
+      ],
+      "ecrfs": [
+        {
+          "form": "Baseline (V1)",
+          "status": "not_started",
+          "completePct": 0
+        }
+      ],
+      "issues": [
+        {
+          "severity": "medium",
+          "message": "Histology and MGMT result not available yet.",
+          "field": "HISTOLOGY"
+        }
+      ],
+      "treatments": []
+    },
+    {
+      "id": "GBM-NL-005",
+      "studyId": "GBM-NL-2026-01",
+      "siteId": "SITE-02",
+      "status": "active",
+      "statusDetail": "on_treatment",
+      "age": 70,
+      "sex": "M",
+      "summary": "Fictional participant: glioblastoma, IDH-wildtype. Chemoradiotherapy completed 2026-11-13; adjuvant temozolomide cycle 1 started 2026-11-20.",
+      "diagnosisDate": "2026-09-02",
+      "enrolledDate": "2026-09-18",
+      "documentIds": [],
+      "visits": [
+        {
+          "name": "Screening (V0)",
+          "date": "2026-09-04",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Baseline (V1)",
+          "date": "2026-09-18",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Radiotherapy start (V2)",
+          "date": "2026-10-02",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Radiotherapy end (V3)",
+          "date": "2026-11-13",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "TMZ cycle 1 (V4)",
+          "date": "2026-11-20",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "TMZ cycle 2 (V5)",
+          "date": "2026-12-18",
+          "status": "scheduled",
+          "note": ""
+        }
+      ],
+      "ecrfs": [
+        {
+          "form": "Baseline (V1)",
+          "status": "complete",
+          "completePct": 100
+        },
+        {
+          "form": "TMZ cycle 1 (V4)",
+          "status": "in_progress",
+          "completePct": 45
+        }
+      ],
+      "issues": [],
+      "treatments": [
+        {
+          "name": "Temozolomide (concurrent)",
+          "dose": "75 mg/m2 daily",
+          "start": "2026-10-02",
+          "end": "2026-11-13"
+        },
+        {
+          "name": "Radiotherapy",
+          "dose": "60 Gy / 30 fractions",
+          "start": "2026-10-02",
+          "end": "2026-11-13"
+        },
+        {
+          "name": "Temozolomide (adjuvant)",
+          "dose": "200 mg/m2 days 1-5, 28-day cycle",
+          "start": "2026-11-20",
+          "end": null
+        }
+      ]
+    },
+    {
+      "id": "GBM-NL-006",
+      "studyId": "GBM-NL-2026-01",
+      "siteId": "SITE-03",
+      "status": "completed",
+      "statusDetail": "in_follow_up",
+      "age": 68,
+      "sex": "F",
+      "summary": "Fictional participant: glioblastoma, IDH-wildtype. All 6 adjuvant temozolomide cycles completed 2026-05-29. In 8-weekly follow-up; no progression documented.",
+      "diagnosisDate": "2025-11-20",
+      "enrolledDate": "2025-12-05",
+      "documentIds": [],
+      "visits": [
+        {
+          "name": "Screening (V0)",
+          "date": "2025-11-21",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Baseline (V1)",
+          "date": "2025-12-05",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Radiotherapy start (V2)",
+          "date": "2025-12-19",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Radiotherapy end (V3)",
+          "date": "2026-01-30",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "TMZ cycle 6 (V9)",
+          "date": "2026-05-29",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "End of treatment (V10)",
+          "date": "2026-06-26",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Follow-up (V11)",
+          "date": "2026-08-21",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Follow-up (V11)",
+          "date": "2026-10-16",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Follow-up (V11)",
+          "date": "2026-12-11",
+          "status": "scheduled",
+          "note": ""
+        }
+      ],
+      "ecrfs": [
+        {
+          "form": "Baseline (V1)",
+          "status": "complete",
+          "completePct": 100
+        },
+        {
+          "form": "End of treatment (V10)",
+          "status": "complete",
+          "completePct": 100
+        }
+      ],
+      "issues": [],
+      "treatments": [
+        {
+          "name": "Radiotherapy",
+          "dose": "60 Gy / 30 fractions",
+          "start": "2025-12-19",
+          "end": "2026-01-30"
+        },
+        {
+          "name": "Temozolomide (adjuvant)",
+          "dose": "200 mg/m2 days 1-5, 28-day cycle",
+          "start": "2026-02-06",
+          "end": "2026-05-29"
+        }
+      ]
+    },
+    {
+      "id": "GBM-NL-007",
+      "studyId": "GBM-NL-2026-01",
+      "siteId": "SITE-01",
+      "status": "withdrawn",
+      "statusDetail": "screen_failure",
+      "age": 59,
+      "sex": "M",
+      "summary": "Fictional participant: screen failure. Tumour was IDH-mutant, so the participant did not meet the IDH-wildtype eligibility criterion.",
+      "diagnosisDate": "2026-10-21",
+      "enrolledDate": null,
+      "documentIds": [],
+      "visits": [
+        {
+          "name": "Screening (V0)",
+          "date": "2026-10-27",
+          "status": "completed",
+          "note": "Screen failure: IDH-mutant"
+        },
+        {
+          "name": "Baseline (V1)",
+          "date": "2026-11-10",
+          "status": "missed",
+          "note": "Not required after screen failure"
+        }
+      ],
+      "ecrfs": [
+        {
+          "form": "Baseline (V1)",
+          "status": "not_started",
+          "completePct": 0
+        }
+      ],
+      "issues": [
+        {
+          "severity": "high",
+          "message": "Participant did not meet the IDH-wildtype eligibility criterion.",
+          "field": "IDHSTAT"
+        }
+      ],
+      "treatments": []
+    },
+    {
+      "id": "GBM-NL-008",
+      "studyId": "GBM-NL-2026-01",
+      "siteId": "SITE-02",
+      "status": "withdrawn",
+      "statusDetail": "consent_withdrawn",
+      "age": 47,
+      "sex": "F",
+      "summary": "Fictional participant: withdrew informed consent on 2026-08-20 after temozolomide cycle 1. No further data collection.",
+      "diagnosisDate": "2026-07-08",
+      "enrolledDate": "2026-07-10",
+      "documentIds": [],
+      "visits": [
+        {
+          "name": "Screening (V0)",
+          "date": "2026-07-06",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Baseline (V1)",
+          "date": "2026-07-10",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "Radiotherapy start (V2)",
+          "date": "2026-07-24",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "TMZ cycle 1 (V4)",
+          "date": "2026-08-14",
+          "status": "completed",
+          "note": ""
+        },
+        {
+          "name": "TMZ cycle 2 (V5)",
+          "date": "2026-09-11",
+          "status": "missed",
+          "note": "Consent withdrawn"
+        }
+      ],
+      "ecrfs": [
+        {
+          "form": "Baseline (V1)",
+          "status": "complete",
+          "completePct": 100
+        }
+      ],
+      "issues": [],
+      "treatments": [
+        {
+          "name": "Temozolomide (concurrent)",
+          "dose": "75 mg/m2 daily",
+          "start": "2026-07-24",
+          "end": "2026-08-20"
+        }
+      ]
+    }
+  ]
+}

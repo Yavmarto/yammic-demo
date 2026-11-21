@@ -1,0 +1,26 @@
+SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK
+Fictief Universitair Medisch Centrum Zuidhaven
+Afdeling Pathologie
+Prof. dr. J. Voorbeeld (fictief)
+
+PATIENTCODE: GBM-NL-001
+DATUM ONTVANGST: 2026-06-02
+DATUM VERSLAG: 2026-06-05
+ONDERZOEK: Resectiepreparaat, rechter frontaal
+
+KLINISCHE GEGEVENS
+Ruimte-innemende laesie rechts frontaal, verdacht voor hooggradig glioom.
+Verwijzend neurochirurg: dr. M. Voorbeeld (fictief).
+
+MACROSCOPIE
+Meerdere fragmenten van grijs-wit weefsel, tesamen 24 gram.
+
+MICROSCOPIE
+Hypercellulair glioom met duidelijke nucleaire atypie, mitosen en
+microvasculaire proliferatie. Gebieden met pseudopalisadering en necrose.
+Immunohistochemie: GFAP positief. IDH1 R132H negatief. ATRX behouden.
+MGMT-promotermethylering: methylatie aangetoond (MS-PCR).
+
+CONCLUSIE
+1. Glioblastoom, IDH-wildtype (WHO CNS5). ICD-O-3 morfologiecode 9440/3.
+2. MGMT-promoter is gemethyleerd.

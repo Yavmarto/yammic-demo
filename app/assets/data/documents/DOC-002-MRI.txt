@@ -1,0 +1,16 @@
+SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE
+Fictional University Medical Center Northhaven - Department of Radiology
+
+SUBJECT CODE: GBM-NL-002
+EXAMINATION: MRI brain with contrast (post-operative)
+DATE: 2026-05-12
+
+FINDINGS
+Status post left temporal craniotomy. There is a thin rim of enhancement along
+the resection cavity. The extent of resection is probably subtotal; a small
+residual area may be present, although post-surgical change cannot be excluded.
+
+No hydrocephalus. No new distant lesions.
+
+IMPRESSION
+Probable subtotal resection. RANO assessment is not available for this timepoint.

@@ -1,0 +1,20 @@
+SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK
+Fictief Streekziekenhuis Westpark - Afdeling Neurologie
+
+PATIENTCODE: GBM-NL-003
+GESLACHT: man
+LEEFTIJD BIJ DIAGNOSE: 61 jaar
+DATUM OPNAME: 2026-08-18
+DATUM ONTSLAG: 2026-08-26
+
+ONTSLAGBRIEF
+Opname voor links parietale craniotomie. Histologie: glioblastoom, IDH-wildtype.
+Postoperatief beloop zonder complicaties.
+
+FUNCTIONELE STATUS
+Karnofsky Performance Status bij ontslag: 90%.
+
+BELEID
+Radiotherapie 60 Gy in 30 fracties met gelijktijdig temozolomide. Aansluitend
+6 geplande cycli adjuvante temozolomide. Tijdens opname graad 1 hoofdpijn,
+geen graad 3 of hoger.
