@@ -169,7 +169,7 @@ Subtitle: *Synthetic data · prototype · not for clinical use.*
 
 ### 3.8 What this is / is not — 8:45–9:30
 
-**Slide 3** (text in §4.3). Read the four "is not" lines; do not paraphrase them into softer language.
+**Slide 3** (text in §4.3). Read the five "is not" lines; do not paraphrase them into softer language.
 
 > "So, plainly. It is a synthetic prototype of one workflow, with pre-computed AI output and a human review loop. It is not connected to anything. It is not a medical device, and we make no MDR claim. It is not validated and not clinically deployable. It is not an accuracy benchmark — we have not measured accuracy, and I will not give you a number today."
 
