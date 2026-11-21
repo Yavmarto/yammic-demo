@@ -18,7 +18,8 @@ class FhirError(Exception):
 
 def _get(url: str, timeout: float = 15):
     try:
-        req = urllib.request.Request(url, headers={"Accept": "application/fhir+json"})
+        req = urllib.request.Request(url, headers={"Accept": "application/fhir+json",
+                                                    "Cache-Control": "no-cache"})  # HAPI reuses identical searches for 60 s otherwise
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return json.load(r)
     except (URLError, OSError, ValueError) as e:
