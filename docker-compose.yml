@@ -1,0 +1,71 @@
+# Local demo infrastructure for the Yammic platform slice.
+# Owner: DevOps (CEL-1773). Only local, synthetic data. No hosting, no real patient data.
+#
+#   postgres  PostgreSQL 16     host 127.0.0.1:5433   db yammic (backend) + hapi (FHIR store)
+#   hapi      HAPI FHIR JPA R4  host 127.0.0.1:8090   http://127.0.0.1:8090/fhir/metadata
+#
+# The FastAPI backend and the Flutter web app run outside Docker (see Makefile).
+# Images are pinned by digest so a demo run never depends on a registry pull.
+
+name: yammic-demo
+
+services:
+  postgres:
+    # postgres:16, pulled 2026-11-21
+    image: postgres:16@sha256:3950ad7c3148ca2175ef1b6c36c9efbf78957ae8fbe8b3a5d7c35af50500382f
+    container_name: yammic-postgres
+    environment:
+      POSTGRES_DB: yammic
+      POSTGRES_USER: yammic
+      POSTGRES_PASSWORD: yammic
+      # Keep initdb output small and fast on a laptop.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./ops/postgres-init.sql:/docker-entrypoint-initdb.d/10-hapi-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U yammic -d yammic"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+  hapi:
+    # hapiproject/hapi:latest, pulled 2026-11-21
+    image: hapiproject/hapi:latest@sha256:0ff86aac4c7bd13a1ee226444a70263bb46ed1c28ef543c30a44f865b80ca04e
+    container_name: yammic-hapi
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # JPA server backed by the same PostgreSQL instance, database "hapi".
+      spring.datasource.url: "jdbc:postgresql://postgres:5432/hapi"
+      spring.datasource.username: yammic
+      spring.datasource.password: yammic
+      spring.datasource.driverClassName: org.postgresql.Driver
+      spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+      hapi.fhir.fhir_version: R4
+      hapi.fhir.cors.enabled: "true"
+      hapi.fhir.server_address: "http://127.0.0.1:8090"
+      management.endpoints.web.exposure.include: health,info
+      management.endpoint.health.show-details: never
+      JAVA_TOOL_OPTIONS: "-Xmx1536m"
+    ports:
+      - "127.0.0.1:8090:8080"
+    healthcheck:
+      # The image ships HealthCheck.class; it probes the Spring Boot actuator
+      # health endpoint on 127.0.0.1:8080 and exits 0 only on HTTP 200.
+      test: ["CMD", "java", "-cp", "/app", "HealthCheck"]
+      interval: 10s
+      timeout: 8s
+      retries: 30
+      # First boot also creates the HAPI schema in PostgreSQL: 60-180 s.
+      start_period: 240s
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+    name: yammic-postgres-data
