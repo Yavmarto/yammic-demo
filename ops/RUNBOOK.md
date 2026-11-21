@@ -1,81 +1,135 @@
-# Yammic demo — local platform runbook
+# Yammic demo — local platform runbook (v4)
 
-Owner: DevOps (CEL-1773). Scope: the local demo stack for Monday 2026-11-23.
+Owner: DevOps (CEL-1801). Scope: the local v4 demo stack for Monday 2026-11-23.
 Everything runs on this machine. **Synthetic data only. No hosting, no outreach, no paid APIs (Gate 3).**
 
-## 1. What runs where
+The frozen v3 checkpoint runs next to v4 on this machine. The two stacks have their own
+compose project, volume, ports, secrets file and processes. Starting, stopping or resetting
+v4 must never touch v3.
 
-| Component | Where | Address | Started by |
-|---|---|---|---|
-| PostgreSQL 16 | Docker `yammic-postgres` | `127.0.0.1:5433` · db `yammic` and `hapi` · user/pass `yammic`/`yammic` | `make up` / `make reset` / `make demo` |
-| HAPI FHIR JPA server (R4) | Docker `yammic-hapi` | `http://127.0.0.1:8090/fhir` | `make up` / `make reset` / `make demo` |
-| FastAPI backend | host process via `uv` | `http://127.0.0.1:8000` · `/health`, `/docs` | `make backend` (foreground) or `make demo` (background) |
-| AI extraction worker | host process via `uv`, `python -m app.ai` | no port; polls `GET /runs?status=queued` and posts proposals through the API | `make ai` (foreground) or `make demo` (background) |
-| Flutter web app | host process, `python3 -m http.server` | `http://127.0.0.1:8080` | `make web` (foreground) or `make demo` (background) |
+## 1. What runs where — v3 and v4 side by side
 
-Data volume: Docker named volume `yammic-postgres-data`. It holds both the backend data and the HAPI schema.
-FHIR data is stored in PostgreSQL database `hapi`, created by `ops/postgres-init.sh` on first boot, owned by its own DB role `hapi`.
+| Component | v3 (frozen checkpoint) | v4 (this checkout) |
+|---|---|---|
+| Worktree | `~/yammic-demo-v3` | `~/yammic-v4` (branch `v4`) |
+| Compose project | `yammic-demo` | `yammic-v4` |
+| PostgreSQL 16 | `127.0.0.1:5433` · db `yammic`, `hapi` | `127.0.0.1:5434` · db `yammic`, `hapi`, `hapi2` |
+| Hospital 1 FHIR (HAPI R4) | `http://127.0.0.1:8090/fhir` | `http://127.0.0.1:8091/fhir` · db `hapi` |
+| Hospital 2 FHIR (HAPI R4) | — | `http://127.0.0.1:8092/fhir` · db `hapi2` |
+| FastAPI backend | `http://127.0.0.1:8000` | `http://127.0.0.1:8001` |
+| AI extraction worker | polls `:8000` | polls `:8001` (`--api`), one per stack |
+| Flutter web app | `http://127.0.0.1:8080` | `http://127.0.0.1:8081` |
+| Data volume | `yammic-postgres-data` | `yammic-v4-postgres-data` |
+| Container names | fixed (`yammic-postgres`, `yammic-hapi`) | auto (`yammic-v4-postgres-1`, `yammic-v4-hapi-1`, `yammic-v4-hapi2-1`) |
 
-Ports are bound to `127.0.0.1` on purpose. Other machines cannot reach them. QA runs on this machine.
+Ports are bound to `127.0.0.1` on purpose. Other machines cannot reach them.
+
+v4 services (compose file `docker-compose.yml`):
+
+| Service | Image | Host port | Database | DB role |
+|---|---|---|---|---|
+| `postgres` | `postgres:16` (pinned digest) | `PG_PORT` (5434) | `yammic` | owner `yammic`; app `yammic_app` |
+| `hapi` | `hapiproject/hapi` (pinned digest) | `FHIR_PORT` (8091) | `hapi` | `hapi` |
+| `hapi2` | `hapiproject/hapi` (same digest) | `FHIR2_PORT` (8092) | `hapi2` | `hapi2` |
+
+All ports come from the environment. The defaults are the v4 values above; override with
+`PG_PORT`, `FHIR_PORT`, `FHIR2_PORT`, `BACKEND_PORT`, `WEB_PORT` if needed.
 
 ## 2. Prerequisites
 
-- Docker Desktop installed and running (`docker info` succeeds).
+- Docker Desktop installed and running (`docker info` succeeds). The v4 stack runs two HAPI
+  JVMs (1.5 GB heap each) next to v3's; about 8 GB of Docker memory is comfortable.
 - `uv` on `PATH` (`uv --version`).
 - Flutter SDK at `~/flutter/bin/flutter`, or set `FLUTTER=/path/to/flutter`.
-- `curl` and `python3`.
-- `timeout` (GNU coreutils; Homebrew `coreutils`). Used by `make health` and the start-up waits.
-- Images already pulled (they are pinned by digest in `docker-compose.yml`):
-  - `postgres:16@sha256:3950ad7c…`
-  - `hapiproject/hapi:latest@sha256:0ff86aac…`
+- `curl`, `python3`, and GNU `timeout` (Homebrew `coreutils`). Used by `make health` and the waits.
+- Images already pulled (pinned by digest in `docker-compose.yml`):
+  `postgres:16@sha256:3950ad7c…` and `hapiproject/hapi:latest@sha256:0ff86aac…`.
+  The demo does not pull images. If the local image store is wiped, run `docker compose pull`
+  once with network access.
 
-The demo does not pull images. If the local image store is wiped, run
-`docker compose pull` once with network access.
-
-## 3. Cold start (first time on a machine, or after a reset)
+## 3. Cold start (v4)
 
 ```bash
-cd ~/yammic-demo
-make reset          # remove volumes, start Postgres + HAPI, wait healthy, seed
-make demo           # start backend + AI worker + web in the background, health-check everything
-open http://127.0.0.1:8080
+cd ~/yammic-v4
+make reset          # remove the v4 volume, start Postgres + both HAPI servers, seed
+make demo           # start backend :8001 + one AI worker + web :8081, health-check all
+open http://127.0.0.1:8081
 ```
 
-`make reset` alone brings up the infrastructure and data. `make demo` adds the backend,
-one AI extraction worker and the web app.
+`make reset` only affects compose project `yammic-v4`. The v3 stack on 5433/8090/8000/8080
+keeps running.
 
-## 4. Daily / demo start
+`make seed` loads hospital 1 with
+`fhir-seed/load.py --hospital 1 --set baseline --base-url http://127.0.0.1:8091/fhir` and hospital 2
+with `--hospital 2 --set baseline --base-url http://127.0.0.1:8092/fhir`. Hospital 2 is skipped
+when `fhir-seed/hospital2/<set>/manifest.json` is absent; the target prints
+`skip FHIR hospital 2 — no <dir> data yet`.
 
-```bash
-make demo           # idempotent: reuses running services, seeds only when empty
-make health         # infrastructure checks
-make health STRICT=1   # all five components must be up, including the AI worker
-```
+Seed sets per hospital (override from the environment):
 
-Expected `make demo` output ends with `Result: OK — full demo stack is healthy.` and a line
-`AI worker: <pid> — consumes queued extraction runs (one worker only)`.
+| Variable | Default | Data | Use |
+|---|---|---|---|
+| `FHIR_H1_SET` | `baseline` | `fhir-seed/baseline/` | hospital 1 baseline bundles |
+| `FHIR_H1_ARRIVALS` | `arrivals` | `fhir-seed/arrivals/` | hospital 1 live-sync arrivals |
+| `FHIR_H2_SET` | `baseline` | `fhir-seed/hospital2/baseline/` | hospital 2 baseline bundles |
+| `FHIR_H2_ARRIVALS` | `arrivals` | `fhir-seed/hospital2/arrivals/` | hospital 2 live-sync arrivals |
 
-The AI worker is what turns **Sync now** and **Run extraction** into live proposals. If it is
-not running, queued runs stay `queued` and the UI polls for 90 s before it says
-"Is the AI service running?". `make health` fails in strict mode when the worker is missing.
+## 4. Backend settings for the two hospitals
 
-## 5. Stop and clean
+`make` exports these to the backend (and to every child process):
 
-| Command | Effect |
+| Variable | Value |
 |---|---|
-| `make stop` | Stop backend, AI worker and web processes, and containers. Data is kept. |
-| `make down` | Stop containers only. Data is kept. |
-| `make reset` | **Delete all data** (`down -v`), start fresh, seed. |
+| `DATABASE_URL` | `postgresql+psycopg://yammic_app:<secret>@127.0.0.1:5434/yammic` |
+| `FHIR_BASE_URL` | `http://127.0.0.1:8091/fhir` (hospital 1; backward-compatible single source) |
+| `FHIR_SOURCES` | JSON array: `[{"id":"hospital-1","name":"Hospital 1","url":"http://127.0.0.1:8091/fhir"},{"id":"hospital-2","name":"Hospital 2","url":"http://127.0.0.1:8092/fhir"}]` |
+| `YAMMIC_API_URL` | `http://127.0.0.1:8001` (the AI worker uses this backend, never v3's :8000) |
+
+`FHIR_SOURCES` is the multi-site contract for the backend (task D): one object per hospital with
+`id`, display `name` and FHIR base `url`. It is a JSON array on a single line.
+W1/W5 still read `FHIR_BASE_URL`; it points at hospital 1.
+
+## 5. Daily / demo start and checks
+
+```bash
+make demo              # idempotent: reuses running services, seeds only when empty
+make health            # infrastructure checks
+make health STRICT=1   # all components must be up: both hospitals, backend, AI worker, web
+```
+
+Expected `make demo` ends with `Result: OK — full v4 demo stack is healthy (both hospitals).`
+and a line `AI worker: <pid> — consumes queued extraction runs (one worker per stack)`.
+
+`make health` checks:
+
+- Postgres on 5434, and that databases `hapi` and `hapi2` are reachable.
+- Hospital 1 `:8091/fhir/metadata` and hospital 2 `:8092/fhir/metadata` return a CapabilityStatement.
+- Backend `:8001/health`, the v4 AI worker (port-scoped), and web `:8081`.
+
+`make stage-arrivals` loads the live-sync arrivals into both hospitals (hospital 2 only when its
+data set exists), without changing the platform data. Use it to make the pre-demo state one command:
+`make reset && make stage-arrivals && make demo`.
+
+## 6. Stop and clean
+
+| Command (run in `~/yammic-v4`) | Effect |
+|---|---|
+| `make stop` | Stop this stack's backend, AI worker and web, then the v4 containers. Data is kept. |
+| `make down` | Stop v4 containers only. Data is kept. |
+| `make reset` | **Delete v4 data** (`down -v`), start fresh, seed. v3 is not touched. |
 
 Logs: `ops/logs/backend.log`, `ops/logs/ai.log`, `ops/logs/web.log`, `ops/logs/web-build.log`.
 PIDs: `ops/run/backend.pid`, `ops/run/ai.pid`, `ops/run/web.pid`.
 
-`make stop` kills an AI worker that you started by hand too, because it stops every
-`python -m app.ai` process that `ops/ai-workers.sh` finds.
+The v4 `ops/ai-workers.sh` only reports workers whose command line contains this stack's API URL
+(`--api http://127.0.0.1:8001`), so `make stop` and `make demo` do not stop or reuse v3's worker.
+The reverse is not true: v3's older `ops/ai-workers.sh` matches every `python -m app.ai` process.
+**While a v4 worker runs, do not run v3's `make stop` (it kills both) or v3's `make demo` (it may
+reuse the v4 worker).** Stop v4 first: `cd ~/yammic-v4 && make stop`.
 
-## 6. Recovery
+## 7. Recovery
 
-### 6.1 Docker daemon is not running
+### 7.1 Docker daemon is not running
 
 Symptom: `make up` prints `ERROR: Docker daemon not reachable`, or `docker info` hangs/fails.
 
@@ -90,10 +144,9 @@ docker desktop stop
 open -a Docker
 ```
 
-**If Docker Desktop was started from an agent/SSH shell and dies with
-`opening tray: starting electron: unmarshaling start request: unexpected EOF`**, the inherited
-shell environment breaks its helper processes. Start the backend headless with a clean
-environment instead (no tray UI, but `docker compose` works):
+If Docker Desktop was started from an agent/SSH shell and dies with
+`opening tray: starting electron: unmarshaling start request: unexpected EOF`, start the backend
+headless with a clean environment (no tray UI, but `docker compose` works):
 
 ```bash
 pkill -f com.docker.backend
@@ -105,77 +158,86 @@ docker desktop status     # Status: running
 docker info
 ```
 
-On a normal desktop session this is not needed; use the Docker Desktop app.
+### 7.2 A port is already taken
 
-### 6.2 A port is already taken
-
-Symptom: `Bind for 127.0.0.1:5433 failed: port is already allocated` or `make health` shows a foreign service.
-
-```bash
-lsof -nP -iTCP:5433 -sTCP:LISTEN    # Postgres
-lsof -nP -iTCP:8090 -sTCP:LISTEN    # HAPI
-lsof -nP -iTCP:8000 -sTCP:LISTEN    # backend
-lsof -nP -iTCP:8080 -sTCP:LISTEN    # web
-```
-
-Stop the other process (another agent's stack, a previous demo, a native Postgres).
-Then `make stop && make demo`.
-
-### 6.3 HAPI is slow to start
-
-First boot creates the whole HAPI schema in PostgreSQL and takes **60–180 s**. Normal.
-`make up` waits (up to 420 s). Watch progress:
+Symptom: `Bind for 127.0.0.1:5434 failed: port is already allocated`, or `make health` shows a
+foreign service. Check the v4 ports first; a hit on the v3 ports belongs to the frozen stack and
+must stay.
 
 ```bash
-docker compose logs -f hapi | grep -iE "Started|ERROR|Exception"
-curl -fsS http://127.0.0.1:8090/fhir/metadata | head -c 200
+lsof -nP -iTCP:5434 -sTCP:LISTEN    # v4 Postgres
+lsof -nP -iTCP:8091 -sTCP:LISTEN    # v4 hospital 1
+lsof -nP -iTCP:8092 -sTCP:LISTEN    # v4 hospital 2
+lsof -nP -iTCP:8001 -sTCP:LISTEN    # v4 backend
+lsof -nP -iTCP:8081 -sTCP:LISTEN    # v4 web
+# v3, do not touch: 5433, 8090, 8000, 8080
 ```
 
-If it is still not healthy after 4 minutes:
+Stop the foreign process, or set another free port in the environment, then `make stop && make demo`.
+
+### 7.3 HAPI is slow to start (either hospital)
+
+First boot creates the whole HAPI schema in PostgreSQL and takes **60–180 s per server**. Normal.
+`make up` waits up to 600 s. Watch progress:
 
 ```bash
-docker compose ps            # hapi should be "starting" or "unhealthy"
-docker compose logs --tail=200 hapi
+docker compose logs -f hapi  | grep -iE "Started|ERROR|Exception"   # hospital 1
+docker compose logs -f hapi2 | grep -iE "Started|ERROR|Exception"   # hospital 2
+curl -fsS http://127.0.0.1:8091/fhir/metadata | head -c 200
+curl -fsS http://127.0.0.1:8092/fhir/metadata | head -c 200
 ```
 
-Common causes: PostgreSQL not ready (check `docker compose logs postgres`), port conflict, or
-insufficient memory (Docker Desktop needs ~8 GB; the stack requests 1.5 GB for HAPI).
+If a server is still not healthy after 4 minutes:
 
-### 6.4 Reset the database
+```bash
+docker compose ps            # hapi / hapi2 should be "starting" or "unhealthy"
+docker compose logs --tail=200 hapi2
+```
+
+Common causes: PostgreSQL not ready (`docker compose logs postgres`), port conflict, or insufficient
+Docker memory (two HAPI JVMs at 1.5 GB each).
+
+### 7.4 Reset the v4 database
 
 ```bash
 make reset
 ```
 
-This removes `yammic-postgres-data`, recreates it, and re-seeds. Use it when data is inconsistent,
-after a schema change, or before a demo. It deletes all local demo data; that is expected.
+This removes `yammic-v4-postgres-data`, recreates it, and re-seeds **only the v4 stack**. Use it when
+v4 data is inconsistent, after a schema change, or before a demo.
 
-Nuclear option (also clears images/containers for this project):
+Nuclear option for v4 only:
 
 ```bash
 docker compose down -v --remove-orphans
-docker volume rm yammic-postgres-data 2>/dev/null || true
+docker volume rm yammic-v4-postgres-data 2>/dev/null || true
 make reset
 ```
 
-### 6.5 Backend cannot reach PostgreSQL
+Never run `docker compose down -v` in `~/yammic-demo-v3`.
+
+### 7.5 Backend cannot reach PostgreSQL
 
 Symptom: `make health` shows `backend ... degraded`, or `backend.log` has `connection refused`.
 
-- Default DSN: `postgresql+psycopg://yammic:yammic@localhost:5433/yammic`.
+- The Makefile exports `DATABASE_URL` on port **5434**. The code default is still 5433 (v3);
+  always start the backend through `make backend` or `make demo` so it gets the v4 URL.
 - Check: `docker compose exec postgres pg_isready -U yammic -d yammic`.
 - If you changed the host port, export `DATABASE_URL` before `make backend`.
 - `make up` must be running first.
 
-### 6.6 Seed skipped or failed
+### 7.6 Seed skipped or failed
 
-`make seed` skips a component when its script is not present yet (workstream not landed). This is normal
-during the build-up to the demo. A failed FHIR seed usually means HAPI is not healthy yet:
-wait, then `make seed`.
+`make seed` skips a component when its script or data is not present yet. This is normal during the
+build-up to the demo:
 
-The backend seed is skipped when the `study` table already has rows. Use `make reset` for a clean slate.
+- hospital 1: fails if `fhir-seed/baseline/manifest.json` is missing (that data is committed).
+- hospital 2: skipped until `fhir-seed/hospital2/<set>/manifest.json` exists (task C adds it).
+- backend: skipped when the `study` table already has rows. Use `make reset` for a clean slate.
 
-### 6.7 Flutter web build fails
+A failed FHIR seed usually means HAPI is not healthy yet: wait, then `make seed`.
+
+### 7.7 Flutter web build fails
 
 ```bash
 cat ops/logs/web-build.log
@@ -190,82 +252,67 @@ cd app && ~/flutter/bin/flutter pub get && ~/flutter/bin/flutter build web --rel
 `make demo` rebuilds the web app only when `app/lib`, `app/web`, `app/assets` or `app/pubspec.yaml`
 are newer than `app/build/web/index.html`.
 
-### 6.8 Live extraction times out, or runs stay `queued`
+### 7.8 Live extraction times out, or runs stay `queued`
 
 Symptom: **Run extraction** spins for 90 s and then says "Is the AI service running?".
 `make health` shows `ai ... no AI worker`, or the run never leaves `queued`.
 
-The AI extraction worker is a separate process. Check it:
+The AI extraction worker is a separate process, scoped to this stack's API:
 
 ```bash
-ops/ai-workers.sh                 # prints the worker PID(s); prints nothing when none run
+ops/ai-workers.sh                 # v4 worker PID(s); nothing when none run
 tail -n 50 ops/logs/ai.log        # one JSON line per run: ai.run_start, ai.run, ai.poll_error
 ```
 
 Restart it with `make demo` (background) or `make ai` (foreground, for debugging).
-`make ai` refuses to start when a worker already runs.
+`make ai` refuses to start when a v4 worker already runs.
 
-**One worker only.** The service polls the queue, so a second worker can pick the same run and
-post duplicate proposals. `make demo` reuses a worker that is already running; it never starts
-a second one. If `ops/ai-workers.sh` prints more than one PID:
+**One worker per stack.** A second worker can pick the same run and post duplicate proposals.
+`make demo` reuses a running v4 worker; it never starts a second one.
 
-```bash
-make stop            # stops backend, web, AI worker and containers
-make demo            # starts one worker again
-```
+The worker logs in as the `ai` service user through the REST API and holds no database credentials.
+A worker that cannot log in exits at once with a traceback in `ops/logs/ai.log`; `make demo` reports
+`AI worker exited during startup` and stops.
 
-The worker needs the backend: it logs in as the `ai` service user and reads/writes through the
-REST API. It holds no database credentials. A worker that cannot log in exits at once with a
-traceback in `ops/logs/ai.log`; `make demo` reports `AI worker exited during startup` and stops.
-
-Provider: `make demo` uses `AI_PROVIDER=auto`. `auto` honours the provider recorded on the run
-when it is `rules` or `ollama`; otherwise it uses Ollama when available, else the deterministic
-rules provider. An explicit `AI_PROVIDER=rules` or `AI_PROVIDER=ollama` overrides the recorded
-value for every run.
-
-## 7. Pre-demo checklist (T-15 minutes)
+## 8. Pre-demo checklist (T-15 minutes)
 
 - [ ] Docker Desktop is running: `docker info` prints a server version.
-- [ ] `make reset && make demo` completes, final line `Result: OK — full demo stack is healthy.`
-- [ ] AI worker: `ops/ai-workers.sh` prints exactly one PID, and `make demo` shows
-      `AI worker: <pid> — consumes queued extraction runs`.
+- [ ] `docker ps` shows both stacks: v3 (`yammic-postgres`, `yammic-hapi`) and v4
+      (`yammic-v4-postgres-1`, `yammic-v4-hapi-1`, `yammic-v4-hapi2-1`), all healthy.
+- [ ] `make reset && make demo` completes in `~/yammic-v4`, final line
+      `Result: OK — full v4 demo stack is healthy (both hospitals).`
+- [ ] `ops/ai-workers.sh` prints exactly one PID, and `make demo` shows the AI worker line.
 - [ ] `tail -n 20 ops/logs/ai.log` has no `ai.poll_error` or `ai.run_error` lines.
-- [ ] `curl -fsS http://127.0.0.1:8090/fhir/metadata` returns a `CapabilityStatement`.
-- [ ] `curl -fsS http://127.0.0.1:8000/health` returns `{"status":"ok",...}`.
-- [ ] `open http://127.0.0.1:8080` shows the login screen; log in with a demo role.
-- [ ] Browser zoom is 100%, screen mirroring is correct.
-- [ ] `ops/logs/` has no growing error tail: `tail -n 50 ops/logs/*.log`.
-- [ ] Backend-down fallback: stop the backend (`make stop` is too broad) — the app must show the
-      read-only offline snapshot. Restart with `make demo`.
-- [ ] Laptop is on power, sleep is disabled, no OS update pending.
+- [ ] Both FHIR servers answer: `curl -fsS http://127.0.0.1:8091/fhir/metadata` and `:8092`.
+- [ ] `curl -fsS http://127.0.0.1:8001/health` returns `{"status":"ok",...}`.
+- [ ] `open http://127.0.0.1:8081` shows the login screen; log in with a demo role.
+- [ ] `tail -n 50 ops/logs/*.log` shows no growing error tail.
+- [ ] v3 is still healthy if it is the fallback (`curl :8090/fhir/metadata`, `:8000/health`, `:8080`).
+- [ ] Browser zoom is 100%, screen mirroring is correct, laptop on power, sleep disabled.
 - [ ] No real patient data on screen or in the dataset.
 
-## 8. Notes and boundaries
+## 9. Notes and boundaries
 
-- No production systems, no cloud resources, no paid APIs. `claude` AI provider stays off (Gate 3).
-- Run **one** AI worker. `make demo` enforces this; do not start a second by hand.
-- `make stage-arrivals` loads the three live-sync arrival patients into HAPI without changing the
-  platform data. Use it to make the pre-demo state one command: `make reset && make stage-arrivals && make demo`.
-- HAPI FHIR uses the local PostgreSQL database `hapi`. Do not point it at a real FHIR endpoint.
-- Do not change `docker-compose.yml` ports or volume names without telling the other workstreams:
-  W3 (FHIR seed) expects `:8090`, W1/W5 expect Postgres on `:5433`.
+- No production systems, no cloud resources, no paid APIs. The `claude` AI provider stays off (Gate 3).
+- Run **one** AI worker per stack. The v4 worker is scoped to `:8001`.
+- Do not change v4 ports, project name or volume names without telling the other workstreams:
+  task C (FHIR seed, hospital 2), task D (backend, `FHIR_SOURCES`) and task F (web) depend on them.
+- Do not stop, restart or reset the v3 stack. If a v4 change would touch it, flag it to the CTO first.
 
-## 9. Secrets, DB roles and known risks (CEL-1785, security review v3)
+## 10. Secrets, DB roles and known risks
 
-- **Secrets.** The first `make` run writes `ops/.env.local` (git-ignored, mode 600) with random `JWT_SECRET`,
-  `PSEUDONYM_KEY`, `AUDIT_KEY` and the DB role passwords. The backend refuses to start without them (no committed
-  default). Deleting the file means a new `make reset` (old tokens, pseudonyms and audit hashes no longer match).
-- **DB roles** (made by `ops/postgres-init.sh`, only on a fresh volume, so use `make reset` after pulling this change):
-  `yammic` = owner/superuser for migrations and seed; `yammic_app` = the running backend, INSERT/SELECT only on
-  `audit_event`; `hapi` = HAPI FHIR, can only connect to database `hapi`.
-- **Audit chain.** Hashes are HMAC-SHA256 with `AUDIT_KEY`. Each committed write appends `time count headHash` to
-  `ops/audit-anchor.log`. `/audit/verify` fails on edits, mid-chain deletion, tail deletion and a full rewrite.
-  `make reset` deletes the anchor with the DB. Known limit: the anchor is a plain local file, not WORM storage;
-  someone with both the DB and the file system can edit both. Production needs an external append-only store.
-- **Known risk: HAPI image.** `hapiproject/hapi:latest` (digest in `docker-compose.yml`, HAPI 8.12.0) still carries
-  Spring/OTel CVEs (4 Critical, 25 High at scan). On 2026-11-21 `latest` still pointed to this digest, so no fixed image
-  could be pinned. Mitigation for the demo: port 8090 bound to 127.0.0.1 only (accepted in writing for the demo), HAPI
-  has its own low-privilege DB user, and CORS allows only `http://127.0.0.1:8080`. Re-check upstream before any use
-  outside a local demo. The HAPI server still has no authentication and serves raw MRN and names (synthetic data).
-- `ops/ai-workers.sh` and `make stop` act on every AI worker / `:8000` / `:8080` process on the machine, so do not run
-  them from a second checkout while another stack is up.
+- **Secrets.** The first `make` run writes `ops/.env.local` (git-ignored, mode 600) with random
+  `JWT_SECRET`, `PSEUDONYM_KEY`, `AUDIT_KEY`, `APP_DB_PASSWORD`, `HAPI_DB_PASSWORD` and
+  `HAPI2_DB_PASSWORD`. The backend refuses to start without them (no committed default). The file is
+  per checkout: v4's secrets cannot open v3's database. Deleting it means a new `make reset`.
+- **DB roles** (made by `ops/postgres-init.sh`, only on a fresh v4 volume):
+  `yammic` = owner/superuser for migrations and seed; `yammic_app` = the running backend;
+  `hapi` = hospital 1, can only connect to database `hapi`; `hapi2` = hospital 2, only `hapi2`.
+- **Audit chain.** Hashes are HMAC-SHA256 with `AUDIT_KEY`. Each committed write appends
+  `time count headHash` to `ops/audit-anchor.log`. `/audit/verify` fails on edits, mid-chain
+  deletion, tail deletion and a full rewrite. `make reset` deletes only v4's anchor with the DB.
+- **Known risk: HAPI image.** `hapiproject/hapi:latest` (pinned digest, HAPI 8.12.0) carries
+  Spring/OTel CVEs (4 Critical, 25 High at scan). Local demo mitigation: both ports bound to
+  127.0.0.1 only, each HAPI has its own low-privilege DB user, CORS pinned to `http://127.0.0.1:8081`.
+  Re-check upstream before any use outside a local demo. HAPI has no authentication and serves raw
+  synthetic MRN and names.

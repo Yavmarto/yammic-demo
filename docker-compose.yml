@@ -1,29 +1,37 @@
-# Local demo infrastructure for the Yammic platform slice.
-# Owner: DevOps (CEL-1773). Only local, synthetic data. No hosting, no real patient data.
+# Local demo infrastructure for the Yammic v4 stack.
+# Owner: DevOps (CEL-1801). Only local, synthetic data. No hosting, no real patient data.
 #
-#   postgres  PostgreSQL 16     host 127.0.0.1:5433   db yammic (backend, role yammic_app) + hapi (FHIR store, role hapi)
-#   hapi      HAPI FHIR JPA R4  host 127.0.0.1:8090   http://127.0.0.1:8090/fhir/metadata
+# This stack is parallel-safe with the frozen v3 stack: it has its own compose
+# project (`yammic-v4`), its own volume and its own host ports. No fixed
+# container_name, so the two stacks cannot take each other's containers away.
 #
+#   postgres   PostgreSQL 16      host 127.0.0.1:5434   db yammic (role yammic_app)
+#                                                      + hapi (role hapi) + hapi2 (role hapi2)
+#   hapi       HAPI FHIR R4       host 127.0.0.1:8091   hospital 1, db hapi
+#   hapi2      HAPI FHIR R4       host 127.0.0.1:8092   hospital 2, db hapi2
+#
+# Every host port comes from the environment and defaults to the v4 values.
+# The v3 stack (Postgres 5433, HAPI 8090) is untouched while this one runs.
 # The FastAPI backend and the Flutter web app run outside Docker (see Makefile).
 # Images are pinned by digest so a demo run never depends on a registry pull.
 
-name: yammic-demo
+name: yammic-v4
 
 services:
   postgres:
     # postgres:16, pulled 2026-11-21
     image: postgres:16@sha256:3950ad7c3148ca2175ef1b6c36c9efbf78957ae8fbe8b3a5d7c35af50500382f
-    container_name: yammic-postgres
     environment:
       POSTGRES_DB: yammic
       POSTGRES_USER: yammic
       POSTGRES_PASSWORD: yammic
       APP_DB_PASSWORD: ${APP_DB_PASSWORD:?run via make (ops/ensure-env.sh creates ops/.env.local)}
       HAPI_DB_PASSWORD: ${HAPI_DB_PASSWORD:?run via make (ops/ensure-env.sh creates ops/.env.local)}
+      HAPI2_DB_PASSWORD: ${HAPI2_DB_PASSWORD:?run via make (ops/ensure-env.sh creates ops/.env.local)}
       # Keep initdb output small and fast on a laptop.
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
     ports:
-      - "127.0.0.1:5433:5432"
+      - "127.0.0.1:${PG_PORT:-5434}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./ops/postgres-init.sh:/docker-entrypoint-initdb.d/10-roles.sh:ro
@@ -36,9 +44,8 @@ services:
     restart: unless-stopped
 
   hapi:
-    # hapiproject/hapi:latest, pulled 2026-11-21
+    # hapiproject/hapi:latest, pulled 2026-11-21 (same pinned digest as v3)
     image: hapiproject/hapi:latest@sha256:0ff86aac4c7bd13a1ee226444a70263bb46ed1c28ef543c30a44f865b80ca04e
-    container_name: yammic-hapi
     depends_on:
       postgres:
         condition: service_healthy
@@ -50,16 +57,16 @@ services:
       spring.datasource.driverClassName: org.postgresql.Driver
       spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
       hapi.fhir.fhir_version: R4
-      # SEC-03: HAPI's default config always enables CORS with origin "*". Pin it to the demo web origin,
-      # so a cross-site page (Origin: evil) gets 403 and cannot read patient data from the browser.
-      hapi.fhir.cors.allowed_origin: "http://127.0.0.1:8080"
+      # Pin CORS to the v4 web origin, so a cross-site page gets 403 and cannot
+      # read patient data from the browser.
+      hapi.fhir.cors.allowed_origin: "http://127.0.0.1:${WEB_PORT:-8081}"
       hapi.fhir.cors.allow_Credentials: "false"
-      hapi.fhir.server_address: "http://127.0.0.1:8090"
+      hapi.fhir.server_address: "http://127.0.0.1:${FHIR_PORT:-8091}"
       management.endpoints.web.exposure.include: health,info
       management.endpoint.health.show-details: never
       JAVA_TOOL_OPTIONS: "-Xmx1536m"
     ports:
-      - "127.0.0.1:8090:8080"
+      - "127.0.0.1:${FHIR_PORT:-8091}:8080"
     healthcheck:
       # The image ships HealthCheck.class; it probes the Spring Boot actuator
       # health endpoint on 127.0.0.1:8080 and exits 0 only on HTTP 200.
@@ -71,6 +78,36 @@ services:
       start_period: 240s
     restart: unless-stopped
 
+  hapi2:
+    # Second hospital: same pinned image, own database `hapi2` and DB user `hapi2`.
+    image: hapiproject/hapi:latest@sha256:0ff86aac4c7bd13a1ee226444a70263bb46ed1c28ef543c30a44f865b80ca04e
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      spring.datasource.url: "jdbc:postgresql://postgres:5432/hapi2"
+      spring.datasource.username: hapi2
+      spring.datasource.password: ${HAPI2_DB_PASSWORD:?run via make}
+      spring.datasource.driverClassName: org.postgresql.Driver
+      spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+      hapi.fhir.fhir_version: R4
+      hapi.fhir.cors.allowed_origin: "http://127.0.0.1:${WEB_PORT:-8081}"
+      hapi.fhir.cors.allow_Credentials: "false"
+      hapi.fhir.server_address: "http://127.0.0.1:${FHIR2_PORT:-8092}"
+      management.endpoints.web.exposure.include: health,info
+      management.endpoint.health.show-details: never
+      JAVA_TOOL_OPTIONS: "-Xmx1536m"
+    ports:
+      - "127.0.0.1:${FHIR2_PORT:-8092}:8080"
+    healthcheck:
+      test: ["CMD", "java", "-cp", "/app", "HealthCheck"]
+      interval: 10s
+      timeout: 8s
+      retries: 30
+      start_period: 240s
+    restart: unless-stopped
+
 volumes:
   pgdata:
-    name: yammic-postgres-data
+    # Own volume, separate from v3's yammic-postgres-data.
+    name: yammic-v4-postgres-data
