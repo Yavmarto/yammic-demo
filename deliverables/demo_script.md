@@ -1,8 +1,8 @@
 # Monday demo — script, talking points and "what this is not"
 
-Owner: PM (CEL-1755) · Version 1.0 · Prepared 2026-11-21
+Owner: PM (CEL-1755/CEL-1759) · Version 1.1 · Rehearsed 2026-11-21
 Demo date: **Monday 2026-11-23** · Slot: **10 minutes + Q&A**
-Build: Flutter (web + macOS), synthetic data only · Code freeze Sun 2026-11-22 20:00 CET
+Build: Flutter (web + macOS) + Zeta design system, synthetic data only · **frozen commit `d807681`** · Code freeze Sun 2026-11-22 20:00 CET
 
 ---
 
@@ -27,10 +27,11 @@ Build: Flutter (web + macOS), synthetic data only · Code freeze Sun 2026-11-22 
 
 | # | Check | Pass condition |
 |---|---|---|
+| 0 | `git -C ~/yammic-demo rev-parse --short HEAD` | `d807681` — the rehearsed build. Do not present from a different tree. |
 | 1 | `cd app && ~/flutter/bin/flutter build web --release` | Build succeeds; serve `build/web` on `127.0.0.1` |
 | 2 | Open the app in Chrome, full screen (`F11`), zoom 100% | Banner "Synthetic data — prototype, not for clinical use" visible |
 | 3 | Network off (Wi-Fi off, no hotspot) | App loads and all screens work |
-| 4 | Click path once, end to end | No red screen, no dead button |
+| 4 | Click path once, end to end (5 minutes) | No red screen, no dead button, no yellow overflow stripe |
 | 5 | Restart the app | State is fresh; audit trail is empty |
 | 6 | Backup recording (2 min, silent clicks) | Plays from local disk if the live build fails |
 | 7 | Laptop: power, Do Not Disturb, screen saver off, notifications off | No interruption |
@@ -44,27 +45,28 @@ Build: Flutter (web + macOS), synthetic data only · Code freeze Sun 2026-11-22 
 
 | Time | Segment | Screen / route | Goal |
 |---|---|---|---|
-| 0:00–0:45 | Opening + honesty frame | Title slide | Set trust: synthetic, prototype |
-| 0:45–1:45 | The problem | Slide 2 (problem) | EHR-to-EDC burden is real and unsolved |
-| 1:45–2:15 | What we will show | Live app, dashboard | Give the map before the tour |
-| 2:15–3:15 | Study dashboard | `/` (UI-001) | "What needs my attention today" |
-| 3:15–4:30 | Participant workspace | `/participant/SYN-0001` (UI-002) | The nurse's home; open review task |
-| 4:30–7:45 | **AI extraction review** | `/review` (UI-005) | Accept · Correct · Defer · provenance |
-| 7:45–8:45 | Audit trail | `/audit` | Every action is attributable and append-only |
-| 8:45–9:30 | What this is / is not | Slide 3 | Pre-empt the overclaim objection |
-| 9:30–10:00 | Next steps + ask | Slide 4 | Gate 1/2 path; one clear decision |
+| 0:00–0:40 | Opening + honesty frame | Title slide | Set trust: synthetic, prototype |
+| 0:40–1:45 | The problem | Slide 2 (problem) | EHR-to-EDC burden is real and unsolved |
+| 1:45–2:05 | What we will show | Live app, dashboard | Give the map before the tour |
+| 2:05–2:55 | Study dashboard | `/` (UI-001) | "What needs my attention today" |
+| 2:55–3:55 | Participant workspace | `/participant/GBM-NL-002` (UI-002) | The nurse's home; open the review queue |
+| 3:55–7:10 | **AI extraction review** | `/review` (UI-005) | Accept (≈4:45) · Correct (≈5:25) · Defer (≈6:20) · provenance (≈6:55) |
+| 7:10–8:00 | Audit trail | `/audit` | Every action is attributable and append-only |
+| 8:00–8:45 | What this is / is not | Slide 3 | Pre-empt the overclaim objection |
+| 8:45–9:35 | Next steps + ask | Slide 4 | Gate 1/2 path; one clear decision |
+| 9:35–10:00 | Stop talking | — | 25 s of deliberate slack; invite Q&A |
 | after | Q&A | Section 6 | Honest answers, no invented numbers |
 
-**Pacing:** roughly 140 spoken words per minute. If you are 30 seconds late at 4:30, cut the dashboard tour to 30 seconds — never cut the Correct step or the audit trail.
+**Pacing:** about 140 spoken words per minute. The measured spoken text is 6:38; with click transitions the full run is about 8:00, leaving 2:00 of buffer. If you are 45 seconds late at 3:55, cut the dashboard detail to 30 seconds and skip the visit timeline — never cut the Correct step, the abstention, or the audit trail.
 
 ---
 
 ## 3. Segment scripts
 
 > Bracketed text is a stage direction. Quotes are spoken text. "Click" lines are the click path.
-> `SYN-0001` is the participant id in the frozen Dart contract (`app/lib/models/models.dart`). If the data task lands a different id format (DEMO-2 brief says `GBM-NL-001`), say that id instead — see §8 open flags.
+> The demo participant is `GBM-NL-002`; ids are `GBM-NL-001..008` in the frozen data (`app/assets/data/participants.json`). All three scripted cases — accept, correct, defer — exist on `GBM-NL-002`.
 
-### 3.1 Opening — 0:00–0:45
+### 3.1 Opening — 0:00–0:40
 
 **Slide:** Title — *"AI-assisted trial data capture — a synthetic working prototype"*.
 Subtitle: *Synthetic data · prototype · not for clinical use.*
@@ -73,7 +75,7 @@ Subtitle: *Synthetic data · prototype · not for clinical use.*
 
 *Why this opener:* the banner and the honesty frame remove the two objections that kill demos — "is this real data?" and "are you claiming too much?".
 
-### 3.2 The problem — 0:45–1:45
+### 3.2 The problem — 0:40–1:45
 
 **Slide 2 — The problem** (text in §4.2).
 
@@ -87,93 +89,100 @@ Subtitle: *Synthetic data · prototype · not for clinical use.*
 - Manual entry is not only slow; it is the main source of transcription errors and query loops between site, monitor and data manager [INFERRED — standard trial operations knowledge].
 - Existing EHR-to-EDC products exist (OpenClinica, Castor, IgniteData Archer and others), so the gap is not "nobody thought of this" [VERIFIED — openclinica.com/ehr-to-edc-integration; others GK, verify].
 
-### 3.3 What we will show — 1:45–2:15
+### 3.3 What we will show — 1:45–2:05
 
 **Switch to the live app at the dashboard.**
 
-> "Three screens and one loop. The study dashboard, one participant's visit, and the review screen where AI proposals are accepted, corrected or rejected. Then the audit trail. Eight minutes of product, two minutes on what it is not."
+> "Three working screens and the audit trail. The study dashboard, one participant's visit, the review screen where AI proposals are accepted, corrected or deferred, and then the audit trail. Eight minutes of product, two minutes on what it is not."
 
-### 3.4 Study dashboard — 2:15–3:15
+### 3.4 Study dashboard — 2:05–2:55
 
 **Click:** app opens on `/` — the **Research dashboard** for one glioblastoma study across three sites.
 
-> "This screen answers one question for a coordinator: what needs my attention today? One synthetic glioblastoma study, three sites, recruitment against target, eCRF completeness, alerts, and the task list. This is deliberately thin. We are not rebuilding a CTMS dashboard; mature products already do that, and we should integrate, not duplicate.
+> "This screen answers one question for a coordinator: what needs my attention today? One synthetic glioblastoma study, three sites, recruitment against target, eCRF completeness, alerts, and the task list. It is deliberately thin: we are not rebuilding a CTMS dashboard; mature products already do that, and we should integrate, not duplicate.
 >
-> The work queue is the **Tasks** card. The open AI extraction review is here. That is the work this product removes from the nurse's evening."
+> The work queue is the **Tasks** card, further down. The MGMT alert points at the same problem as the task. That is the work this product removes from the nurse's evening."
 
-**Expected on screen:** "Research dashboard"; study card with "Recruitment x/y" and "eCRF completeness n%"; sections "Alerts", "Sites", "Tasks", "Milestones"; task row with assignee, due date and participant id.
-**Click next:** the task row in **Tasks** (title from `dashboard.json`, e.g. "Review AI extractions") → participant.
-**If a chart is missing:** do not wait. Say "the numbers are the source of truth" and move on. (Known build issue: the seeded placeholder study is "Synthetic Cardio Study"; the GBM study must replace it before rehearsal — §8.)
+**Expected on screen:** "Research dashboard"; one card "ReDiReCCT-GB Demo (synthetic) · GBM-NL-2026-01 · phase II" with "Recruitment 8/24" and "eCRF completeness 71%"; sections "Alerts" (warning: "GBM-NL-002: AI MGMT proposal contradicts the pathology report."), "Sites", "Tasks", "Milestones". Task row: "Correct MGMT promoter value · Data manager (demo) · due 2026-11-24 · GBM-NL-002".
+**Click next:** scroll one notch to **Tasks**, click the **Correct MGMT promoter value** row → participant. (The task list is below the fold at 1440×900; the scroll is part of the script, not a failure.)
+**If the task row is not visible:** open **Participants** in the rail and click `GBM-NL-002`. Do not debug on stage.
 
-### 3.5 Participant workspace — 3:15–4:30
+### 3.5 Participant workspace — 2:55–3:55
 
-**Click:** the task row, or **Participants** in the navigation rail → `/participant/SYN-0001`.
+**Click:** the task row, or **Participants** in the navigation rail → `/participant/GBM-NL-002`.
 
-> "This is the site nurse's home. A pseudonymised id, status, the visit timeline, eCRF status and the quality issues. Notice what is not here: no name, no date of birth, no hospital record number. In a real deployment, identifiers stay in the hospital node; this workspace works on the pseudonymised record.
+> "This is the site nurse's home. A pseudonymised id, status, the study and site, age and sex, and the clinical summary. Notice what is not here: no name, no date of birth, no hospital record number. In a real deployment, identifiers stay in the hospital node; this workspace works on the pseudonymised record.
 >
-> Baseline is complete. Week four is scheduled. And the eCRF card shows "awaiting review" — that is our entry point."
+> The visit timeline and eCRF status are further down; we do not need them today. The header button is our entry point: **Open AI review**."
 
-**Expected on screen:** participant id and status chip; study · site · age · sex; "Clinical summary"; "Visit timeline"; "eCRF status" with progress bars and the raw status text; "Quality issues"; "Treatment history"; header button.
-**Click next:** **Review AI values** in the header (the build shows **Open AI review** when no eCRF is awaiting review). The app passes the participant id to `/review`.
+**Expected on screen:** "GBM-NL-002" and an "active" chip; "GBM-NL-2026-01 · SITE-02 · 64 y · M"; "Clinical summary"; "Visit timeline"; header button **Open AI review**.
+**Label note:** the build shows **Review AI values** only when an eCRF is `awaiting_review`; `GBM-NL-002` is `in progress`, so the label is **Open AI review**. Do not say "awaiting review".
+**Click next:** **Open AI review** in the header. The app passes `GBM-NL-002` to `/review` and filters the queue to that participant.
 
-### 3.6 AI extraction review — 4:30–7:45 (centrepiece)
+### 3.6 AI extraction review — 3:55–7:10 (centrepiece)
 
-**Screen:** UI-005. Left: synthetic source document. Middle: proposal. Right: target eCRF field.
-*Build note: as of 2026-11-21 10:05 this screen is still the Engineer's stub ("AI review — stub"). The segment cannot be rehearsed until DEMO-5 lands. The labels below are the required minimum; final layout comes from D7.*
+**Screen:** UI-005, live in the frozen build. Left: synthetic source document with the evidence span highlighted. Middle: proposed values. Right: target eCRF field.
+**Build facts:** toolbar reads "AI extraction review", filtered to `GBM-NL-002`; the queue has **16 pending** proposals (15 fields plus a duplicate `EXT` extent-of-resection row). The first card is **Subject identifier** — select a card before you click an action.
 
 **(a) Layout — 45 s**
 
-> "Three columns. On the left, the synthetic source document. The AI's evidence is highlighted, so you can check it in one glance. In the middle, the proposal: the value, the confidence, the proposed standard code, and the model and prompt version that produced it. On the right, the target eCRF field.
+> "Three columns. On the left, the synthetic source document, with the AI's evidence highlighted so you can check it in one glance. In the middle, the proposed values: the value, the confidence, and the proposed standard code. On the right, the target eCRF field.
 >
 > The value on the right is not research data yet. It is a proposal. Nothing is saved into the dataset until a person acts. Four actions: accept, correct, reject, defer."
 
 **(b) Accept — 40 s**
 
-**Click:** Accept on histology.
-**Example:** `histology = "Glioblastoma, IDH-wildtype"`, confidence 0.96, evidence span in the pathology report, proposed code ICD-O-3 9440/3.
+**Click:** click the **Histology (central review)** card, then **Accept**.
+**Example:** `Glioblastoma, IDH-wildtype`, confidence 0.97, evidence span in the pathology report, code `ICD-O-3 9440/3 — Glioblastoma, NOS`.
 
-> "Histology. Confidence 0.96. The highlighted sentence in the report is the evidence. One click, and it moves from proposal to verified data — with the reviewer, the time and the source recorded. If the sentence did not support the value, we would not accept it, whatever the confidence says."
+> "Histology. Confidence 0.97. The highlighted sentence in the pathology report is the evidence. One click moves it from proposal to verified data — with the reviewer, the time and the source recorded. If the sentence did not support the value, we would not accept it, whatever the confidence says."
 
 **(c) Correct — 50 s**
 
-**Click:** Correct on `mgmt_methylation`.
-**Example:** AI proposal `methylated`, confidence 0.61; source text says `unmethylated`.
+**Click:** click the **MGMT promoter methylation** card, then **Correct**. Replace **Methylated** with **Unmethylated**. Click **Save correction**.
+**Example:** AI proposal `Methylated`, confidence 0.72; source span: `MGMT promoter is unmethylated`.
 
-> "Now a harder one. The model proposes 'methylated' with confidence 0.61. The report says 'unmethylated'. The model was uncertain, and it was wrong. We correct the value and type the reason. That reason is part of the record, because the next reviewer needs to know why the proposal changed.
+> "Now a harder one. The model proposes 'methylated' with confidence 0.72. The report says 'unmethylated'. The model was uncertain, and it was wrong. We replace the value and save. The record keeps the original proposal, the corrected value, the reviewer and the time, so the next reviewer can see exactly what changed.
 >
 > This case is in the demo on purpose. A demo that only shows the model being right is not a demo of a safety mechanism."
 
+**Do not claim a reason field on Correct.** The build records a before/after pair plus the reviewer; free-text reason capture is on the Reject path only.
+
 **(d) Defer / reject — 40 s**
 
-**Click:** Defer on `progression_date` (RANO).
-**Example:** model abstains — "not stated" in the document, confidence 0.18.
+**Click:** click the **Date of progression (RANO)** card, then **Defer**.
+**Example:** model abstains — "Not stated", confidence 0.00; source: "RANO assessment is not available for this timepoint." Accept is disabled.
 
-> "Third case: the document does not state a RANO progression date. The model abstains. It does not invent a value. We defer it, and it becomes an open task for the next visit instead of a silent gap in the dataset.
+> "Third case: the MRI says the RANO assessment is not available. The model abstains: value 'Not stated', confidence 0.00, and Accept is disabled. It does not invent a value. We defer it, and it becomes an open task for the next visit instead of a silent gap in the dataset.
 >
-> Reject exists for a different case: a proposal that is not in the source at all. Rejecting is not deleting — it is a recorded human decision."
+> Reject exists for a different case: a proposal that is not in the source at all. It asks for a reason, and it is recorded, not deleted."
 
 **(e) Provenance — 20 s**
 
 > "Every proposal carries the model id and the prompt version. When the model changes, the audit trail tells you which values came from which version. That is what makes an AI workflow reviewable in a regulated trial."
 
-### 3.7 Audit trail — 7:45–8:45
+The target pane shows `Model demo-extractor v0.1 · prompt prompt-2026-11-21`; the MGMT code is a LOINC placeholder marked unverified.
 
-**Click:** **Audit** in the navigation rail → `/audit`.
+### 3.7 Audit trail — 7:10–8:00
 
-> "Four events, in order. The AI extraction, then accept, correct and defer. Who, what, when, before, after, and whether the source was AI or a human. The AI event carries the model and prompt version; the human events carry the reviewer.
+**Click:** **View audit trail** in the target pane (or **Audit** in the navigation rail) → `/audit`.
+
+> "The queue load wrote one AI extraction event for every proposed value: forty-six events. Our three human decisions are on top, newest first: defer, correct, accept.
 >
-> The list is append-only. There is no edit and no delete button, because the audit trail is the safety argument. A monitor can reconstruct exactly what happened to every value, and why."
+> Click **Human**. Three events. Who, what, when, before, after, and whether the source was AI or a human. The AI events carry the model and prompt version; the human events carry the reviewer.
+>
+> Click the correction. Before 'methylated', after 'unmethylated', with the reviewer and time. The list is append-only: no edit and no delete. A monitor can reconstruct exactly what happened to every value, and why."
 
-**Point at:** one AI row and one human row, then the before/after pair on the correction.
-**If the trail is empty:** the review actions did not persist — switch to the backup recording for 30 seconds, then continue on the next steps slide.
+**Point at:** the `Human` filter (count drops to "3 events"), then the **correct** row and its detail: `Methylated → Unmethylated`, actor `SYN-JD`, source `Human · verified`, model `demo-extractor v0.1`, prompt `prompt-2026-11-21`.
+**If the human events are missing:** the review actions did not persist — switch to the backup recording for 30 seconds, then continue on the next steps slide. The 46 AI rows alone are not evidence of review.
 
-### 3.8 What this is / is not — 8:45–9:30
+### 3.8 What this is / is not — 8:00–8:45
 
 **Slide 3** (text in §4.3). Read the five "is not" lines; do not paraphrase them into softer language.
 
 > "So, plainly. It is a synthetic prototype of one workflow, with pre-computed AI output and a human review loop. It is not connected to anything. It is not a medical device, and we make no MDR claim. It is not validated and not clinically deployable. It is not an accuracy benchmark — we have not measured accuracy, and I will not give you a number today."
 
-### 3.9 Next steps — 9:30–10:00
+### 3.9 Next steps — 8:45–9:35
 
 **Slide 4** (text in §4.4).
 
@@ -299,7 +308,7 @@ I will not invent a number. Phase 3 is a controlled single-hospital pilot; cost 
 No. Hard rule: AI never writes to the EHR, and it never makes a treatment decision. Values go to the research dataset only after human review.
 
 **Q12. Why Flutter?**
-One codebase for web and macOS, which keeps the demo stable on the presenting laptop. The Board set it as the product UI default. The trade-off is a smaller widget ecosystem than React; for this workflow that is acceptable.
+One codebase for web and macOS, which keeps the demo stable on the presenting laptop. The Board set it as the product UI default. The frozen build uses Flutter with the Zeta design system for the visual layer. The trade-off is a smaller widget ecosystem than React; for this workflow that is acceptable.
 
 **Q13. What is still missing before a hospital could use it?**
 Authentication and roles, real connectors, terminology services, validation evidence, a QMS, security assessment and a DPIA. That is Phase 2–4, and it is the larger part of the work.
@@ -318,7 +327,8 @@ Because a safety mechanism that is only shown working on easy cases is marketing
 | App does not start / "Data load failed" | Restart once. If it repeats, open the backup recording and present from it. |
 | A click does nothing | Do not click twice. Say "prototype", go to the next screen from the navigation rail, keep the story. |
 | Review screen shows no proposals | Go to the dashboard, reopen the participant, then review. If still empty, use the recording for the review segment. |
-| Audit trail empty after review | Say "state is in memory in this build", show the recording's audit segment, continue. |
+| Audit shows 46 AI events but no human events | The review actions did not persist. Say "state is in memory in this build", show the recording's audit segment, continue. |
+| Correction mode clips the Cancel control | Known 53 px overflow. Click Correct, type the value, press Enter to save. Do not tab to Cancel on stage. |
 | Projector or resolution breaks the layout | Switch to the macOS build, or use the recording at 1440×900. |
 | Question you cannot answer | "We have not verified that; it goes on the open-questions list." Write it down. |
 
@@ -326,52 +336,74 @@ Because a safety mechanism that is only shown working on easy cases is marketing
 
 ---
 
-## 8. Click-path verification against spec and build
+## 8. Click-path verification against the frozen build
 
-Status at 2026-11-21 10:05 CET (script v1.0).
+Rehearsal 2026-11-21 10:30 CET. Frozen build `d807681` on `dev` (DEMO-1/5 + DEMO-2 data + DEMO-7 Zeta). Working tree clean except other teams' untracked `deliverables/` drafts.
 
-**Build check done now** (commit `4b817b1`, `dev` branch):
+**Checks run on `d807681`**
 - `~/flutter/bin/flutter analyze` → "No issues found".
-- `~/flutter/bin/flutter build web --release` → "Built build/web".
-- Shell renders the banner text "Synthetic data — prototype, not for clinical use" and the navigation rail with the exact labels **Dashboard · Participants · AI review · Audit**.
-- UI-001 dashboard and UI-002 participant workspace are implemented and clickable (task row → participant; header button → review).
-- UI-005 review and the audit view are **stubs** (`AI review — stub (Engineer)`, `Audit trail — stub (Engineer)`). The review and audit segments cannot be rehearsed until DEMO-5 lands.
+- `~/flutter/bin/flutter test` → 8 of 8 passed (data contract, review/audit, smoke).
+- `~/flutter/bin/flutter build web --release` → success.
+- `~/flutter/bin/flutter build macos` → success; the macOS app launches (QA CEL-1757).
+- Scripted click path through the real widget tree (app root with `ZetaProvider`, 1440×900): all taps resolved; no dead click. Audit: 49 events (46 AI extraction + 3 human), `Human` filter = 3 events, correction detail shows `Methylated → Unmethylated`, actor `SYN-JD`, source `Human · verified`, model `demo-extractor v0.1`, prompt `prompt-2026-11-21`.
+- Banner `Synthetic data — prototype, not for clinical use` rendered on `/`, `/participant/GBM-NL-002`, `/review` and `/audit` (one `Shell`, hard rule).
 
-| Step | Route | Contract source | Status |
+| Step | Route | Exact on-screen label | Result |
 |---|---|---|---|
-| Dashboard | `/` | `demo_tech_spec.md` routes; plan screen table (UI-001) | **Built and clickable** |
-| Participant | `/participant/<id>` | `demo_tech_spec.md`; `main.dart` router | **Built and clickable** |
-| AI review | `/review` (optional participant argument) | `demo_tech_spec.md`; `05` §3 UI-005; journey 1 in `05` §4 | Route fixed; **stub — UI details pending D7 spec and DEMO-5** |
-| Audit | `/audit` | `demo_tech_spec.md`; `04` FR-038 | Route fixed; **stub — pending DEMO-5** |
+| Dashboard | `/` | "Research dashboard"; "ReDiReCCT-GB Demo (synthetic) · GBM-NL-2026-01 · phase II" | Works |
+| Tasks row | `/` | "Correct MGMT promoter value · Data manager (demo) · due 2026-11-24 · GBM-NL-002" | Works; row is below the fold — scroll one notch |
+| Participant | `/participant/GBM-NL-002` | "GBM-NL-002", "active", "Clinical summary", header **Open AI review** | Works; eCRF/quality sections are below the fold |
+| Review | `/review` (filtered) | "AI extraction review", "16 pending", `SOURCE · pathology report · DOC-002-PATH` | Works |
+| Accept | review | **Histology (central review)** card + **Accept** → "Verified · Accepted" | Works |
+| Correct | review | **MGMT promoter methylation** + **Correct** → **Save correction** → "Verified · Corrected" | Works; **53 px Row overflow in correction mode** (risk below) |
+| Defer | review | **Date of progression (RANO)** + **Defer** → "Deferred"; Accept disabled | Works |
+| Audit | `/audit` | **Human** filter → "3 events"; correction detail with before/after | Works |
 
-**Checked now**
-- Sequence matches journey 1 exactly (dashboard → participant → review → accept/correct/reject → audit).
-- Actions match `05` §3 (Accept / Correct / Reject / Defer, evidence highlighted, confidence shown, provenance retained).
-- Field names match the planned eCRF set (histology, MGMT promoter methylation, RANO progression date) and the `AiExtraction` model fields (`value`, `sourceText`, `spanStart`, `spanEnd`, `confidence`, `model`, `promptVersion`).
-- Banner, no-network and pre-computed-AI rules match the plan's stability rules.
-- On-screen labels in §3 match build commit `4b817b1` (navigation rail labels; participant header button; dashboard section headings).
+**Deviations found and fixed in the script (v1.1)**
+- Participant id `SYN-0001` → `GBM-NL-002`. The accept, correct and defer cases all exist on `GBM-NL-002`; `GBM-NL-001` has no wrong-MGMT case.
+- Entry is the second task row, **Correct MGMT promoter value**, not the first ("Review AI extractions for TMZ cycle 5" → `GBM-NL-001`).
+- Header button is **Open AI review** (002's eCRF is `in progress`, not `awaiting_review`).
+- Confidences are 0.97 (accept), 0.72 (correct), 0.00 (abstain); code is `ICD-O-3 9440/3 — Glioblastoma, NOS`.
+- Correct has no reason field; the build records a before/after pair plus the reviewer.
+- The audit is 49 events (46 AI + 3 human), not four. Click **Human** to show the three decisions, newest first: defer, correct, accept.
+- Dashboard Tasks is below the fold; the participant eCRF/quality cards are below the fold. The script now scrolls once and does not claim those cards are visible.
+- Run sheet rebalanced: the problem needs 1:05 and next steps 0:50; total spoken text is 6:38.
 
-**Pending (owner + date)**
-- D7 screen spec (Designer, due Sat 18:00): confirm layout order, colour/icon of "AI proposal — not verified", keyboard shortcuts; adjust the click wording, not the sequence.
-- Final build (CTO + Engineer, before freeze Sun 20:00): run the script once; fix timings and any dead click. Tracked in **DEMO-4b**.
-- Acceptance run (QA, DEMO-6): include this click path in the stability run and report deviations.
-
-**Open data flags**
-- Participant id format: `models.dart` says `SYN-0001`; the DEMO-2 brief says `GBM-NL-001`. Align before rehearsal; the script uses `SYN-0001`.
-- `extractions.json` must contain the three scripted cases: high-confidence accept, plausible-but-wrong medium-confidence value (to correct), and an abstention ("not stated", to defer). If the fourth (reject) case exists, add 20 seconds in the review segment and cut dashboard detail.
-- The placeholder dashboard still says "Synthetic Cardio Study"; the demo needs the GBM study before rehearsal.
+**Open risks**
+- **Correct-mode layout overflow** (53 px, target pane, 1440×900, Zeta theme): the control Row "Save correction / Cancel" is too wide. Tracked as a child issue for the app owner; the fix is `Row` → `Wrap`. In release the `Cancel` control clips; **Save correction works and is visible**. Do not tab to Cancel on stage.
+- The timed read used TTS at 140 wpm, not the presenter's voice. Do one human read before Monday (§9).
+- Code freeze is Sunday 20:00. If any commit lands after `d807681`, repeat this checklist; the Zeta work changed colours only, not labels or routes.
+- Data note: `GBM-NL-002` has two `EXTRES` proposals (conf 0.38 and 0.93). The script does not touch them; do not accept both on stage.
 
 ---
 
-## 9. Rehearsal plan
+## 9. Rehearsal log and plan
 
-1. **Silent run** (20 min): click the full path three times with no talking. Fix any dead click or missing state. Reset the app between runs.
-2. **Timed read** (15 min): read the spoken text at a normal pace with a timer. Target 9:30 to leave 30 seconds of slack.
-3. **Dress rehearsal** (20 min): full run with one listener who asks two hostile questions from §6. Record it; check the banner is visible in every frame.
-4. **Cut order if over time:** dashboard detail → audit polish → Q&A depth. Never cut the Correct step, the abstention, or the "is not" slide.
+**Run 1 — scripted click run, 2026-11-21, frozen `d807681`:** one full pass through dashboard → participant → review (accept, correct, defer) → audit. Every tap resolved; banner present on all four screens; audit assertions passed. One layout exception in correction mode (see §8 risks). No dead click.
+
+**Run 2 — timed read, 2026-11-21:** the exact spoken text was rendered at 140 words per minute with macOS `say -r 140` and measured: **6:38**. Click budget: 8 mouse actions in the review segment plus ~10 typed characters (≈23 s at 2 s/action), 7 s in audit, 9 s for dashboard/participant navigation, 6 s for slide changes = **0:48**. Planned full run: **7:30–8:10 of 10:00**, including stage pauses.
+
+| Segment | Spoken (measured) | Clicks | Budget |
+|---|---|---|---|
+| 3.1 Opening | 0:22 | — | 0:40 |
+| 3.2 The problem | 1:02 | — | 1:05 |
+| 3.3 What we will show | 0:16 | 0:04 | 0:20 |
+| 3.4 Study dashboard | 0:35 | 0:04 | 0:39 |
+| 3.5 Participant | 0:31 | 0:04 | 0:35 |
+| 3.6 Review | 2:02 | 0:23 | 2:25 |
+| 3.7 Audit | 0:40 | 0:07 | 0:47 |
+| 3.8 Is / is not | 0:24 | 0:02 | 0:26 |
+| 3.9 Next steps | 0:48 | 0:02 | 0:50 |
+| **Total** | **6:38** | **0:48** | **7:47** |
+
+**Remaining for a human (10 minutes)**
+1. One full dress rehearsal in the presenter's own voice with a listener; take two hostile questions from §6.
+2. Check the correction control row after the overflow fix; confirm `Save correction` and `Cancel` are both visible.
+3. Record the 2-minute backup (silent clicks) on the frozen build, then play it once from local disk.
+4. If the human read is slower than 140 wpm, cut in this order: audit provenance detail → dashboard alert detail → participant summary detail. Never cut the Correct step, the abstention, or the "is not" slide.
 
 **Presenter card (one page, printed)**
-`0:00 open · 0:45 problem · 1:45 map · 2:15 dashboard · 3:15 participant · 4:30 review (accept 5:15 · correct 5:55 · defer 6:45 · provenance 7:25) · 7:45 audit · 8:45 is/is not · 9:30 next steps · 10:00 stop`
+`0:00 open · 0:40 problem · 1:45 map · 2:05 dashboard (scroll to Tasks) · 2:55 participant · 3:55 review (accept 4:45 · correct 5:25 · defer 6:20 · provenance 6:55) · 7:10 audit (Human filter, correction row) · 8:00 is/is not · 8:45 next steps · 9:35 stop talking · 10:00 end`
 
 ---
 
