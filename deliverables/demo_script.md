@@ -590,7 +590,7 @@ I will not invent a number. Phase 3 is a controlled single-hospital pilot; cost 
 
 ## 10. Rehearsal log (against the real v4 build)
 
-Rehearsed **2026-11-21 21:20–21:45 CET** on the **v4 stack** in `~/yammic-v4` at `1aeba7d` (the script commit is recorded at the freeze), with the frozen v3 stack running untouched on 8080/8000. The rehearsal used the real v4 web build (:8081), the real backend (:8001), both HAPI servers, and the local Ollama worker. The click path was driven in a headless Chromium at **1440×900** with screenshots at every screen; the write path was verified with the same API calls the UI makes. No v3 data or process was touched.
+Rehearsed **2026-11-21 21:20–21:45 CET** on the **v4 stack** in `~/yammic-v4`: code at `1aeba7d` (rename), plus the docs-only security review `9a81b9a`; the v4 script is `00a88d5` (the freeze commit is recorded on Sunday). The frozen v3 stack ran untouched on 8080/8000. The rehearsal used the real v4 web build (:8081), the real backend (:8001), both HAPI servers, and the local Ollama worker. The click path was driven in a headless Chromium at **1440×900** with screenshots at every screen; the write path was verified with the same API calls the UI makes. No v3 data or process was touched.
 
 **Stack and data**
 
