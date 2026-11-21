@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yammic v4 screen references — five new features</title>
+<style>
+:root{
+  --canvas:#F3F6FA; --surface:#FFFFFF; --sunken:#EEF2F7; --hover:#F3F6FA; --selected:#F1F8FF;
+  --line:#E4E9F0; --line-strong:#CED2DB; --input:#8A94A6;
+  --ink:#1D1E23; --ink2:#545963; --ink3:#667085;
+  --accent:#0073E6; --accent-ink:#005BB8; --accent-soft:#F1F8FF; --focus:#005BB8;
+  --brand:#0E1B2C; --brand-muted:#9FB3C8;
+  --ai:#FEF2E2; --ai-line:#B26A00; --ai-ink:#6E4A00; --evidence:#FFE1A8; --evidence-active:#FFD08A;
+  --ok:#ECFFF7; --ok-line:#4EA26B; --ok-ink:#0C5734;
+  --bad:#FFF0F1; --bad-line:#D70015; --bad-ink:#8F000E;
+  --defer:#F3F6FA; --defer-line:#8A94A6; --defer-ink:#3F4B58;
+  --teal:#1A8080; --teal-bg:#E7F7F7; --teal-ink:#0B4F4F;
+  --info:#F1F8FF; --info-line:#7CB4F0; --info-ink:#005BB8;
+  --chart1:#0073E6; --chart2:#1A8080; --chart3:#8D7400; --chart4:#D30589; --chart-pos:#00864F; --grid:#E4E9F0; --chart-muted:#A7B0BE;
+  --r-control:8px; --r-panel:12px; --r-dialog:16px; --r-pill:999px;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s6:24px; --s8:32px; --s12:48px; --s16:64px;
+  --font:"IBM Plex Sans","Inter","Segoe UI",-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:"SF Mono","Menlo","Consolas",monospace;
+  --shadow:0 8px 24px rgba(16,24,40,.10),0 2px 6px rgba(16,24,40,.06);
+  --ease:cubic-bezier(.25,1,.5,1);
+}
+*{box-sizing:border-box}
+html{background:#0f141b}
+body{margin:0;font-family:var(--font);color:var(--ink);background:#0f141b;-webkit-font-smoothing:antialiased}
+body.single{background:var(--canvas);width:1440px;height:900px;overflow:hidden}
+a{color:var(--accent-ink);text-decoration:none}
+.i{width:18px;height:18px;display:inline-block;vertical-align:-4px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.doc{max-width:1680px;margin:0 auto;padding:28px 28px 80px}
+.doc-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding:8px 0 20px;border-bottom:1px solid #26303d;color:#e9eef5}
+.doc-head h1{font-size:26px;line-height:1.2;font-weight:500;margin:0 0 6px;letter-spacing:-.3px}
+.doc-head p{margin:0;color:#9fb0c4;font-size:13px;max-width:820px;line-height:1.5}
+.doc-head .meta{font-size:12px;color:#8a9bb0;text-align:right;white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 6px;color:#c9d5e4;font-size:12px}
+.legend span{display:inline-flex;align-items:center;gap:6px;background:#161d27;border:1px solid #26303d;border-radius:999px;padding:5px 10px}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.index{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 24px}
+.index a{color:#dce6f2;background:#161d27;border:1px solid #26303d;border-radius:8px;padding:7px 10px;font-size:12px}
+.index a:hover{border-color:#3d5166;background:#1b2430}
+.screen{margin:0 0 40px}
+.caption{display:flex;align-items:baseline;justify-content:space-between;gap:16px;color:#c9d5e4;font-size:13px;margin:0 0 10px}
+.caption h2{font-size:16px;font-weight:500;margin:0;color:#e9eef5;white-space:nowrap}
+.caption p{margin:0;color:#8a9bb0;font-size:12px;max-width:980px;line-height:1.45}
+.frame-wrap{position:relative;width:100%;overflow:hidden;background:#0f141b}
+.frame{width:1440px;height:900px;background:var(--canvas);position:relative;transform-origin:top left;overflow:hidden;border:1px solid #26303d;border-radius:4px}
+body.single .doc{padding:0;max-width:none}
+body.single .doc-head,body.single .index,body.single .caption,body.single .legend,body.single .foot{display:none}
+body.single .screen{margin:0}
+body.single .frame-wrap{height:900px}
+body.single .frame{border:0;border-radius:0;transform:none}
+.banner{height:28px;flex:0 0 28px;background:#FEF2E2;border-bottom:1px solid #F0D3A8;color:#6E4A00;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;font-weight:500}
+.banner .demo{margin-left:8px;font-size:9.5px;letter-spacing:.08em;border:1px solid #D9A96A;border-radius:999px;padding:1px 6px;color:#8A5A00}
+.shell{display:flex;height:872px}
+.side{width:232px;flex:0 0 232px;background:var(--sunken);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:16px 12px 12px}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px 18px}
+.mark{width:26px;height:26px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:500}
+.brand b{font-size:18px;font-weight:500;letter-spacing:-.2px}
+.nav-group{margin:0 0 12px}
+.nav-group .gl{font-size:10px;letter-spacing:.1em;color:var(--ink3);padding:0 10px 6px;font-weight:500}
+.nav-item{display:flex;align-items:center;gap:9px;height:36px;padding:0 10px;border-radius:8px;color:var(--ink2);font-size:13.5px;font-weight:400;cursor:default;white-space:nowrap}
+.nav-item .i{width:17px;height:17px;flex:0 0 17px;color:var(--ink3)}
+.nav-item.active{background:var(--selected);color:var(--ink);font-weight:500;box-shadow:inset 0 0 0 1px #D6E8FC}
+.nav-item.active .i{color:var(--accent)}
+.badge{margin-left:auto;font-size:10.5px;font-weight:500;background:var(--ai);color:var(--ai-ink);border:1px solid #E8C98F;border-radius:999px;padding:1px 6px}
+.badge.q{background:var(--info);color:var(--info-ink);border-color:#BFDCFA}
+.side-foot{margin-top:auto;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:8px}
+.conn{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink2);padding:0 8px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 3px rgba(26,128,128,.12);flex:0 0 8px}
+.dot.amber{background:var(--ai-line);box-shadow:0 0 0 3px rgba(178,106,0,.12)}
+.dot.grey{background:var(--defer-line);box-shadow:none}
+.dot.red{background:var(--bad-line);box-shadow:none}
+.user{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;background:#fff;border:1px solid var(--line)}
+.avatar{width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center;font-size:10.5px;font-weight:500;flex:0 0 26px}
+.user .nm{font-size:12.5px;font-weight:500;line-height:1.2}
+.user .rl{font-size:10.5px;color:var(--ink3)}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{height:56px;flex:0 0 56px;background:rgba(255,255,255,.86);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 24px}
+.crumb{font-size:12px;color:var(--ink3);display:flex;align-items:center;gap:6px}
+.crumb b{color:var(--ink);font-weight:500}
+.study{font-size:11.5px;color:var(--ink2);border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px}
+.spacer{flex:1}
+.connpill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--teal-ink);background:var(--teal-bg);border:1px solid #BFE7E7;border-radius:999px;padding:4px 9px}
+.connpill .dot{width:7px;height:7px;flex:0 0 7px;box-shadow:none}
+.date{font-size:11.5px;color:var(--ink3)}
+.rolebanner{height:30px;flex:0 0 30px;display:flex;align-items:center;gap:8px;padding:0 24px;background:var(--info);border-bottom:1px solid var(--line);color:var(--info-ink);font-size:12px;font-weight:500}
+.content{flex:1;min-height:0;overflow:hidden;padding:24px;display:flex;flex-direction:column;gap:16px}
+.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;min-height:48px;flex:0 0 auto}
+.pagehead h1{font-size:30px;line-height:1.2;font-weight:500;letter-spacing:-.5px;margin:0}
+.pagehead p{margin:4px 0 0;font-size:12.5px;color:var(--ink2)}
+.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:40px;padding:0 14px;border-radius:8px;border:1px solid transparent;font:500 13px/1 var(--font);cursor:default;white-space:nowrap}
+.btn .i{width:15px;height:15px}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.outline{background:#fff;border-color:var(--line-strong);color:var(--ink)}
+.btn.text{background:transparent;color:var(--accent-ink)}
+.btn.quiet{background:transparent;color:var(--ink2)}
+.btn.danger{background:transparent;color:var(--bad-ink)}
+.btn.sm{height:30px;padding:0 9px;font-size:12px;border-radius:7px}
+.btn[aria-disabled="true"]{opacity:.45}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-panel);overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.phead{height:44px;flex:0 0 44px;display:flex;align-items:center;gap:8px;padding:0 16px;border-bottom:1px solid var(--line)}
+.phead .label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:500}
+.phead .right{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink3)}
+.pbody{padding:16px;min-height:0}
+.pbody.tight{padding:0}
+.pbody.scroll{overflow:hidden;position:relative}
+.grow{flex:1;min-height:0}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;min-height:0}
+.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+.metric{display:flex;background:#fff;border:1px solid var(--line);border-radius:var(--r-panel);height:92px;overflow:hidden;flex:0 0 92px}
+.metric .seg{display:block;flex:1;padding:11px 15px;border-right:1px solid var(--line);position:relative;min-width:0}
+.metric .seg:last-child{border-right:0}
+.mlabel{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mvalue{font-size:26px;line-height:1.1;font-weight:500;letter-spacing:-.4px;font-variant-numeric:tabular-nums;margin-top:3px;white-space:nowrap}
+.mvalue small{font-size:13px;color:var(--ink3);font-weight:400;letter-spacing:0}
+.mdelta{font-size:10.5px;color:var(--chart2);font-weight:500;white-space:nowrap}
+.mdelta.neg{color:var(--bad-ink)}
+.mbar{position:absolute;left:16px;right:16px;bottom:5px;height:2px;background:var(--line)}
+.mbar i{display:block;height:2px;background:var(--accent);width:33%}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:500;border-radius:999px;padding:2px 7px;border:1px solid;white-space:nowrap}
+.tag.ai{background:var(--ai);border-color:#E8C98F;color:var(--ai-ink)}
+.tag.ai.dash{border-style:dashed}
+.tag.ok{background:var(--ok);border-color:#B9E3C9;color:var(--ok-ink)}
+.tag.bad{background:var(--bad);border-color:#F3B9BE;color:var(--bad-ink)}
+.tag.defer{background:var(--defer);border-color:#DDE3EB;color:var(--defer-ink)}
+.tag.teal{background:var(--teal-bg);border-color:#BFE7E7;color:var(--teal-ink)}
+.tag.plain{background:#fff;border-color:var(--line);color:var(--ink2)}
+.tag .d{width:5px;height:5px;border-radius:50%;background:currentColor;flex:0 0 5px}
+.table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}
+.table thead th{background:var(--sunken);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:500;text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.table td{padding:8px 12px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.table tr:last-child td{border-bottom:0}
+.table .num{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+.table .mono{font-family:var(--mono);font-size:11px;color:var(--ink2)}
+.table .sub{font-size:10.5px;color:var(--ink3)}
+.bar{height:6px;border-radius:6px;background:var(--line);overflow:hidden;width:64px}
+.bar i{display:block;height:6px;background:var(--accent);border-radius:6px}
+.bar.teal i{background:var(--chart2)}
+.rowflex{display:flex;align-items:center;gap:10px;min-height:0}
+.qitem{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line)}
+.qitem:last-child{border-bottom:0}
+.qitem .qmain{min-width:0;flex:1}
+.qitem .qfield{font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qitem .qsub{font-size:10.5px;color:var(--ink3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.small{font-size:11px;color:var(--ink3)}
+.mono{font-family:var(--mono);font-size:11px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.kbd{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;border:1px solid var(--line-strong);border-radius:4px;font-family:var(--mono);font-size:9.5px;color:var(--ink3);background:#fff}
+.kv{display:grid;grid-template-columns:84px 1fr;gap:6px 10px;font-size:12px}
+.kv dt{color:var(--ink3)}
+.kv dd{margin:0;color:var(--ink);font-weight:500}
+.divider{height:1px;background:var(--line);margin:0}
+.segctl{display:inline-flex;background:var(--sunken);border:1px solid var(--line);border-radius:8px;padding:2px;flex:0 0 auto}
+.segctl span{font-size:11.5px;padding:5px 9px;border-radius:6px;color:var(--ink2);white-space:nowrap}
+.segctl span.on{background:#fff;color:var(--ink);font-weight:500;box-shadow:0 1px 2px rgba(16,24,40,.08)}
+.chip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 9px;border:1px solid var(--line-strong);border-radius:8px;background:#fff;font-size:11.5px;color:var(--ink2);white-space:nowrap}
+.chip.on{background:var(--selected);border-color:var(--accent);color:var(--ink);font-weight:500}
+.chip .d{width:7px;height:7px;border-radius:50%;background:var(--teal);flex:0 0 7px}
+.checkbox{width:16px;height:16px;border-radius:4px;border:1px solid var(--input);background:#fff;display:inline-grid;place-items:center;flex:0 0 16px;color:#fff;font-size:10px}
+.checkbox.on{background:var(--accent);border-color:var(--accent)}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:28px}
+.empty .ei{width:32px;height:32px;color:var(--ink3);opacity:.75}
+.empty b{font-size:12.5px;font-weight:500}
+.empty span{font-size:10.5px;color:var(--ink3);max-width:280px;line-height:1.45}
+.skel{background:var(--sunken);border-radius:6px;height:10px;width:70%}
+.skel.w2{width:46%;height:8px}.skel.w3{width:86%}
+/* v4: tabs, state pills, evidence */
+.tabs{display:flex;align-items:center;gap:2px;border-bottom:1px solid var(--line);height:40px;flex:0 0 40px}
+.tab{height:40px;padding:0 14px;display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink2);border-bottom:2px solid transparent;white-space:nowrap}
+.tab.on{color:var(--ink);font-weight:500;border-bottom-color:var(--accent)}
+.tab .badge{margin-left:2px}
+.spill{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:500;border-radius:999px;padding:2px 7px;border:1px solid;white-space:nowrap}
+.spill.met{background:var(--ok);border-color:var(--ok-line);color:var(--ok-ink)}
+.spill.notmet{background:var(--bad);border-color:var(--bad-line);color:var(--bad-ink)}
+.spill.unknown{background:var(--defer);border-color:var(--defer-line);color:var(--defer-ink);border-style:dashed}
+.spill.aip{background:var(--ai);border-color:var(--ai-line);color:var(--ai-ink);border-style:dashed}
+.spill.planned{background:#fff;border-color:var(--defer-line);color:var(--defer-ink);border-style:dashed}
+.evlink{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:var(--info-ink);white-space:nowrap;font-weight:500}
+.evlink .i{width:12px;height:12px}
+.evbox{background:#FFF9EE;border:1px solid #F0D3A8;border-left:2px solid var(--ai-line);border-radius:8px;padding:9px 11px;font-size:12px;line-height:1.55;color:var(--ink)}
+.evbox .hl{background:var(--evidence);border-bottom:2px solid var(--ai-line);border-radius:3px;padding:0 1px}
+.evbox .src{font-size:10px;color:var(--ink3);margin-top:5px;font-family:var(--mono)}
+/* screening */
+.split{display:flex;gap:16px;flex:1;min-height:0}
+.queue{width:360px;flex:0 0 360px}
+.qrow{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-bottom:1px solid var(--line);min-height:64px}
+.qrow.sel{background:var(--selected);box-shadow:inset 0 0 0 2px var(--accent);border-radius:10px}
+.qrow .qid{font-size:12.5px;font-weight:500;font-variant-numeric:tabular-nums}
+.qrow .qmeta{font-size:10.5px;color:var(--ink3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qrow .qright{margin-left:auto;text-align:right;flex:0 0 auto}
+.minibar{display:flex;height:4px;border-radius:3px;overflow:hidden;background:var(--line);width:92px;margin-top:5px}
+.minibar i{display:block;height:4px}
+.checkhead{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.checkhead h2{font-size:18px;font-weight:500;margin:0;font-variant-numeric:tabular-nums}
+.checkhead .meta{font-size:11.5px;color:var(--ink2);margin-top:2px}
+.critgroup{background:var(--sunken);height:30px;display:flex;align-items:center;padding:0 16px;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:500;border-bottom:1px solid var(--line)}
+.crit{display:flex;align-items:flex-start;gap:10px;padding:9px 16px;border-bottom:1px solid var(--line);min-height:54px}
+.crit .st{width:18px;flex:0 0 18px;margin-top:2px}
+.crit .code{width:52px;flex:0 0 52px;font-family:var(--mono);font-size:11px;color:var(--ink2);margin-top:3px}
+.crit .ctext{flex:1;min-width:0;font-size:12.5px;line-height:1.45}
+.crit .ctext b{font-weight:500}
+.crit .cright{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:0 0 auto}
+.footbar{height:58px;flex:0 0 58px;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:0 16px;background:var(--surface)}
+/* dashboard compare */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1;min-height:0}
+.bars{display:flex;flex-direction:column;gap:10px}
+.brow{display:flex;align-items:center;gap:10px}
+.brow .bl{width:132px;flex:0 0 132px;font-size:11.5px;color:var(--ink2)}
+.brow .bt{flex:1;display:flex;flex-direction:column;gap:3px}
+.bgrp{display:flex;align-items:center;gap:4px;height:14px}
+.bgrp i{display:block;height:8px;border-radius:2px;min-width:2px}
+.bgrp em{font-style:normal;font-family:var(--mono);font-size:9.5px;color:var(--ink2);margin-left:4px;white-space:nowrap}
+.legend{display:flex;gap:12px;font-size:10.5px;color:var(--ink3);flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend em{width:8px;height:8px;border-radius:2px;display:inline-block;font-style:normal}
+/* queries */
+.qlayout{display:flex;gap:16px;flex:1;min-height:0}
+.qlist{width:360px;flex:0 0 360px}
+.qthread{flex:1;min-width:0}
+.qcontext{width:340px;flex:0 0 340px}
+.filterbar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.qrow2{padding:9px 12px;border-bottom:1px solid var(--line);min-height:68px}
+.qrow2.sel{background:var(--selected);box-shadow:inset 0 0 0 2px var(--accent);border-radius:10px}
+.qrow2 .top{display:flex;align-items:center;gap:7px}
+.qrow2 .f{font-size:12.5px;font-weight:500}
+.qrow2 .age{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--ink3)}
+.qrow2 .snip{font-size:11px;color:var(--ink2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qrow2 .meta{display:flex;align-items:center;gap:6px;margin-top:5px;font-size:10px;color:var(--ink3)}
+.unread{width:6px;height:6px;border-radius:50%;background:var(--accent);flex:0 0 6px}
+.thread{flex:1;min-height:0;display:flex;flex-direction:column}
+.thead{height:62px;flex:0 0 62px;padding:9px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.msg{display:flex;gap:9px;padding:9px 16px;border-bottom:1px solid #F0F3F8}
+.msg .body{font-size:12.5px;line-height:1.5;color:var(--ink);margin-top:2px}
+.msg .meta{font-size:10.5px;color:var(--ink3)}
+.msg .att{display:inline-flex;align-items:center;gap:4px;margin-top:5px;font-size:10px;color:var(--info-ink);background:var(--accent-soft);border:1px solid #D6E8FC;border-radius:6px;padding:2px 6px}
+.sys{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--ink3);padding:7px 16px;background:#FAFCFE;border-bottom:1px solid var(--line)}
+.composer{border-top:1px solid var(--line);padding:9px 12px;background:var(--surface);flex:0 0 auto}
+.composer .fake{height:52px;border:1px solid var(--input);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--ink3)}
+.composer .row{display:flex;align-items:center;gap:8px;margin-top:7px}
+.compareblock{padding:12px 14px;border-bottom:1px solid var(--line)}
+.cval{display:flex;align-items:baseline;gap:6px}
+.cval b{font-size:22px;font-weight:500;font-variant-numeric:tabular-nums}
+.conflict{background:var(--bad);border:1px solid var(--bad-line);border-radius:8px;padding:8px 10px;font-size:11px;color:var(--bad-ink);line-height:1.4;margin-top:8px}
+.sdv{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
+/* timeline */
+.tlayout{display:flex;gap:16px;flex:1;min-height:0}
+.tline{flex:1;min-width:0}
+.trail{width:360px;flex:0 0 360px}
+.tcontrols{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.lanehead{display:flex;align-items:center;gap:10px;height:30px;border-bottom:1px solid var(--line);background:var(--sunken);padding:0 12px}
+.axis{position:relative;flex:1;height:30px}
+.axis .m{position:absolute;top:8px;font-family:var(--mono);font-size:9px;color:var(--ink3)}
+.axis .m:last-child{left:auto!important;right:0}
+.today{position:absolute;top:0;bottom:0;width:1px;border-left:1px dashed var(--bad-line);z-index:2}
+.today b{position:absolute;top:-1px;left:3px;font-size:9px;color:var(--bad-ink);font-weight:500;white-space:nowrap}
+.lane{display:flex;align-items:center;gap:0;height:64px;border-bottom:1px solid var(--line)}
+.lanelabel{width:120px;flex:0 0 120px;display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink2);padding-left:2px}
+.lanelabel .i{width:15px;height:15px}
+.track{position:relative;flex:1;height:64px;background-image:linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:16.66% 100%;}
+.evbar{position:absolute;height:20px;border-radius:3px;font-size:9.5px;line-height:16px;padding:0 5px;white-space:nowrap;overflow:hidden}
+.evbar.solid{background:rgba(0,115,230,.12);border:2px solid var(--accent);color:var(--accent-ink)}
+.evbar.teal{background:rgba(26,128,128,.12);border:2px solid var(--teal);color:var(--teal-ink)}
+.evbar.amber{background:rgba(0,115,230,.08);border:2px dashed var(--accent);color:var(--accent-ink)}
+.evbar.plan{background:#fff;border:2px dashed var(--defer-line);color:var(--defer-ink);opacity:.8}
+.evdot{position:absolute;width:12px;height:12px;border-radius:50%;border:2px solid var(--accent);background:#fff;top:26px}
+.evdot.fill{background:var(--accent)}
+.evdot.scan{border-color:var(--chart4)}.evdot.scan.fill{background:var(--chart4)}
+.evdot.bad{border-color:var(--bad-line)}.evdot.bad.fill{background:var(--bad-line)}
+.evtick{position:absolute;top:37px;width:2px;height:10px;background:var(--ink2);border-radius:1px}
+.evtick b{position:absolute;top:-12px;left:-5px;font-family:var(--mono);font-size:8px;color:var(--ink3);font-weight:400}
+.legendline{display:flex;gap:10px;align-items:center;padding:8px 14px;border-top:1px solid var(--line);font-size:10px;color:var(--ink3);flex-wrap:wrap}
+.legendline span{display:inline-flex;align-items:center;gap:4px}
+.legendline em{width:10px;height:6px;border-radius:2px;display:inline-block;font-style:normal}
+.tevent{padding:12px 14px;border-bottom:1px solid var(--line)}
+.tevent h3{font-size:15px;font-weight:500;margin:4px 0 2px}
+.tevent .date{font-family:var(--mono);font-size:11px;color:var(--ink3)}
+.evlist{display:flex;flex-direction:column}
+.evlist .r{display:flex;align-items:center;gap:8px;padding:7px 14px;border-bottom:1px solid var(--line);font-size:11px}
+.evlist .r .d{width:6px;height:6px;border-radius:50%;background:var(--accent);flex:0 0 6px}
+/* protocol */
+.playout{display:flex;gap:16px;flex:1;min-height:0}
+.pprot{width:420px;flex:0 0 420px}
+.pprop{flex:1;min-width:0}
+.prail{width:320px;flex:0 0 320px}
+.prose{padding:14px 16px;font-size:12px;line-height:1.6;color:var(--ink);overflow:hidden}
+.prose h4{font-size:12.5px;font-weight:500;margin:10px 0 4px;letter-spacing:.01em}
+.prose p{margin:0 0 7px}
+.prose .hl{background:var(--evidence-active);border-bottom:2px solid var(--ai-line);border-radius:3px;padding:0 1px}
+.pcard{border:1px solid var(--line);border-radius:9px;padding:9px 10px;margin:7px 12px;background:#fff}
+.pcard.ai{border-color:#E8C98F;border-style:dashed;background:#FFFCF5}
+.pcard.excl{opacity:.55}
+.pcard .r1{display:flex;align-items:center;gap:7px}
+.pcard .r1 b{font-size:12.5px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard .r2{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:10.5px;color:var(--ink2);flex-wrap:wrap}
+.pcard .r3{display:flex;align-items:center;gap:8px;margin-top:5px;font-size:10px;color:var(--ink3);flex-wrap:wrap}
+.vcard{border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin:8px 12px;background:#fff}
+.vcard.active{border-color:var(--ok-line);background:#F7FFFB}
+.vcard.draft{border-color:#E8C98F;background:#FFFCF5}
+.vcard b{font-size:12.5px;font-weight:500}
+.vcard .m{font-size:10.5px;color:var(--ink3);margin-top:3px;line-height:1.45}
+.checkrow{display:flex;align-items:flex-start;gap:6px;font-size:10.5px;line-height:1.4;padding:3px 12px}
+.checkrow .i{width:13px;height:13px;margin-top:1px}
+.vhist .r{display:flex;gap:8px;padding:7px 12px;border-bottom:1px solid var(--line);font-size:10.5px;color:var(--ink2)}
+.vhist .r .vd{width:7px;height:7px;border-radius:50%;background:var(--ok-line);margin-top:3px;flex:0 0 7px}
+.vhist .r.old .vd{background:var(--mutedLine,#B5BEC9)}
+.foot{color:#8a9bb0;font-size:11px;padding:22px 0 0;border-top:1px solid #26303d;margin-top:10px}
+.states{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;flex:1}
+.statebox{background:#fff;border:1px solid var(--line);border-radius:var(--r-panel);padding:16px;min-height:160px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:7px}
+.statebox .ei{width:28px;height:28px;color:var(--ink3);opacity:.8}
+.statebox b{font-size:12.5px;font-weight:500}
+.statebox span{font-size:10.5px;color:var(--ink3);line-height:1.45}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.2"/><path d="M15.5 14.5c2.4.2 4.1 1.7 4.7 4.5"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5z"/><path d="M18.5 16.5l.7 2.3 2.3.7-2.3.7-.7 2.3-.7-2.3-2.3-.7 2.3-.7z"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+<symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 3v5M15 3v5M6 8h12v2a6 6 0 0 1-6 6 6 6 0 0 1-6-6zM12 16v5"/></symbol>
+<symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-5"/><circle cx="12" cy="18" r="1.5"/></symbol>
+<symbol id="i-export" viewBox="0 0 24 24"><path d="M12 3v11M8 10l4 4 4-4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7L11.5 5.8"/><path d="M14 11a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.5-1.5"/></symbol>
+<symbol id="i-linkoff" viewBox="0 0 24 24"><path d="M10 13a4 4 0 0 0 5.7 0l1.5-1.5"/><path d="M14 11a4 4 0 0 0-5.7 0l-1.5 1.5"/><path d="M4 4l16 16"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></symbol>
+<symbol id="i-checkc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8 12.4l2.8 2.8L16.5 9"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L20 8l-4-4L4 16z"/><path d="M14.5 5.5l4 4"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.5 9.2a2.6 2.6 0 1 1 3.6 2.4c-.8.4-1.1.9-1.1 1.8"/><circle cx="12" cy="17" r=".8" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></symbol>
+<symbol id="i-sync" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14-4L4 9"/><path d="M4 5v4h4"/><path d="M4 13a8 8 0 0 0 14 4l2-2"/><path d="M20 19v-4h-4"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5.5c0 4.4-3 7.6-7 9.5-4-1.9-7-5.1-7-9.5V6z"/><path d="M8.5 12l2.3 2.3 4.7-4.8"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 9v4.5"/><circle cx="12" cy="17" r=".8" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.8" r=".8" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-error" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5.5"/><circle cx="12" cy="16.6" r=".8" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 5h16l-6 7v6l-4 2v-8z"/></symbol>
+<symbol id="i-compare" viewBox="0 0 24 24"><path d="M7 4v16M17 4v16"/><path d="M4 8l3-3 3 3M14 16l3 3 3-3"/></symbol>
+<symbol id="i-cut" viewBox="0 0 24 24"><circle cx="7" cy="17" r="2.5"/><circle cx="7" cy="7" r="2.5"/><path d="M9 15L20 4M9 9L20 20"/></symbol>
+<symbol id="i-rt" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></symbol>
+<symbol id="i-med" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="8" rx="4" transform="rotate(-35 12 12)"/><path d="M9 15l6-6"/></symbol>
+<symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M7 12h10"/></symbol>
+<symbol id="i-event" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
+<symbol id="i-timel" viewBox="0 0 24 24"><path d="M3 12h18"/><circle cx="7" cy="12" r="2"/><circle cx="13" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></symbol>
+<symbol id="i-forum" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></symbol>
+<symbol id="i-rule" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9l2 2 3-3M8 16h8"/></symbol>
+<symbol id="i-tree" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="4" rx="1"/><rect x="3" y="16" width="6" height="4" rx="1"/><rect x="15" y="16" width="6" height="4" rx="1"/><path d="M12 7v5M6 16v-4h12v4"/></symbol>
+<symbol id="i-personoff" viewBox="0 0 24 24"><circle cx="10" cy="8" r="3"/><path d="M4 19c.5-3 2.4-4.6 4.8-4.9"/><path d="M16 16l5 5M21 16l-5 5"/></symbol>
+<symbol id="i-verified" viewBox="0 0 24 24"><path d="M12 3l2.3 1.7 2.8-.2 1 2.6 2.3 1.6-.9 2.7.9 2.7-2.3 1.6-1 2.6-2.8-.2L12 21l-2.3-1.7-2.8.2-1-2.6L3.6 15l.9-2.7L3.6 9.7l2.3-1.6 1-2.6 2.8.2z"/><path d="M8.5 12.2l2.2 2.2 4.8-4.8"/></symbol>
+<symbol id="i-attach" viewBox="0 0 24 24"><path d="M8 12l6-6a4 4 0 0 1 5.7 5.7l-8 8a6 6 0 0 1-8.5-8.5l7-7"/></symbol>
+<symbol id="i-open" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"/></symbol>
+<symbol id="i-cloudoff" viewBox="0 0 24 24"><path d="M6 17h10a4 4 0 0 0 1.2-7.8A5.5 5.5 0 0 0 7 8.6"/><path d="M4 4l16 16"/></symbol>
+<symbol id="i-doc" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M9.5 12h5M9.5 15.5h5"/></symbol>
+</svg>
+<div class="doc">
+  <header class="doc-head">
+    <div>
+      <h1>Yammic v4 — five new screens</h1>
+      <p>Visual reference for the v4 features, using the frozen v3 visual language: one accent, amber for AI proposals, green for human-verified data, teal for system integrity, 1 px borders, no shadows on panels. The contract is <span class="mono">deliverables/D7c_v4_screens.md</span>.</p>
+    </div>
+    <div class="meta">2026-11-21 · Designer<br>1440 × 900 frames</div>
+  </header>
+  <div class="legend">
+    <span><i class="sw" style="background:#0073E6"></i> Accent</span>
+    <span><i class="sw" style="background:#B26A00"></i> AI proposal</span>
+    <span><i class="sw" style="background:#4EA26B"></i> Human verified</span>
+    <span><i class="sw" style="background:#D70015"></i> Not met / conflict</span>
+    <span><i class="sw" style="background:#1A8080"></i> System integrity</span>
+    <span><i class="sw" style="background:#F3F6FA;border:1px solid #CED2DB"></i> Unknown / planned</span>
+  </div>
+  <nav class="index">
+    <a href="#screening">01 Screening</a>
+    <a href="#sites">02 Site comparison</a>
+    <a href="#queries">03 Queries + SDV</a>
+    <a href="#timeline">04 Participant timeline</a>
+    <a href="#protocol">05 Protocol → form</a>
+    <a href="#states">06 States</a>
+  </nav>
+  <div id="screens"></div>
+  <div class="foot">Static reference for the Engineer. Not production code. Screenshots: <span class="mono">shots/</span>. The same tokens are in <span class="mono">app/lib/theme/tokens.dart</span>.</div>
+</div>
+<script>
+const I = (n, cls='') => `<svg class="i ${cls}"><use href="#i-${n}"/></svg>`;
+
+const nav = [
+  ['STUDY', [
+    ['/', 'Dashboard', 'grid', ''],
+    ['/participants', 'Participants', 'users', ''],
+    ['/screening', 'Screening', 'rule', '3'],
+    ['/queries', 'Queries', 'forum', '9:q'],
+    ['/review', 'AI review', 'spark', '46'],
+    ['/audit', 'Audit trail', 'clock', ''],
+  ]],
+  ['PLATFORM', [
+    ['/integrations', 'Integrations', 'plug', ''],
+    ['/ai-quality', 'AI quality', 'gauge', ''],
+    ['/protocol', 'Protocol → form', 'tree', ''],
+    ['/export', 'Export', 'export', ''],
+  ]],
+];
+function badge(v){
+  if(!v) return '';
+  if(v.endsWith(':q')) return `<span class="badge q">${v.slice(0,-2)}</span>`;
+  return `<span class="badge">${v}</span>`;
+}
+function sidebar(active){
+  return `<aside class="side">
+    <div class="brand"><div class="mark">Y</div><b>Yammic</b></div>
+    ${nav.map(([g,items])=>`<div class="nav-group"><div class="gl">${g}</div>
+      ${items.map(([r,l,ic,b])=>`<div class="nav-item ${active===r?'active':''}">${I(ic)} ${l} ${badge(b)}</div>`).join('')}
+    </div>`).join('')}
+    <div class="side-foot">
+      <div class="conn"><span class="dot"></span> FHIR connected · 42 ms</div>
+      <div class="user"><div class="avatar">JD</div><div><div class="nm">SYN-JD</div><div class="rl">Research nurse</div></div>${I('down','')}</div>
+    </div>
+  </aside>`;
+}
+function shell(active, crumb, content, opts={}){
+  const {monitor=false} = opts;
+  const who = monitor ? ['MV','SYN-MV','Monitor'] : ['JD','SYN-JD','Research nurse'];
+  return `<div class="banner">${I('info')} Synthetic data · Prototype, not for clinical use <span class="demo">DEMO</span></div>
+  <div class="shell">
+    <aside class="side">
+      <div class="brand"><div class="mark">Y</div><b>Yammic</b></div>
+      ${nav.map(([g,items])=>`<div class="nav-group"><div class="gl">${g}</div>
+        ${items.map(([r,l,ic,b])=>`<div class="nav-item ${active===r?'active':''}">${I(ic)} ${l} ${badge(b)}</div>`).join('')}
+      </div>`).join('')}
+      <div class="side-foot">
+        <div class="conn"><span class="dot"></span> FHIR connected · 42 ms</div>
+        <div class="user"><div class="avatar">${who[0]}</div><div><div class="nm">${who[1]}</div><div class="rl">${who[2]}</div></div>${I('down')}</div>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="top">
+        <div class="crumb"><b>${crumb}</b></div>
+        <div class="study">GBM-NL-2026-01</div>
+        <div class="spacer"></div>
+        <div class="connpill"><span class="dot"></span> Connected</div>
+        <div class="date">Data as of 23 Nov 2026</div>
+        <div class="avatar">${who[0]}</div>
+      </div>
+      ${monitor?`<div class="rolebanner">${I('info')} Monitor · queries and source verification only. The eCRF is read-only.</div>`:''}
+      <div class="content">${content}</div>
+    </div>
+  </div>`;
+}
+
+/* 1. SCREENING */
+const screening = shell('/screening', 'Screening', `
+  <div class="pagehead">
+    <div><h1>Screening</h1><p>3 to screen · 1 awaiting sign-off · 1 screen-fail</p></div>
+    <div class="actions">
+      <button class="btn outline">${I('filter')} Site: all ${I('down')}</button>
+      <button class="btn outline">${I('sync')} Sync</button>
+    </div>
+  </div>
+  <div class="split">
+    <div class="panel queue">
+      <div class="phead"><span class="label">Queue · 3</span><span class="right">oldest first</span></div>
+      <div class="filterbar" style="padding:8px 10px">
+        <div class="segctl"><span class="on">To screen</span><span>Sign-off</span><span>Screen-fail</span><span>All</span></div>
+      </div>
+      <div style="padding:7px 10px;border-bottom:1px solid var(--line)">
+        <div style="height:32px;border:1px solid var(--line-strong);border-radius:8px;display:flex;align-items:center;gap:6px;padding:0 9px;color:var(--ink3);font-size:11px">${I('search')} Search ID or site</div>
+      </div>
+      <div style="flex:1;overflow:hidden">
+        <div class="qrow sel">
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--ai);color:var(--ai-ink);display:grid;place-items:center;font-size:9px;font-weight:500;flex:0 0 28px">N4</div>
+          <div style="min-width:0;flex:1"><div class="qid">GBM-NL-004</div><div class="qmeta">44 y · F · Site 02 · referred 21 Nov</div><div class="minibar"><i style="width:77%;background:var(--ok-line)"></i><i style="width:8%;background:var(--bad-line)"></i><i style="width:15%;background:var(--defer-line)"></i></div></div>
+          <div class="qright"><span class="tag ai">Screening</span><div class="mono" style="margin-top:5px">10/13</div></div>
+        </div>
+        <div class="qrow">
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center;font-size:9px;font-weight:500;flex:0 0 28px">N5</div>
+          <div style="min-width:0;flex:1"><div class="qid">GBM-NL-005</div><div class="qmeta">61 y · M · Site 01 · referred 22 Nov</div><div class="minibar"><i style="width:69%;background:var(--ok-line)"></i><i style="width:0%;background:var(--bad-line)"></i><i style="width:15%;background:var(--defer-line)"></i><i style="width:16%;background:var(--line)"></i></div></div>
+          <div class="qright"><span class="tag ai">Awaiting sign-off</span><div class="mono" style="margin-top:5px">9/13</div></div>
+        </div>
+        <div class="qrow">
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--bad);color:var(--bad-ink);display:grid;place-items:center;font-size:9px;font-weight:500;flex:0 0 28px">N3</div>
+          <div style="min-width:0;flex:1"><div class="qid">GBM-NL-003</div><div class="qmeta">38 y · M · Site 03 · referred 19 Nov</div><div class="minibar"><i style="width:46%;background:var(--ok-line)"></i><i style="width:46%;background:var(--bad-line)"></i><i style="width:0%;background:var(--defer-line)"></i><i style="width:8%;background:var(--line)"></i></div></div>
+          <div class="qright"><span class="tag bad">Screen-fail</span><div class="mono" style="margin-top:5px">6/13</div></div>
+        </div>
+        <div class="qrow" style="background:#FAFBFD">
+          <div style="min-width:0;flex:1"><div class="qid" style="color:var(--ink2)">Queue clear after these 3</div><div class="qmeta">Sync again to check for new referrals.</div></div>
+        </div>
+      </div>
+      <div class="footbar" style="height:46px;flex-basis:46px;background:var(--sunken)"><span class="small">3 to screen · 1 awaiting sign-off · 1 screen-fail</span></div>
+    </div>
+    <div class="panel grow">
+      <div class="checkhead">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:9px"><h2>GBM-NL-004</h2><span class="tag ai">Screening</span><span class="tag plain">${I('alert')} 2 source conflicts</span></div>
+          <div class="meta">44 y · F · Site 02 · FUMC Noordhaven · referred 21 Nov 2026 · CRC SYN-LV</div>
+          <div style="margin-top:7px;display:flex;align-items:center;gap:8px"><div class="bar" style="width:160px"><i style="width:62%;background:var(--ok-line)"></i></div><span class="mono">10 met · 1 not met · 2 unknown</span><span class="small">· 8 human-confirmed</span></div>
+        </div>
+        <div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <button class="btn primary" aria-disabled="true" title="Resolve 3 unknown criteria first">${I('checkc')} Sign off eligibility</button>
+          <span class="small">5 criteria need a decision</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;padding:7px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap"><span class="small">Sources</span><span class="tag plain">${I('doc')} DOC-201-PATH</span><span class="tag plain">${I('doc')} DOC-201-MRI</span><span class="tag plain">${I('doc')} DOC-201-DIS</span><span class="spacer"></span><span class="small">Protocol criteria v1.0 · 13 criteria</span></div>
+      <div style="flex:1;overflow:hidden">
+        <div class="critgroup">Inclusion · 9</div>
+        ${[
+          ['checkc','INC-01','Age 18 years or older at diagnosis.','met','Met','DOC-201-DIS · p.1','',true],
+          ['spark','INC-02','Histologically confirmed glioblastoma, IDH-wildtype (WHO CNS5).','aip','Met · AI','DOC-201-PATH · p.2','0.96',false],
+          ['checkc','INC-03','MGMT promoter methylation status is known.','met','Met','DOC-201-PATH · p.2','',true],
+          ['checkc','INC-04','Karnofsky Performance Status 60 or higher, within 7 days.','met','Met','DOC-201-DIS · p.2','',true],
+          ['help','INC-05','Adequate bone-marrow function (ANC, platelets, haemoglobin).','unknown','Unknown · AI','No evidence','0.41',false],
+          ['checkc','INC-06','Adequate hepatic function (ALT, bilirubin).','met','Met','DOC-201-LAB · p.1','',true],
+          ['spark','INC-07','Adequate renal function (creatinine or eGFR).','aip','Met · AI','DOC-201-LAB · p.1','0.88',false],
+          ['x','INC-08','Post-surgical MRI is evaluable and surgery recovery ≥2 weeks.','notmet','Not met','DOC-201-MRI · p.1','',true],
+          ['checkc','INC-09','Able to give written informed consent and comply.','met','Met','DOC-201-CON · p.1','',true],
+        ].map(([ic,code,txt,st,label,ev,conf,human])=>`
+          <div class="crit">
+            <div class="st" style="color:${st==='met'?'var(--ok-line)':st==='notmet'?'var(--bad-line)':st==='aip'?'var(--ai-line)':'var(--defer-line)'}">${I(ic)}</div>
+            <div class="code">${code}</div>
+            <div class="ctext"><b>${txt}</b>${conf?`<div class="small" style="margin-top:2px;color:var(--ai-ink)">AI · confidence ${conf} ${human?'':'· not confirmed'}</div>`:''}</div>
+            <div class="cright"><span class="spill ${st==='aip'?'aip':st}">${label}</span><span class="evlink">${ev==='No evidence'?I('linkoff'):I('link')} ${ev}</span></div>
+          </div>`).join('')}
+        <div class="critgroup">Exclusion · 4</div>
+        ${[
+          ['checkc','EXC-01','Any prior radiotherapy to the brain.','met','Met','DOC-201-DIS · p.2'],
+          ['checkc','EXC-02','Prior systemic anti-glioma therapy.','met','Met','DOC-201-DIS · p.2'],
+          ['checkc','EXC-03','Tumour is IDH-mutant or IDH indeterminate.','met','Met','DOC-201-PATH · p.2'],
+          ['help','EXC-04','Pregnant or breastfeeding.','unknown','Unknown','No evidence'],
+        ].map(([ic,code,txt,st,label,ev])=>`
+          <div class="crit">
+            <div class="st" style="color:${st==='met'?'var(--ok-line)':'var(--defer-line)'}">${I(ic)}</div>
+            <div class="code">${code}</div>
+            <div class="ctext"><b>${txt}</b></div>
+            <div class="cright"><span class="spill ${st}">${label}</span><span class="evlink">${ev==='No evidence'?I('linkoff'):I('link')} ${ev}</span></div>
+          </div>`).join('')}
+      </div>
+      <div class="footbar"><span class="spill met">${I('checkc')} 10 met</span><span class="spill notmet">${I('x')} 1 not met</span><span class="spill aip">${I('spark')} 3 AI only</span><span class="spill unknown">${I('help')} 2 unknown</span><span class="spacer"></span><span class="small">${I('lock')} Sign-off writes one audit event</span></div>
+    </div>
+  </div>
+`);
+
+/* 2. SITE COMPARISON DASHBOARD */
+const sites = shell('/', 'Research dashboard', `
+  <div class="pagehead">
+    <div><h1>Research dashboard</h1><p>ReDiReCT-GB · All sites · 3 sites · last sync 2 min ago</p></div>
+    <div class="actions">
+      <button class="btn outline">${I('filter')} All sites ${I('down')}</button>
+      <button class="btn outline">${I('compare')} Compare sites</button>
+      <button class="btn outline">${I('sync')} Refresh</button>
+    </div>
+  </div>
+  <div class="metric">
+    <div class="seg"><div class="mlabel">Enrolled · all sites</div><div class="mvalue">8<small>/24</small></div><div class="mdelta">+3 this week</div><div class="mbar"><i style="width:33%"></i></div></div>
+    <div class="seg"><div class="mlabel">Screening</div><div class="mvalue">11</div><div class="mdelta">3 to screen · 1 sign-off</div></div>
+    <div class="seg"><div class="mlabel">eCRF verified</div><div class="mvalue">71<small>%</small></div><div class="mdelta">verified data only</div></div>
+    <div class="seg"><div class="mlabel">Open queries</div><div class="mvalue">9</div><div class="mdelta neg">+2 since Mon</div></div>
+    <div class="seg"><div class="mlabel">AI review</div><div class="mvalue">46</div><div class="mdelta">2 abstained</div></div>
+  </div>
+  <div class="panel grow">
+    <div class="phead"><span class="label">Site comparison</span><span class="right"><span class="small">Compare:</span><span class="chip on"><span class="checkbox on">✓</span><span class="d"></span>01 Zuidhaven</span><span class="chip on"><span class="checkbox on">✓</span><span class="d"></span>02 Noordhaven</span><span class="chip on"><span class="checkbox on">✓</span><span class="d"></span>03 Westpark</span></span></div>
+    <div style="padding:12px 16px;display:flex;flex-direction:column;gap:10px;flex:1;min-height:0">
+      <div class="legend"><span><em style="background:#0073E6"></em>Site 01 Zuidhaven</span><span><em style="background:#1A8080"></em>Site 02 Noordhaven</span><span><em style="background:#8D7400"></em>Site 03 Westpark</span><span style="margin-left:auto">Bars in fixed site order · fill 12% · 2 px rule · direct labels</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 28px">
+        ${[
+          ['Enrolment vs target',[['3/10',30,'var(--chart1)'],['3/8',37,'var(--chart2)'],['2/6',33,'var(--chart3)']]],
+          ['eCRF completeness',[['70%',70,'var(--chart1)'],['78%',78,'var(--chart2)'],['64%',64,'var(--chart3)']]],
+          ['Open queries / participant',[['1.3',65,'var(--chart1)'],['1.0',50,'var(--chart2)'],['1.0',50,'var(--chart3)']]],
+          ['SDV coverage',[['40%',40,'var(--chart1)'],['55%',55,'var(--chart2)'],['50%',50,'var(--chart3)']]],
+        ].map(([label,vals])=>`<div class="brow"><div class="bl">${label}</div><div class="bt">${vals.map(([v,p,c])=>`<div class="bgrp"><i style="width:${p*1.7}px;background:${c};opacity:.22;border:1px solid ${c}"></i><em>${v}</em></div>`).join('')}</div></div>`).join('')}
+      </div>
+      <table class="table" style="table-layout:fixed">
+        <thead><tr><th style="width:24%">Site</th><th style="text-align:right;width:10%">Enrol.</th><th style="text-align:right;width:9%">Screen</th><th style="text-align:right;width:9%">Queries</th><th style="width:14%">eCRF</th><th style="width:14%">SDV</th><th style="text-align:right;width:12%">Δ avg</th></tr></thead>
+        <tbody>
+          <tr><td><b>Zuidhaven</b> <span class="sub">· 01</span></td><td class="num">3/10</td><td class="num">4</td><td class="num">4</td><td><div class="rowflex"><div class="bar"><i style="width:70%"></i></div><span class="mono">70%</span></div></td><td><div class="rowflex"><div class="bar teal"><i style="width:40%"></i></div><span class="mono">40%</span></div></td><td class="num" style="color:var(--bad-ink);white-space:nowrap">${I('down')} −3 pp</td></tr>
+          <tr><td><b>Noordhaven</b> <span class="sub">· 02</span></td><td class="num">3/8</td><td class="num">5</td><td class="num">3</td><td><div class="rowflex"><div class="bar"><i style="width:78%"></i></div><span class="mono">78%</span></div></td><td><div class="rowflex"><div class="bar teal"><i style="width:55%"></i></div><span class="mono">55%</span></div></td><td class="num" style="color:var(--teal-ink);white-space:nowrap">${I('chev')} +5 pp</td></tr>
+          <tr><td><b>Westpark</b> <span class="sub">· 03 · Paused</span></td><td class="num">2/6</td><td class="num">2</td><td class="num">2</td><td><div class="rowflex"><div class="bar"><i style="width:64%"></i></div><span class="mono">64%</span></div></td><td><div class="rowflex"><div class="bar teal"><i style="width:50%"></i></div><span class="mono">50%</span></div></td><td class="num" style="color:var(--bad-ink);white-space:nowrap">${I('down')} −9 pp</td></tr>
+        </tbody>
+      </table>
+      <div class="small">Δ is the site value minus the study average. Enrolment is site-only. Last sync 2 min ago for all sites.</div>
+      <table class="table" style="table-layout:fixed">
+        <thead><tr><th style="width:26%">Site connection</th><th style="width:22%">FHIR</th><th style="width:15%">Last sync</th><th style="text-align:right;width:12%">Docs</th><th style="text-align:right;width:14%">SDV pending</th><th style="width:11%">Status</th></tr></thead>
+        <tbody>
+          <tr><td><b>Zuidhaven</b> <span class="sub">· 01</span></td><td class="mono">HAPI R4 · 42 ms</td><td class="mono">2 min</td><td class="num">18</td><td class="num">6</td><td><span class="tag teal"><span class="d"></span>Connected</span></td></tr>
+          <tr><td><b>Noordhaven</b> <span class="sub">· 02</span></td><td class="mono">HAPI R4 · 48 ms</td><td class="mono">2 min</td><td class="num">14</td><td class="num">3</td><td><span class="tag teal"><span class="d"></span>Connected</span></td></tr>
+          <tr><td><b>Westpark</b> <span class="sub">· 03</span></td><td class="mono">HAPI R4 · paused</td><td class="mono">6 min</td><td class="num">8</td><td class="num">4</td><td><span class="tag plain"><span class="d" style="background:#8A94A6"></span>Paused</span></td></tr>
+        </tbody>
+      </table>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:2px">
+        <div style="background:var(--sunken);border-radius:8px;padding:9px 11px"><div class="mlabel">Highest enrolment</div><div style="font-size:12.5px;margin-top:3px"><b>Noordhaven</b> <span class="mono">3/8</span> <span class="small">· site 02</span></div></div>
+        <div style="background:var(--sunken);border-radius:8px;padding:9px 11px"><div class="mlabel">Most open queries</div><div style="font-size:12.5px;margin-top:3px"><b>Zuidhaven</b> <span class="mono">4</span> <span class="small">· site 01</span></div></div>
+        <div style="background:var(--sunken);border-radius:8px;padding:9px 11px"><div class="mlabel">SDV gap</div><div style="font-size:12.5px;margin-top:3px"><b>Zuidhaven</b> <span class="mono">40%</span> <span class="small">· 15 pp below best</span></div></div>
+      </div>
+      <div style="margin-top:0;padding-top:8px;border-top:1px solid var(--line);display:flex;align-items:center;gap:8px"><span class="tag teal"><span class="d"></span>2 connected</span><span class="small">Click a row to scope the dashboard to that site.</span><span class="spacer"></span><span class="small">${I('filter')} Showing all sites</span></div>
+    </div>
+  </div>
+`);
+
+/* 3. QUERIES */
+const queries = shell('/queries', 'Queries', `
+  <div class="pagehead">
+    <div><h1>Queries</h1><p>Questions you asked the sites · 9 open · 2 answered · 18 resolved</p></div>
+    <div class="actions"><button class="btn primary">${I('plus')} Ask a query</button></div>
+  </div>
+  <div class="qlayout">
+    <div class="panel qlist">
+      <div class="phead"><span class="label">Inbox · 9</span><span class="right">open first</span></div>
+      <div class="filterbar"><div class="segctl"><span class="on">Open</span><span>Answered</span><span>Resolved</span><span>All</span></div></div>
+      <div class="filterbar" style="padding:7px 10px"><span class="chip">Severity: all ${I('down')}</span><span class="chip">Site: all ${I('down')}</span><span style="flex:1"></span>${I('search','')}</div>
+      <div style="flex:1;overflow:hidden">
+        <div class="qrow2 sel">
+          <div class="top">${I('alert')}<span class="f">KPS</span><span class="tag ai">Open</span><span class="age">1 d</span></div>
+          <div class="snip">KPS 80 in the eCRF, but the clinic letter says 70.</div>
+          <div class="meta">GBM-NL-002 · Site 01 · FUMC Zuidhaven <span class="unread" style="margin-left:auto"></span></div>
+        </div>
+        <div class="qrow2">
+          <div class="top">${I('alert')}<span class="f">Resection extent</span><span class="tag ai">Open</span><span class="age">2 d</span></div>
+          <div class="snip">MRI report says partial resection; operative note says complete.</div>
+          <div class="meta">GBM-NL-002 · Site 01 · FUMC Zuidhaven <span class="unread" style="margin-left:auto"></span></div>
+        </div>
+        <div class="qrow2">
+          <div class="top">${I('info')}<span class="f">MGMT promoter</span><span class="tag" style="background:var(--info);border-color:#BFDCFA;color:var(--info-ink)">Answered</span><span class="age">3 d</span></div>
+          <div class="snip">Please attach the molecular report page for MGMT.</div>
+          <div class="meta">GBM-NL-003 · Site 03 · Westpark</div>
+        </div>
+        <div class="qrow2">
+          <div class="top">${I('info')}<span class="f">Date of progression</span><span class="tag" style="background:var(--info);border-color:#BFDCFA;color:var(--info-ink)">Answered</span><span class="age">4 d</span></div>
+          <div class="snip">Which MRI is the RANO progression reference?</div>
+          <div class="meta">GBM-NL-001 · Site 01 · FUMC Zuidhaven</div>
+        </div>
+        <div class="qrow2">
+          <div class="top">${I('info')}<span class="f">TMZ planned cycles</span><span class="tag" style="background:var(--info);border-color:#BFDCFA;color:var(--info-ink)">Answered</span><span class="age">5 d</span></div>
+          <div class="snip">Protocol says 6; eCRF says 5. Please confirm.</div>
+          <div class="meta">GBM-NL-002 · Site 01 · FUMC Zuidhaven</div>
+        </div>
+      </div>
+      <div style="padding:8px 12px;border-top:1px solid var(--line)"><span class="small">9 open · 2 answered · 18 resolved</span></div>
+    </div>
+    <div class="panel qthread">
+      <div class="thead">
+        <div style="min-width:0;flex:1">
+          <div style="display:flex;align-items:center;gap:7px;white-space:nowrap"><span class="mono" style="font-size:12px">#Q-014</span><span style="font-size:15px;font-weight:500">KPS</span><span class="tag ai">Open</span><span class="tag bad">High</span></div>
+          <div class="small" style="margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">GBM-NL-002 · Raised 21 Nov 10:12 · Site 01 · FUMC Zuidhaven</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex:0 0 auto"><span class="tag ok">${I('verified')} Source verified · MV · 14:12</span></div>
+      </div>
+      <div style="flex:1;overflow:hidden">
+        <div class="msg"><div class="avatar" style="background:var(--ai);color:var(--ai-ink)">MV</div><div style="flex:1"><div class="meta"><b style="color:var(--ink)">MV · Monitor</b> · 21 Nov 10:12</div><div class="body">Please confirm which KPS is correct for the baseline visit. The eCRF shows 80, but the clinic letter of 20 Nov records KPS 70. Please attach the source page.</div></div></div>
+        <div class="sys">${I('sync')} JD marked the query answered · 21 Nov 10:40</div>
+        <div class="msg"><div class="avatar">JD</div><div style="flex:1"><div class="meta"><b style="color:var(--ink)">JD · Research nurse</b> · 21 Nov 10:40</div><div class="body">The clinic letter is correct: KPS 70 on 20 Nov. The eCRF value of 80 came from the discharge letter, which copied the earlier assessment. I corrected the eCRF and attached the clinic letter.</div><div class="att">${I('attach')} DOC-202-DIS · p.1</div></div></div>
+        <div class="msg" style="background:#FAFCFE"><div class="avatar" style="background:var(--ai);color:var(--ai-ink)">MV</div><div style="flex:1"><div class="meta"><b style="color:var(--ink)">MV · Monitor</b> · 21 Nov 14:02</div><div class="body">Thank you. I checked the corrected value against the clinic letter and verified the source.</div></div></div>
+        <div class="sys" style="background:var(--teal-bg);color:var(--teal-ink)">${I('verified')} Source verified by MV · 21 Nov 14:12 · audit event AE-7841</div>
+      </div>
+      <div class="composer" style="background:var(--sunken)">
+        <div class="row" style="margin-top:0"><span class="small">${I('info')} Monitor view · waiting for the site to answer. Only the nurse or PI can reply and resolve.</span><span class="spacer"></span><button class="btn outline sm" aria-disabled="true">Send reply</button></div>
+        <div class="small" style="margin-top:5px">Source verification is the monitor's write action. eCRF stays read-only.</div>
+      </div>
+    </div>
+    <div class="panel qcontext">
+      <div class="phead"><span class="label">Field context</span><span class="right">ECRF-GBM-BASELINE</span></div>
+      <div class="compareblock">
+        <div class="small">eCRF value</div><div class="cval"><b>70</b><span class="small">%</span></div>
+        <div class="small" style="margin-top:7px">Source value</div><div class="cval"><b>70</b><span class="small">% · DOC-202-DIS · 20 Nov</span></div>
+        <div class="conflict" style="background:var(--ok);border-color:var(--ok-line);color:var(--ok-ink)">${I('checkc')} Source agrees after correction. The query is ready to resolve.</div>
+        <div class="sdv"><span class="spill met">${I('verified')} Source verified · MV · 14:12</span></div>
+        <div class="small" style="margin-top:4px">SDV is append-only in this demo. Writes one audit event.</div>
+      </div>
+      <div class="compareblock">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span class="label">Evidence</span><span class="spacer"></span><span class="evlink">${I('open')} Open source</span></div>
+        <div class="evbox">KPS <span class="hl">70</span> on 20 Nov 2026. Patient able to carry out normal activity with effort; some signs or symptoms of disease.<div class="src">DOC-202-DIS · p.1 ¶4 · received 20 Nov</div></div>
+      </div>
+      <div class="compareblock">
+        <dl class="kv"><dt>Participant</dt><dd>GBM-NL-002</dd><dt>Field</dt><dd>kps</dd><dt>Visit</dt><dd>Baseline (V1)</dd><dt>History</dt><dd>3 messages · 4 audit events</dd><dt>AI proposal</dt><dd><span class="tag ai">${I('spark')} Unverified · 0.84</span></dd></dl>
+      </div>
+      <div style="padding:10px 14px;margin-top:auto"><span class="small">${I('lock')} eCRF is read-only for the monitor.</span></div>
+    </div>
+  </div>
+`, {monitor:true});
+
+/* 4. TIMELINE */
+const timeline = shell('/participants', 'Participants / GBM-NL-001 / Timeline', `
+  <div class="pagehead">
+    <div>
+      <div style="display:flex;align-items:center;gap:9px"><h1>GBM-NL-001</h1><span class="tag teal"><span class="d"></span>Active</span><span class="tag plain">${I('verified')} Consent active</span></div>
+      <p>57 y · F · Site 01 · FUMC Zuidhaven · GBM, IDH-wildtype · enrolled 05 Jun 2026</p>
+    </div>
+    <div class="actions"><button class="btn outline">Open eCRF</button><button class="btn primary">${I('spark')} Review AI (3)</button></div>
+  </div>
+  <div class="tabs"><div class="tab">Overview</div><div class="tab on">Timeline</div><div class="tab">eCRF</div><div class="tab">Queries <span class="badge q">2</span></div></div>
+  <div class="tlayout" style="display:flex;gap:16px;flex:1;min-height:0">
+    <div class="panel tline">
+      <div class="tcontrols">
+        <div class="segctl"><span>3M</span><span class="on">6M</span><span>All</span></div>
+        <span class="chip on">Surgery</span><span class="chip on">Radiotherapy</span><span class="chip on">Chemotherapy</span><span class="chip on">Scans</span><span class="chip on">Visits</span>
+        <span class="spacer"></span><span class="small">${I('timel')} Today · 23 Nov 2026</span>
+      </div>
+      <div class="lanehead"><div style="width:120px;flex:0 0 120px"></div><div class="axis">${['Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m,i)=>`<span class="m" style="left:${i*16.66}%">${m}</span>`).join('')}</div></div>
+      <div style="position:relative;flex:1;overflow:hidden">
+        <div style="position:absolute;left:120px;right:0;top:0;bottom:0;pointer-events:none;background-image:linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:16.66% 100%"></div>
+        <div class="today" style="left:calc(120px + 82%)"><b style="right:4px;left:auto">Today</b></div>
+        <div class="lane"><div class="lanelabel">${I('cut')} Surgery</div><div class="track"><div class="evdot fill" style="left:1%"></div><div class="small" style="position:absolute;left:2.5%;top:19px;white-space:nowrap">Craniotomy · GTR · verified</div></div></div>
+        <div class="lane"><div class="lanelabel">${I('rt')} Radiotherapy</div><div class="track"><div class="evbar teal" style="left:8.5%;width:20%;top:22px">60 Gy / 30 fx</div></div></div>
+        <div class="lane"><div class="lanelabel">${I('med')} Chemotherapy</div><div class="track">
+          <div class="evbar solid" style="left:31.5%;width:5%;top:22px">1</div>
+          <div class="evbar solid" style="left:44.6%;width:5%;top:22px">2</div>
+          <div class="evbar solid" style="left:57.7%;width:5%;top:22px">3</div>
+          <div class="evbar solid" style="left:70.9%;width:5%;top:22px">4</div>
+          <div class="evbar amber" style="left:82%;width:7%;top:22px">5 · due</div>
+          <div class="evbar plan" style="left:94%;width:5%;top:22px">6</div>
+        </div></div>
+        <div class="lane"><div class="lanelabel">${I('scan')} Scans</div><div class="track">
+          <div class="evdot scan fill" style="left:2%"></div><div class="evdot scan fill" style="left:8.5%"></div><div class="evdot scan fill" style="left:35%"></div><div class="evdot scan" style="left:78%"></div>
+          <div class="small" style="position:absolute;left:2%;top:44px;white-space:nowrap">Baseline MRI</div><div class="small" style="position:absolute;left:76%;top:44px;white-space:nowrap">W24 MRI · planned</div>
+        </div></div>
+        <div class="lane" style="border-bottom:0"><div class="lanelabel">${I('event')} Visits</div><div class="track">
+          ${[['V0',1],['V2',8.5],['V3',28],['V4',31.5],['V5',44.6],['V6',57.7],['V7',70.9],['V8',84],['V9',97]].map(([v,p])=>`<div class="evtick" style="left:${p}%"><b>${v}</b></div>`).join('')}
+          <div class="small" style="position:absolute;left:2%;top:45px">V0–V7 completed · V8 due 27 Nov</div>
+        </div></div>
+      </div>
+      <div class="legendline"><span><em style="background:var(--accent)"></em>verified</span><span><em style="background:var(--evidence);border:1px dashed var(--ai-line)"></em>AI · unverified</span><span><em style="background:#fff;border:1px dashed var(--defer-line)"></em>planned</span><span><em style="background:var(--bad-line);border-radius:50%"></em>missed</span><span class="spacer"></span><span>Click any event to open its source.</span></div>
+    </div>
+    <div class="panel trail">
+      <div class="phead"><span class="label">Event</span><span class="right">${I('open')} Open source</span></div>
+      <div class="tevent">
+        <div style="display:flex;align-items:center;gap:6px"><span class="tag teal">${I('rt')} Radiotherapy</span><span class="spill met">${I('checkc')} Verified</span></div>
+        <div class="date">19 Jun – 31 Jul 2026</div>
+        <h3>Concurrent radiotherapy · 60 Gy / 30 fx</h3>
+        <dl class="kv" style="margin-top:10px"><dt>Dose</dt><dd>60 Gy in 30 fractions</dd><dt>Dates</dt><dd>19 Jun → 31 Jul 2026</dd><dt>With</dt><dd>TMZ 75 mg/m²/day</dd><dt>Verified by</dt><dd>SYN-JD · 14:06</dd><dt>Source</dt><dd class="mono">DOC-002-RT</dd></dl>
+        <div class="evbox" style="margin-top:9px">Radiotherapy: <span class="hl">60 Gy in 30 fractions</span> to the resection cavity, completed 31 Jul 2026. Concurrent temozolomide 75 mg/m² daily.<div class="src">DOC-002-RT · p.1 ¶2 · 31 Jul 2026</div></div>
+        <div style="display:flex;gap:6px;margin-top:10px"><button class="btn primary sm">${I('open')} Open source</button><button class="btn outline sm">View audit</button><button class="btn text sm">${I('forum')} Raise query</button></div>
+      </div>
+      <div class="phead" style="border-top:1px solid var(--line)"><span class="label">All events · 14</span><span class="right">grouped by month</span></div>
+      <div class="evlist" style="flex:1;overflow:hidden">
+        <div class="r"><span class="d"></span><b>01 Jun</b><span>Surgery · craniotomy, GTR</span><span class="spacer"></span><span class="tag plain">Verified</span></div>
+        <div class="r"><span class="d" style="background:var(--chart4)"></span><b>05 Jun</b><span>Baseline MRI</span><span class="spacer"></span><span class="tag plain">Verified</span></div>
+        <div class="r"><span class="d" style="background:var(--teal)"></span><b>19 Jun</b><span>RT start · 60 Gy</span><span class="spacer"></span><span class="tag plain">Verified</span></div>
+        <div class="r"><span class="d" style="background:var(--teal)"></span><b>31 Jul</b><span>RT end · 30 fx</span><span class="spacer"></span><span class="tag plain">Verified</span></div>
+        <div class="r"><span class="d" style="background:var(--chart3)"></span><b>07 Aug</b><span>TMZ cycle 1</span><span class="spacer"></span><span class="tag plain">Verified</span></div>
+        <div class="r"><span class="d" style="background:var(--chart3)"></span><b>27 Nov</b><span>TMZ cycle 5 · due</span><span class="spacer"></span><span class="tag ai">AI · 3</span></div>
+      </div>
+    </div>
+  </div>
+`);
+
+/* 5. PROTOCOL → FORM */
+const protocol = shell('/protocol', 'Protocol → form', `
+  <div class="pagehead">
+    <div><h1>Protocol → form</h1><p>GBM-NL-2026-01 · draft form v4 · 15 fields · 13 criteria · not approved</p></div>
+    <div class="actions"><button class="btn outline">v1.0 (current) ${I('down')}</button><span class="tag plain">${I('spark')} Rules · local</span><button class="btn outline">${I('spark')} Analyse protocol</button></div>
+  </div>
+  <div class="playout">
+    <div class="panel pprot">
+      <div class="phead"><span class="label">Protocol · v1.0</span><span class="right">SYNTHETIC · 21 Nov</span></div>
+      <div class="prose" style="flex:1;overflow:hidden">
+        <div style="font-size:13px;font-weight:500;margin-bottom:6px">GBM-NL-2026-01 · Protocol synopsis</div>
+        <h4>4. Population</h4>
+        <p>Adults (≥18 years) with newly diagnosed, histologically confirmed glioblastoma, IDH-wildtype, who meet every inclusion criterion and no exclusion criterion.</p>
+        <h4>5. Eligibility criteria</h4>
+        <p><b>INC-01 — Age.</b> <span class="hl">Age ≥18 years at diagnosis.</span> Check: age from demographics or clinic letter; eCRF AGE.</p>
+        <p><b>INC-02 — Histology.</b> Histologically confirmed glioblastoma, ICD-O-3 morphology 9440/3, IDH-wildtype (WHO CNS5, 2021). Check: pathology report plus IDH1/2 result; eCRF HISTOLOGY, IDHSTAT.</p>
+        <p><b>INC-03 — MGMT status.</b> <span class="hl">MGMT promoter methylation status is known (methylated or unmethylated).</span> Check: molecular pathology report; eCRF MGMTPROM.</p>
+        <p><b>INC-04 — Performance status.</b> Karnofsky Performance Status ≥60, recorded within 7 days before registration.</p>
+        <p><b>EXC-01 — Prior brain radiotherapy.</b> Any prior radiotherapy to the brain. Check: oncology history in clinic letter or radiotherapy record.</p>
+        <h4>8. Key eCRF data points</h4>
+        <p>Form ECRF-GBM-BASELINE v1.0, 13 required fields of 15 total: SUBJID, SITEID, SEX, AGE, MHSTDAT, HISTOLOGY, IDHSTAT, MGMTPROM, KPS, EXTRES, RTDOSE, RTFRAC, TMZPLNC.</p>
+        <div class="small" style="margin-top:10px">Evidence navigator · ${I('link')} §5 ¶3 · 2 spans</div>
+      </div>
+      <div class="footbar" style="height:44px;flex-basis:44px"><span class="small">${I('link')} Evidence 1 of 2 · §5 ¶3</span><span class="spacer"></span><button class="btn text sm">Open document ${I('open')}</button></div>
+    </div>
+    <div class="panel pprop">
+      <div class="phead"><span class="label">Proposals · draft v4</span><span class="right">2 excluded · 1 edited</span></div>
+      <div class="filterbar"><div class="segctl"><span class="on">All</span><span>Fields</span><span>Criteria</span></div><span class="spacer"></span><span class="small">15 fields · 9 inclusion · 4 exclusion</span></div>
+      <div style="flex:1;overflow:hidden">
+        <div class="critgroup">Form fields · 15</div>
+        <div class="pcard ai"><div class="r1"><span class="checkbox on">✓</span><b>Histology (central review)</b><span class="tag plain">coded</span></div><div class="r2"><span class="mono">CDISC MH.MHTERM</span><span class="tag plain">ICD-O-3</span><span>Required</span><span class="spacer"></span><span class="spill aip">${I('spark')} AI · 0.96</span></div><div class="r3"><span class="evlink">${I('link')} §8 Table · row 6</span><span>·</span><span>Histology code from pathology</span></div></div>
+        <div class="pcard ai"><div class="r1"><span class="checkbox on">✓</span><b>MGMT promoter methylation</b><span class="tag plain">coded</span></div><div class="r2"><span class="mono">CDISC LB.LBORRES</span><span>Required</span><span class="spacer"></span><span class="spill aip">${I('spark')} AI · 0.93</span></div><div class="r3"><span class="evlink">${I('link')} §5 INC-03</span><span>·</span><span>Molecular report</span></div></div>
+        <div class="pcard ai"><div class="r1"><span class="checkbox on">✓</span><b>Karnofsky Performance Status</b><span class="tag plain">integer</span></div><div class="r2"><span class="mono">CDISC QS.QSORRES</span><span class="tag plain">%</span><span>Required</span><span class="spacer"></span><span class="spill aip">${I('spark')} AI · 0.91</span></div><div class="r3"><span class="evlink">${I('link')} §5 INC-04</span><span>·</span><span>Clinic letter, within 7 days</span></div></div>
+        <div class="pcard excl"><div class="r1"><span class="checkbox"></span><b>Maximum AE grade</b><span class="tag plain">integer</span><span class="spill unknown">Excluded</span></div><div class="r2"><span class="mono">CDISC AE.AETOXGR</span><span>Optional</span><span class="spacer"></span><span class="spill aip">${I('spark')} AI · 0.72</span></div><div class="r3"><span class="evlink">${I('link')} §8 · optional field</span><span class="small">Excluded by SYN-PI</span></div></div>
+        <div class="critgroup">Inclusion criteria · 9</div>
+        <div class="pcard ai"><div class="r1"><span class="checkbox on">✓</span><b>INC-01 — Age ≥18 years at diagnosis</b><span class="tag plain">Inclusion</span></div><div class="r2"><span>Check: eCRF AGE, MHSTDAT</span><span class="spacer"></span><span class="spill aip">${I('spark')} AI · 0.99</span></div><div class="r3"><span class="evlink">${I('link')} §5 ¶1</span><span>·</span><span>Age from demographics</span></div></div>
+        <div class="pcard ai"><div class="r1"><span class="checkbox on">✓</span><b>INC-03 — MGMT status is known</b><span class="tag plain">Inclusion</span></div><div class="r2"><span>Check: eCRF MGMTPROM; molecular report</span><span class="spacer"></span><span class="spill aip">${I('spark')} AI · 0.94</span></div><div class="r3"><span class="evlink">${I('link')} §5 ¶3</span><span>·</span><span>Selected evidence span</span></div></div>
+        <div class="critgroup">Exclusion criteria · 4</div>
+        <div class="pcard ai"><div class="r1"><span class="checkbox on">✓</span><b>EXC-01 — Prior brain radiotherapy</b><span class="tag plain">Exclusion</span></div><div class="r2"><span>Check: oncology history</span><span class="spacer"></span><span class="spill aip">${I('spark')} AI · 0.97</span></div><div class="r3"><span class="evlink">${I('link')} §5 ¶10</span></div></div>
+      </div>
+      <div class="footbar"><span class="small">12 of 15 fields · 13 of 13 criteria selected · ${I('edit')} 1 edited</span><span class="spacer"></span><button class="btn primary" aria-disabled="true" title="PI only">${I('checkc')} Approve &amp; create version</button></div>
+    </div>
+    <div class="panel prail">
+      <div class="phead"><span class="label">Approval</span><span class="right">PI only</span></div>
+      <div class="vcard active"><div style="display:flex;align-items:center;gap:6px"><b>Form v3 · Active</b><span class="spill met">${I('checkc')} Approved</span></div><div class="m">15 fields · 13 criteria · approved by SYN-PI on 18 Nov 2026<br>${I('lock')} Screening uses this version only.</div><div class="small" style="margin-top:5px"><a href="#">View diff</a></div></div>
+      <div class="vcard draft"><div style="display:flex;align-items:center;gap:6px"><b>Form v4 · Draft</b><span class="spill aip">${I('spark')} Not active</span></div><div class="m">+2 fields · +1 criterion · 1 changed · 3 excluded<br>Draft from protocol v1.0.</div></div>
+      <div style="padding:6px 12px 4px" class="label">Approval checklist</div>
+      <div class="checkrow" style="color:var(--ok-ink)">${I('checkc')} Every included field has evidence</div>
+      <div class="checkrow" style="color:var(--ok-ink)">${I('checkc')} Every criterion is included or excluded</div>
+      <div class="checkrow" style="color:var(--ok-ink)">${I('checkc')} No duplicate field or criterion codes</div>
+      <div class="checkrow" style="color:var(--ink2)">${I('info')} Screening stays on v3 for in-progress candidates.</div>
+      <div class="phead" style="border-top:1px solid var(--line)"><span class="label">Version history</span><span class="right">3 versions</span></div>
+      <div class="vhist" style="flex:1;overflow:hidden">
+        <div class="r"><span class="vd"></span><div><b>v3</b> · 18 Nov 2026 · SYN-PI<br><span class="small">15 fields · 13 criteria · active</span></div></div>
+        <div class="r old"><span class="vd"></span><div><b>v2</b> · 02 Nov 2026 · SYN-PI<br><span class="small">13 fields · 12 criteria</span></div></div>
+        <div class="r old"><span class="vd"></span><div><b>v1</b> · 12 Oct 2026 · SYN-PI<br><span class="small">12 fields · 10 criteria</span></div></div>
+      </div>
+      <div class="footbar" style="height:48px;flex-basis:48px;background:var(--ai)"><span class="small" style="color:var(--ai-ink)">${I('spark')} AI proposals are not active until the PI approves.</span></div>
+    </div>
+  </div>
+`);
+
+/* 6. STATES */
+const states = shell('/', 'States and components', `
+  <div class="pagehead"><div><h1>v4 states</h1><p>Every new panel needs empty, loading, error and offline. Skeletons match the final shape.</p></div></div>
+  <div class="panel">
+    <div class="phead"><span class="label">Screening — sign-off blocked by unknown criteria</span><span class="right">3 cues, never colour alone</span></div>
+    <div class="pbody" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="spill met">${I('checkc')} Met · human confirmed</span><span class="spill aip">${I('spark')} Met · AI only</span><span class="spill notmet">${I('x')} Not met</span><span class="spill unknown">${I('help')} Unknown</span><span class="spill planned">${I('clock')} Planned</span><button class="btn primary" aria-disabled="true">Sign off eligibility</button><span class="small">Disabled until every criterion has a human decision</span></div>
+  </div>
+  <div class="states">
+    <div class="statebox">${I('rule','ei')}<b>Empty: no candidates</b><span>No candidates to screen. Sync hospital data or add a referral to start screening.</span><button class="btn outline sm">${I('sync')} Sync now</button></div>
+    <div class="statebox"><div class="skel w3"></div><div class="skel"></div><div class="skel w2"></div><div class="skel" style="width:82%"></div><div class="small">Loading: skeleton rows at final height. No page spinner.</div></div>
+    <div class="statebox" style="border-color:#F3B9BE">${I('error','ei')}<b style="color:var(--bad-ink)">Error: checklist unavailable</b><span>The local backend did not answer. The queue stays usable; retry reloads this candidate only.</span><button class="btn outline sm">Retry</button></div>
+    <div class="statebox">${I('forum','ei')}<b>Empty: queries clear</b><span>No open queries. Raise a query from a participant field when a value needs a source check.</span><button class="btn text sm">Open participants</button></div>
+    <div class="statebox" style="border-color:#E8C98F">${I('spark','ei')}<b>AI service down, rules active</b><span>Proposals from the last run stay visible and marked stale. Retry when the local model is back.</span><button class="btn outline sm">Retry analyse</button></div>
+    <div class="statebox">${I('cloudoff','ei')}<b>Offline snapshot</b><span>Read-only. Sign-off, replies, SDV and approval are disabled with a tooltip. Evidence stays readable.</span><span class="tag plain">${I('cloudoff')} Offline snapshot</span></div>
+  </div>
+`);
+
+const screens = [
+  ['screening','01 Screening queue + criteria checklist','A 360 px queue, a criteria checklist with finding + verification as separate cues, evidence per criterion, and a sign-off gate that cannot be passed on AI-only data.',screening],
+  ['sites','02 Site switcher + site comparison','The dashboard scopes to one site from one control; All sites shows a comparison panel with grouped bars and a table. Deltas are teal/red with arrows, never colour alone.',sites],
+  ['queries','03 Queries inbox + field thread + SDV tick','Monitor view: list, thread, field context. Raise, reply, resolve and source verification are separate rights. Conflict stays visible; SDV is append-only.',queries],
+  ['timeline','04 Participant timeline','Surgery, radiotherapy, chemotherapy cycles, scans and visits on one axis. Click any event to open the exact source document and excerpt.',timeline],
+  ['protocol','05 Protocol → form builder','Protocol text left, AI proposals middle, approval and version rail right. The PI approves a new form version; proposals stay amber until then.',protocol],
+  ['states','06 States and components','Empty, loading, error, offline, blocked sign-off, and AI-unavailable states share the v3 grammar and the same tokens.',states],
+];
+
+const only = new URLSearchParams(location.search).get('only');
+const root = document.getElementById('screens');
+if (only) {
+  document.body.classList.add('single');
+  const idx = Number(only) - 1;
+  const s = screens[idx];
+  root.innerHTML = `<section class="screen" id="${s[0]}"><div class="frame-wrap"><div class="frame">${s[3]}</div></div></section>`;
+} else {
+  root.innerHTML = screens.map(s=>`<section class="screen" id="${s[0]}"><div class="caption"><h2>${s[1]}</h2><p>${s[2]}</p></div><div class="frame-wrap"><div class="frame">${s[3]}</div></div></section>`).join('');
+  function fitFrames(){
+    document.querySelectorAll('.frame').forEach(f=>{
+      const w = f.parentElement.clientWidth;
+      const s = Math.min(1, w/1440);
+      f.style.transform = 'scale('+s+')';
+      f.parentElement.style.height = (900*s)+'px';
+    });
+  }
+  window.addEventListener('resize', fitFrames);
+  fitFrames();
+}
+</script>
+</body>
+</html>
