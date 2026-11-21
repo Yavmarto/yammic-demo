@@ -56,7 +56,7 @@ def _find_span(docs: list[dict], patterns: list[str]) -> tuple[str | None, int |
     return None, None, None, []
 
 
-def run_ai_screening(c, pid: str, user: dict, *, provider: str = "auto") -> list[dict]:
+def run_ai_screening(c, pid: str, user: dict, *, provider: str = "rules") -> list[dict]:
     """Evaluate all study criteria for `pid` using task C's AI screening checker if available,
     falling back to deterministic rule checks with exact document spans."""
     p = _one(c, "SELECT * FROM participant WHERE id=:i", i=pid)

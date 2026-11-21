@@ -75,3 +75,13 @@ CREATE TABLE ecrf_form_version (
   note text,
   UNIQUE (study_id, form_id, version)
 );
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'yammic_app') THEN
+    GRANT USAGE ON SCHEMA public TO yammic_app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO yammic_app;
+    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO yammic_app;
+    REVOKE ALL ON audit_event FROM yammic_app;
+    GRANT SELECT, INSERT ON audit_event TO yammic_app;
+  END IF;
+END $$;

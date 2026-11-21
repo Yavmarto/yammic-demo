@@ -110,6 +110,13 @@ if __name__ == "__main__":
         with engine.begin() as c:
             c.execute(text("DROP SCHEMA public CASCADE"))
             c.execute(text("CREATE SCHEMA public"))
+            c.execute(text("""DO $$ BEGIN
+              IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'yammic_app') THEN
+                GRANT USAGE ON SCHEMA public TO yammic_app;
+                ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO yammic_app;
+                ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO yammic_app;
+              END IF;
+            END $$"""))
     migrate()
     load()
     print("seeded")

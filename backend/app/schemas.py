@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
 
@@ -496,8 +496,8 @@ class Timeline(M):
 
 
 class FormFieldProposal(M):
-    id: str
-    label: str
+    id: str = Field(min_length=1, max_length=64)
+    label: str = Field(min_length=1, max_length=256)
     section: str | None = "clinical_status"
     value_type: str | None = "string"
     required: bool = True
@@ -512,22 +512,22 @@ class FormFieldProposal(M):
 
 
 class CriterionProposal(M):
-    id: str
+    id: str = Field(min_length=1, max_length=64)
     type: Literal["inclusion", "exclusion"] = "inclusion"
-    text: str
+    text: str = Field(min_length=1, max_length=2000)
     data_needed: str | None = None
     source_sentence: str | None = None
 
 
 class FormVersionIn(M):
-    form_id: str = "ECRF-GBM-BASELINE"
-    protocol_text: str | None = None
+    form_id: str = Field(default="ECRF-GBM-BASELINE", min_length=1, max_length=64)
+    protocol_text: str | None = Field(default=None, max_length=200_000)
     fields: list[FormFieldProposal] = []
     criteria: list[CriterionProposal] = []
     provider: str | None = None
     model: str | None = None
     prompt_version: str | None = None
-    note: str | None = None
+    note: str | None = Field(default=None, max_length=2000)
 
 
 class FormApproveIn(M):

@@ -239,8 +239,10 @@ def get_screening(pid: str, user=ANY):
 
 
 @r.post("/participants/{pid}/screening/check", response_model=S.Screening, tags=["screening"])
-def run_screening_check(pid: str, provider: str = Query("auto"), user=Depends(require("nurse", "pi", "service"))):
+def run_screening_check(pid: str, provider: str = Query("rules"), user=Depends(require("nurse", "pi", "service"))):
     """Run the AI screening checker against all trial entry criteria for a participant."""
+    if provider.lower() not in ("auto", "rules", "ollama"):
+        raise HTTPException(422, "provider must be one of ['auto', 'ollama', 'rules']")
     with engine.begin() as c:
         must(one(c, "SELECT 1 FROM participant WHERE id=:i", i=pid), "Participant")
         W.run_ai_screening(c, pid, user, provider=provider)
@@ -253,7 +255,7 @@ def post_screening_checks(pid: str, body: list[S.ScreeningChecksIn], user=Depend
     with engine.begin() as c:
         p = must(one(c, "SELECT * FROM participant WHERE id=:i", i=pid), "Participant")
         for x in body:
-            must(one(c, "SELECT 1 FROM screening_criterion WHERE study_id=:s AND id=:c", s=p["study_id"], c=x.criterion_id),
+            must(one(c, "SELECT 1 FROM screening_criterion WHERE study_id=:s AND id=:cid", s=p["study_id"], cid=x.criterion_id),
                  f"Criterion {x.criterion_id}")
             if x.document_id:
                 d = must(one(c, "SELECT participant_id, text FROM source_document WHERE id=:i", i=x.document_id), "Document")
@@ -291,8 +293,8 @@ def confirm_criterion(pid: str, cid: str, body: S.ScreeningCriterionConfirmIn,
         raise HTTPException(422, "status is required")
     with engine.begin() as c:
         p = must(one(c, "SELECT * FROM participant WHERE id=:i FOR UPDATE", i=pid), "Participant")
-        must(one(c, "SELECT 1 FROM screening_criterion WHERE study_id=:s AND id=:c", s=p["study_id"], c=cid), "Criterion")
-        prev = one(c, "SELECT * FROM screening_check WHERE participant_id=:p AND criterion_id=:c", p=pid, c=cid)
+        must(one(c, "SELECT 1 FROM screening_criterion WHERE study_id=:s AND id=:cid", s=p["study_id"], cid=cid), "Criterion")
+        prev = one(c, "SELECT * FROM screening_check WHERE participant_id=:p AND criterion_id=:cid", p=pid, cid=cid)
         c.execute(text("""INSERT INTO screening_check
             (participant_id, criterion_id, ai_status, coordinator_status, confirmed_by, confirmed_at, note, updated_at)
             VALUES (:p,:cid,:st,:st,:u,now(),:n,now())
@@ -633,6 +635,8 @@ def propose_form_version(study_id: str, body: S.FormVersionIn | None = Body(defa
                   s=study_id, f=body.form_id)["v"]
         fields_payload = [f.model_dump(by_alias=True) for f in body.fields]
         criteria_payload = [cr.model_dump(by_alias=True) for cr in body.criteria]
+        if body.protocol_text is not None and not body.protocol_text.strip():
+            raise HTTPException(422, "protocolText cannot be blank")
         proto = body.protocol_text or W.default_synopsis()
         prov = body.provider or "rules"
         mod = body.model or "protocol-rules-v4"
@@ -641,7 +645,7 @@ def propose_form_version(study_id: str, body: S.FormVersionIn | None = Body(defa
             try:
                 from .ai import protocol as ai_protocol
                 ai_prop = ai_protocol.propose_from_synopsis(
-                    proto, provider=body.provider or "auto", allow_fallback=True,
+                    proto, provider=body.provider or "rules", allow_fallback=True,
                     study_id=study_id, form_id=body.form_id, proposed_version=f"1.{nxt - 1}"
                 )
                 fields_payload = [f.as_api() for f in ai_prop.fields]

@@ -226,6 +226,8 @@
             "title": "Dataneeded"
           },
           "id": {
+            "maxLength": 64,
+            "minLength": 1,
             "title": "Id",
             "type": "string"
           },
@@ -241,6 +243,8 @@
             "title": "Sourcesentence"
           },
           "text": {
+            "maxLength": 2000,
+            "minLength": 1,
             "title": "Text",
             "type": "string"
           },
@@ -1467,10 +1471,14 @@
             "title": "Help"
           },
           "id": {
+            "maxLength": 64,
+            "minLength": 1,
             "title": "Id",
             "type": "string"
           },
           "label": {
+            "maxLength": 256,
+            "minLength": 1,
             "title": "Label",
             "type": "string"
           },
@@ -1732,6 +1740,8 @@
           },
           "formId": {
             "default": "ECRF-GBM-BASELINE",
+            "maxLength": 64,
+            "minLength": 1,
             "title": "Formid",
             "type": "string"
           },
@@ -1749,6 +1759,7 @@
           "note": {
             "anyOf": [
               {
+                "maxLength": 2000,
                 "type": "string"
               },
               {
@@ -1771,6 +1782,7 @@
           "protocolText": {
             "anyOf": [
               {
+                "maxLength": 200000,
                 "type": "string"
               },
               {
@@ -5913,7 +5925,7 @@
             "name": "provider",
             "required": false,
             "schema": {
-              "default": "auto",
+              "default": "rules",
               "title": "Provider",
               "type": "string"
             }
