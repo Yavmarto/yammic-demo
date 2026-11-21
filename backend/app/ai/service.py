@@ -22,7 +22,7 @@ from .client import ApiError, HttpApiClient
 from .providers import rules as rules_mod
 from .types import FieldDef, ProviderError, ProviderUnavailable
 
-PROVIDERS = ("rules", "ollama", "claude")
+PROVIDERS = ("rules", "ollama")
 
 
 def log(event: str, **fields: Any) -> None:
@@ -41,7 +41,7 @@ def _choose(provider_name: str, run: dict) -> str:
     name = (provider_name or "auto").lower()
     if name == "auto":
         pref = (run.get("provider") or "").lower()
-        if pref in PROVIDERS and pref != "claude":
+        if pref in PROVIDERS:
             return pref
         return providers.resolve("auto")
     return name
@@ -65,8 +65,6 @@ def process_run(client, run: dict, *, provider: str = "auto",
         raise ProviderError(f"participant {participant} has no source documents")
 
     requested = _choose(provider, run)
-    if requested == "claude":
-        raise ProviderUnavailable("claude provider is disabled (Gate 3)")
     impl = providers.get_provider(requested)
     warnings: list[str] = []
     fallback_from: str | None = None

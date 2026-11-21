@@ -141,7 +141,7 @@ def test_ai_registry_and_eval_endpoints(client, auth, monkeypatch, tmp_path):
     providers = client.get("/ai/providers", headers=h).json()
     by_name = {p["name"]: p for p in providers["providers"]}
     assert by_name["rules"]["available"] is True
-    assert by_name["claude"]["available"] is False and by_name["claude"]["paid"] is True
+    assert "claude" not in by_name  # Board 2026-11-21: local providers only
 
     prompts = client.get("/ai/prompts", headers=h).json()["prompts"]
     assert prompts and prompts[-1]["active"] is True

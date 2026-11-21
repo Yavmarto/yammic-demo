@@ -23,7 +23,7 @@ from . import providers, registry
 
 r = APIRouter()
 RESULTS = Path(__file__).resolve().parents[2] / "eval" / "results"
-PROVIDER_CHOICES = {"auto", "rules", "ollama", "claude"}
+PROVIDER_CHOICES = {"auto", "rules", "ollama"}
 
 
 def _one(c, sql: str, **p):
