@@ -27,6 +27,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--prompt-version", default=None)
     ap.add_argument("--out", type=Path, default=None)
     ap.add_argument("--json", action="store_true", help="print the full result JSON")
+    ap.add_argument("--no-latest", action="store_true",
+                    help="do not make this run the default latest.json (keep per-provider latest)")
     args = ap.parse_args(argv)
     names = args.provider or ["rules"]
 
@@ -39,7 +41,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"[{name}] unavailable: {exc}", file=sys.stderr)
             failed += 1
             continue
-        run_path, md_path = harness.save(result, args.out)
+        run_path, md_path = harness.save(result, args.out, update_latest=not args.no_latest)
         print(harness.to_markdown(result))
         print(f"[{name}] wrote {run_path} and {md_path}")
         if args.json:

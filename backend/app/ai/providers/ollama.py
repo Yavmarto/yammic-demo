@@ -22,6 +22,8 @@ DEFAULT_MODEL = os.environ.get("OLLAMA_MODEL", "qwen2.5:7b-instruct")
 DEFAULT_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434").rstrip("/")
 
 _NUMERIC = {"AGE", "KPS", "RTFRAC", "TMZPLNC", "AEGRADE", "RTDOSE"}
+_HEDGE = re.compile(r"\b(probably|probable|possibly|waarschijnlijk|may be|cannot be excluded|"
+                    r"niet uit te sluiten|vermoedelijk)\b", re.I)
 
 
 def _post(url: str, payload: dict, timeout: float) -> dict:
@@ -223,6 +225,9 @@ class OllamaProvider:
                 proposals.append(_abstain(field, "unparsed_value",
                                           f"Model value {raw_value!r} could not be normalised."))
                 continue
+            if _HEDGE.search(evidence.text) and confidence >= 0.6:
+                confidence = 0.45
+                warnings.append(f"{field.id}: hedged evidence; confidence capped at 0.45")
             supported = _supports(field.id, normalized, evidence.text, raw_value)
             if not supported:
                 confidence = min(confidence, 0.35)

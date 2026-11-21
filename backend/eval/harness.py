@@ -246,7 +246,8 @@ def _hard_cases(provider_name: str, *, pred_cache: dict[str, dict]) -> dict[str,
     return cases
 
 
-def save(result: dict[str, Any], out_dir: Path | None = None) -> tuple[Path, Path]:
+def save(result: dict[str, Any], out_dir: Path | None = None, *,
+         update_latest: bool = True) -> tuple[Path, Path]:
     out_dir = out_dir or RESULTS
     out_dir.mkdir(parents=True, exist_ok=True)
     provider = result["provider"]["name"]
@@ -254,10 +255,11 @@ def save(result: dict[str, Any], out_dir: Path | None = None) -> tuple[Path, Pat
     run_path = out_dir / f"{provider}-{stamp}.json"
     run_path.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n")
     (out_dir / f"latest-{provider}.json").write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n")
-    (out_dir / "latest.json").write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n")
     md = to_markdown(result)
     (out_dir / f"latest-{provider}.md").write_text(md + "\n")
-    (out_dir / "latest.md").write_text(md + "\n")
+    if update_latest:
+        (out_dir / "latest.json").write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n")
+        (out_dir / "latest.md").write_text(md + "\n")
     return run_path, out_dir / f"latest-{provider}.md"
 
 

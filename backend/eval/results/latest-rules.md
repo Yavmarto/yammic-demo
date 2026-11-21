@@ -1,6 +1,6 @@
 # AI extraction eval — rules (rules-regex-v1)
 
-Dataset: **all** · 13 documents · prompt `rules_v1` · 23 ms
+Dataset: **all** · 13 documents · prompt `rules_v1@31d138e3eea9` · 17 ms
 
 **Precision 1.000 · Recall 1.000 · F1 1.000 · macro-F1 1.000 · abstention rate 0.066 · span errors 0**
 
