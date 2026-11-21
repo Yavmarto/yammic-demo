@@ -141,7 +141,7 @@ class _Detail extends StatelessWidget {
         title: 'Form fields (${fields.length})',
         padding: EdgeInsets.zero,
         child: Column(children: [
-          const TableHead([('Field', 3, false), ('Section', 2, false), ('Type', 2, false), ('Required', 1, false), ('Protocol sentence', 6, false)]),
+          const TableHead([('Field', 3, false), ('Section', 2, false), ('Type', 2, false), ('Req.', 1, false), ('Protocol sentence', 6, false)]),
           for (final f in fields)
             DataRow2(flex: const [3, 2, 2, 1, 6], cells: [
               Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [Text('${f['label']}', style: K.body), Text('${f['id']}', style: K.mono)]),
