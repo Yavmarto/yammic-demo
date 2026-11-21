@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zeta_flutter/zeta_flutter.dart';
 import 'data/app_state.dart';
 import 'features/audit/audit_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
@@ -50,19 +51,24 @@ class _DemoAppState extends State<DemoApp> {
   @override
   Widget build(BuildContext context) => AppScope(
         state: state,
-        child: MaterialApp(
-          title: 'Yammic demo',
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(colorSchemeSeed: const Color(0xFF0B6E99), useMaterial3: true),
-          builder: (context, child) => FutureBuilder<void>(
-            future: loaded,
-            builder: (_, snap) => snap.connectionState != ConnectionState.done
-                ? const Scaffold(body: Center(child: CircularProgressIndicator()))
-                : snap.hasError
-                    ? Scaffold(body: Center(child: Text('Data load failed: ${snap.error}')))
-                    : child!,
+        child: ZetaProvider(
+          initialThemeMode: ThemeMode.light,
+          builder: (context, light, dark, themeMode) => MaterialApp(
+            title: 'Yammic demo',
+            debugShowCheckedModeBanner: false,
+            theme: light,
+            darkTheme: dark,
+            themeMode: themeMode,
+            builder: (context, child) => FutureBuilder<void>(
+              future: loaded,
+              builder: (_, snap) => snap.connectionState != ConnectionState.done
+                  ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+                  : snap.hasError
+                      ? Scaffold(body: Center(child: Text('Data load failed: ${snap.error}')))
+                      : child!,
+            ),
+            onGenerateRoute: _route,
           ),
-          onGenerateRoute: _route,
         ),
       );
 }

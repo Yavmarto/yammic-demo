@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zeta_flutter/zeta_flutter.dart';
 import '../../data/app_state.dart';
 import '../../models/models.dart';
 
@@ -85,7 +86,7 @@ class ParticipantScreen extends StatelessWidget {
       h('Quality issues'),
       Card(
         child: Column(children: [
-          for (final q in p.issues) _issue(q),
+          for (final q in p.issues) _issue(context, q),
           if (p.issues.isEmpty) const ListTile(title: Text('None')),
         ]),
       ),
@@ -103,9 +104,9 @@ class ParticipantScreen extends StatelessWidget {
     ]);
   }
 
-  Widget _issue(QualityIssue q) => ListTile(
+  Widget _issue(BuildContext context, QualityIssue q) => ListTile(
         leading: Icon(Icons.report_problem_outlined,
-            color: q.severity == 'high' ? Colors.red : q.severity == 'medium' ? Colors.orange : null),
+            color: q.severity == 'high' ? Zeta.of(context).colors.mainNegative : q.severity == 'medium' ? Zeta.of(context).colors.mainWarning : null),
         title: Text(q.message),
         subtitle: Text(q.field),
       );

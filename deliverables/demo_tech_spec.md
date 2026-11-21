@@ -3,7 +3,7 @@
 Target: stable MVP demo Monday 2026-11-23. Code freeze Sun 2026-11-22 20:00 CET. Synthetic data only. No network, backend or live AI calls. Banner "Synthetic data — prototype, not for clinical use" on every screen (rendered by the shell).
 
 ## Stack
-Flutter 3.47.5 (`~/flutter/bin/flutter`), Dart ^3.13, Material 3. Targets: web + macOS. No runtime packages beyond the Flutter SDK (dev: `flutter_lints 6.0.0`). State: one `AppState` (ChangeNotifier) in an `AppScope` InheritedWidget; audit log is its own ChangeNotifier. Routing: `MaterialApp.onGenerateRoute` with named routes.
+Flutter 3.47.5 (`~/flutter/bin/flutter`), Dart ^3.13, Material 3 with the Zeta design system (`zeta_flutter 1.4.5`, exact pin; `ZetaProvider` theme, Zeta navigation rail and semantic colours). Targets: web + macOS. Only runtime package beyond the Flutter SDK: `zeta_flutter` (dev: `flutter_lints 6.0.0`). State: one `AppState` (ChangeNotifier) in an `AppScope` InheritedWidget; audit log is its own ChangeNotifier. Routing: `MaterialApp.onGenerateRoute` with named routes.
 
 ## Layout (`app/lib`)
 - `main.dart`, `shell/` — app, routes, nav rail, banner (CTO)

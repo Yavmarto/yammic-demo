@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:zeta_flutter/zeta_flutter.dart';
 import '../../data/app_state.dart';
 import '../../models/models.dart';
 
@@ -93,9 +94,9 @@ class _AuditScreenState extends State<AuditScreen> {
             key: ValueKey('audit-row-$k'),
             dense: true,
             selected: e == sel,
-            selectedTileColor: const Color(0xFFD7E3F7),
+            selectedTileColor: Zeta.of(context).colors.surfaceSelected,
             onTap: () => setState(() => sel = e),
-            leading: _badge(ai),
+            leading: _badge(context, ai),
             title: Text('${e.action} · ${e.field}', overflow: TextOverflow.ellipsis),
             subtitle: Text('${_t(e.timestamp)} · ${e.actor}${e.before != null || e.after != null ? ' · ${e.before ?? '—'} → ${e.after ?? '—'}' : ''}',
                 style: const TextStyle(fontFamily: 'monospace'), overflow: TextOverflow.ellipsis),
@@ -103,11 +104,13 @@ class _AuditScreenState extends State<AuditScreen> {
         },
       );
 
-  Widget _badge(bool ai) => Container(
+  Widget _badge(BuildContext cx, bool ai) {
+    final c = Zeta.of(cx).colors;
+    return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: ai ? const Color(0xFFFFF1CC) : const Color(0xFFE4F3E9),
-          border: Border.all(color: ai ? const Color(0xFF8A5A00) : const Color(0xFF1E6B42)),
+          color: ai ? c.surfaceWarningSubtle : c.surfacePositiveSubtle,
+          border: Border.all(color: ai ? c.borderWarning : c.borderPositive),
           borderRadius: BorderRadius.circular(4),
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -116,6 +119,7 @@ class _AuditScreenState extends State<AuditScreen> {
           Text(ai ? 'AI' : 'Human', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
         ]),
       );
+  }
 
   String _t(DateTime d) => d.toIso8601String().substring(11, 19);
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zeta_flutter/zeta_flutter.dart';
 import '../../data/app_state.dart';
 
 /// UI-001 study dashboard (thin).
@@ -40,7 +41,7 @@ class DashboardScreen extends StatelessWidget {
         ListTile(
           leading: Icon(
             a.severity == 'critical' ? Icons.error : a.severity == 'warning' ? Icons.warning_amber : Icons.info_outline,
-            color: a.severity == 'critical' ? Colors.red : a.severity == 'warning' ? Colors.orange : null,
+            color: a.severity == 'critical' ? Zeta.of(context).colors.mainNegative : a.severity == 'warning' ? Zeta.of(context).colors.mainWarning : null,
           ),
           title: Text(a.message),
           subtitle: Text(a.studyId),

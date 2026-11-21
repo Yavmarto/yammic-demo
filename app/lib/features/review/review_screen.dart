@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:zeta_flutter/zeta_flutter.dart';
 import '../../data/app_state.dart';
 import 'review_store.dart';
 
@@ -12,17 +13,22 @@ class _Look {
   const _Look(this.bg, this.border, this.fg, this.icon, this.label, {this.dashed = false});
 }
 
-const _ai = _Look(Color(0xFFFFF1CC), Color(0xFF8A5A00), Color(0xFF5A3D00), Icons.auto_awesome, 'AI · Unverified', dashed: true);
-const _abst = _Look(Color(0xFFE9EDF3), Color(0xFF5A6B80), Color(0xFF303F52), Icons.help_outline, 'AI abstained', dashed: true);
-const _looks = {
-  RState.accepted: _Look(Color(0xFFE4F3E9), Color(0xFF1E6B42), Color(0xFF12452A), Icons.check_circle_outline, 'Verified · Accepted'),
-  RState.corrected: _Look(Color(0xFFE4F3E9), Color(0xFF1E6B42), Color(0xFF12452A), Icons.edit_note, 'Verified · Corrected'),
-  RState.rejected: _Look(Color(0xFFFCE8E6), Color(0xFFA61B1B), Color(0xFF7A1010), Icons.block, 'Rejected'),
-  RState.deferred: _Look(Color(0xFFE9EDF3), Color(0xFF5A6B80), Color(0xFF303F52), Icons.schedule, 'Deferred'),
-};
-
-_Look _lookOf(ReviewItem i, RState s) =>
-    s == RState.unverified ? (i.abstained ? _abst : _ai) : _looks[s]!;
+// Zeta semantic colours: warning = AI proposal (dashed), positive = human-verified, negative = rejected, cool = neutral.
+_Look _lookOf(BuildContext cx, ReviewItem i, RState s) {
+  final c = Zeta.of(cx).colors;
+  _Look neutral(IconData ic, String l, {bool dashed = false}) =>
+      _Look(c.surfaceCool, c.borderDefault, c.mainDefault, ic, l, dashed: dashed);
+  _Look ok(IconData ic, String l) => _Look(c.surfacePositiveSubtle, c.borderPositive, c.mainDefault, ic, l);
+  return switch (s) {
+    RState.unverified => i.abstained
+        ? neutral(Icons.help_outline, 'AI abstained', dashed: true)
+        : _Look(c.surfaceWarningSubtle, c.borderWarning, c.mainDefault, Icons.auto_awesome, 'AI · Unverified', dashed: true),
+    RState.accepted => ok(Icons.check_circle_outline, 'Verified · Accepted'),
+    RState.corrected => ok(Icons.edit_note, 'Verified · Corrected'),
+    RState.rejected => _Look(c.surfaceNegativeSubtle, c.borderNegative, c.mainDefault, Icons.block, 'Rejected'),
+    RState.deferred => neutral(Icons.schedule, 'Deferred'),
+  };
+}
 
 class _Dashed extends CustomPainter {
   final Color c;
@@ -56,7 +62,7 @@ class _StateBox extends StatelessWidget {
             color: look.bg,
             borderRadius: BorderRadius.circular(8),
             border: look.dashed ? null : Border.all(color: look.border, width: 2),
-            boxShadow: selected ? const [BoxShadow(color: Color(0xFF0B57D0), spreadRadius: 3)] : null,
+            boxShadow: selected ? [BoxShadow(color: Zeta.of(context).colors.borderSelected, spreadRadius: 3)] : null,
           ),
           child: child,
         ),
@@ -258,7 +264,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             TextSpan(text: t.substring(0, i.start)),
             TextSpan(
               text: t.substring(i.start, i.end),
-              style: const TextStyle(backgroundColor: Color(0xFFFFC94D), fontWeight: FontWeight.w700, decoration: TextDecoration.underline),
+              style: TextStyle(backgroundColor: Zeta.of(context).colors.surfaceWarning, fontWeight: FontWeight.w700, decoration: TextDecoration.underline),
             ),
             TextSpan(text: t.substring(i.end)),
           ])
@@ -270,10 +276,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
           Container(
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(8),
-            color: const Color(0xFFE9EDF3),
+            color: Zeta.of(context).colors.surfaceCool,
             child: const Text('No evidence span — AI abstained. Accept is disabled.'),
           ),
-        SelectableText.rich(TextSpan(style: const TextStyle(fontSize: 15, height: 1.6, color: Color(0xFF1A1C1E)), children: [body])),
+        SelectableText.rich(TextSpan(style: TextStyle(fontSize: 15, height: 1.6, color: Zeta.of(context).colors.mainDefault), children: [body])),
       ]),
     );
   }
@@ -287,7 +293,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
           InkWell(
             key: ValueKey('card-${v[k].id}'),
             onTap: () => setState(() { sel = k; correcting = false; }),
-            child: _StateBox._(_lookOf(v[k], store.stateOf(v[k])), _card(v[k]), k == sel),
+            child: _StateBox._(_lookOf(context, v[k], store.stateOf(v[k])), _card(v[k]), k == sel),
           ),
           const SizedBox(height: 8),
         ],
@@ -304,17 +310,17 @@ class _ReviewScreenState extends State<ReviewScreen> {
       Text('$shown ${i.unit}'.trim(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
       const SizedBox(height: 8),
       Wrap(spacing: 8, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
-        _chip(_lookOf(i, s)),
+        _chip(_lookOf(context, i, s)),
         Text('conf ${i.confidence.toStringAsFixed(2)}'),
         if (i.confidence < 0.70 && !i.abstained)
-          const Text('Low confidence', style: TextStyle(color: Color(0xFF8A5A00), fontWeight: FontWeight.w700)),
+          Text('Low confidence', style: TextStyle(color: Zeta.of(context).colors.mainWarning, fontWeight: FontWeight.w700)),
       ]),
     ]);
   }
 
   Widget _target(ReviewItem i) {
     final s = store.stateOf(i);
-    final l = _lookOf(i, s);
+    final l = _lookOf(context, i, s);
     final pending = s == RState.unverified;
     final written = s == RState.accepted ? i.value : s == RState.corrected ? store.corrected[i.id] : null;
     final code = i.code;
