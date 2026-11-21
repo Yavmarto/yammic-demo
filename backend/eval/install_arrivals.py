@@ -52,7 +52,11 @@ def install() -> None:
 def remove() -> None:
     with engine.begin() as c:
         ids = [d["id"] for d in _docs()]
+        c.execute(text("DELETE FROM review_decision WHERE extraction_id IN "
+                       "(SELECT id FROM extraction WHERE document_id = ANY(:ids))"), {"ids": ids})
         c.execute(text("DELETE FROM extraction WHERE document_id = ANY(:ids)"), {"ids": ids})
+        c.execute(text("DELETE FROM extraction_run WHERE document_id = ANY(:ids) OR participant_id = :p"),
+                  {"ids": ids, "p": "GBM-NL-005"})
         c.execute(text("DELETE FROM source_document WHERE id = ANY(:ids)"), {"ids": ids})
     print(f"removed {len(ids)} new-arrivals documents")
 

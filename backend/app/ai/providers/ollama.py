@@ -199,9 +199,6 @@ class OllamaProvider:
                 continue
             raw_value = str(item.get("value") or "").strip()
             quote = str(item.get("evidenceQuote") or "").strip()
-            if not raw_value:
-                proposals.append(_abstain(field, "no_value", rationale))
-                continue
             found = locate_quote(document_text, quote)
             if not found:
                 warnings.append(f"{field.id}: evidence quote not found in document; abstained")
@@ -210,7 +207,8 @@ class OllamaProvider:
                 continue
             start, end, matched = found
             evidence = make_evidence(document_text, start, end)
-            normalized, display = terminology.canonicalize(field.id, raw_value)
+            normalized, display = (terminology.canonicalize(field.id, raw_value)
+                                   if raw_value else (None, None))
             if normalized is None:
                 recovered = _recover_from_evidence(field.id, evidence.text)
                 if recovered is not None:
@@ -218,6 +216,9 @@ class OllamaProvider:
                     warnings.append(f"{field.id}: model value {raw_value!r} was empty or garbled; "
                                     f"read {display!r} from the verified evidence quote")
             if normalized is None:
+                if not raw_value:
+                    proposals.append(_abstain(field, "no_value", rationale))
+                    continue
                 warnings.append(f"{field.id}: value {raw_value!r} is not canonical; abstained")
                 proposals.append(_abstain(field, "unparsed_value",
                                           f"Model value {raw_value!r} could not be normalised."))

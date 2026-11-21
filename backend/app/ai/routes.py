@@ -75,8 +75,21 @@ def ai_eval(provider: str | None = Query(default=None), user=Depends(current_use
     for path in candidates:
         if path.exists():
             data = json.loads(path.read_text())
-            return {"available": True, "source": path.name, "results": data}
+            body = {"available": True, "source": path.name, "results": data,
+                    "providers": _all_latest()}
+            return body
     raise HTTPException(404, "No eval results yet. Run `make eval` (or `python -m eval.run_eval`).")
+
+
+def _all_latest() -> dict:
+    out = {}
+    for path in sorted(RESULTS.glob("latest-*.json")):
+        name = path.name.removeprefix("latest-").removesuffix(".json")
+        try:
+            out[name] = json.loads(path.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue
+    return out
 
 
 @r.post("/participants/{pid}/extract", response_model=S.Run, status_code=201, tags=["ai"])
