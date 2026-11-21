@@ -10,6 +10,7 @@ Everything runs on this machine. **Synthetic data only. No hosting, no outreach,
 | PostgreSQL 16 | Docker `yammic-postgres` | `127.0.0.1:5433` · db `yammic` and `hapi` · user/pass `yammic`/`yammic` | `make up` / `make reset` / `make demo` |
 | HAPI FHIR JPA server (R4) | Docker `yammic-hapi` | `http://127.0.0.1:8090/fhir` | `make up` / `make reset` / `make demo` |
 | FastAPI backend | host process via `uv` | `http://127.0.0.1:8000` · `/health`, `/docs` | `make backend` (foreground) or `make demo` (background) |
+| AI extraction worker | host process via `uv`, `python -m app.ai` | no port; polls `GET /runs?status=queued` and posts proposals through the API | `make ai` (foreground) or `make demo` (background) |
 | Flutter web app | host process, `python3 -m http.server` | `http://127.0.0.1:8080` | `make web` (foreground) or `make demo` (background) |
 
 Data volume: Docker named volume `yammic-postgres-data`. It holds both the backend data and the HAPI schema.
@@ -36,32 +37,41 @@ The demo does not pull images. If the local image store is wiped, run
 ```bash
 cd ~/yammic-demo
 make reset          # remove volumes, start Postgres + HAPI, wait healthy, seed
-make demo           # start backend + web in the background, health-check everything
+make demo           # start backend + AI worker + web in the background, health-check everything
 open http://127.0.0.1:8080
 ```
 
-`make reset` alone brings up the infrastructure and data. `make demo` adds the backend and web app.
+`make reset` alone brings up the infrastructure and data. `make demo` adds the backend,
+one AI extraction worker and the web app.
 
 ## 4. Daily / demo start
 
 ```bash
 make demo           # idempotent: reuses running services, seeds only when empty
 make health         # infrastructure checks
-make health STRICT=1   # all four components must be up
+make health STRICT=1   # all five components must be up, including the AI worker
 ```
 
-Expected `make demo` output ends with `Result: OK — full demo stack is healthy.`
+Expected `make demo` output ends with `Result: OK — full demo stack is healthy.` and a line
+`AI worker: <pid> — consumes queued extraction runs (one worker only)`.
+
+The AI worker is what turns **Sync now** and **Run extraction** into live proposals. If it is
+not running, queued runs stay `queued` and the UI polls for 90 s before it says
+"Is the AI service running?". `make health` fails in strict mode when the worker is missing.
 
 ## 5. Stop and clean
 
 | Command | Effect |
 |---|---|
-| `make stop` | Stop backend/web processes and containers. Data is kept. |
+| `make stop` | Stop backend, AI worker and web processes, and containers. Data is kept. |
 | `make down` | Stop containers only. Data is kept. |
 | `make reset` | **Delete all data** (`down -v`), start fresh, seed. |
 
-Logs: `ops/logs/backend.log`, `ops/logs/web.log`, `ops/logs/web-build.log`.
-PIDs: `ops/run/backend.pid`, `ops/run/web.pid`.
+Logs: `ops/logs/backend.log`, `ops/logs/ai.log`, `ops/logs/web.log`, `ops/logs/web-build.log`.
+PIDs: `ops/run/backend.pid`, `ops/run/ai.pid`, `ops/run/web.pid`.
+
+`make stop` kills an AI worker that you started by hand too, because it stops every
+`python -m app.ai` process that `ops/ai-workers.sh` finds.
 
 ## 6. Recovery
 
@@ -180,10 +190,46 @@ cd app && ~/flutter/bin/flutter pub get && ~/flutter/bin/flutter build web --rel
 `make demo` rebuilds the web app only when `app/lib`, `app/web`, `app/assets` or `app/pubspec.yaml`
 are newer than `app/build/web/index.html`.
 
+### 6.8 Live extraction times out, or runs stay `queued`
+
+Symptom: **Run extraction** spins for 90 s and then says "Is the AI service running?".
+`make health` shows `ai ... no AI worker`, or the run never leaves `queued`.
+
+The AI extraction worker is a separate process. Check it:
+
+```bash
+ops/ai-workers.sh                 # prints the worker PID(s); prints nothing when none run
+tail -n 50 ops/logs/ai.log        # one JSON line per run: ai.run_start, ai.run, ai.poll_error
+```
+
+Restart it with `make demo` (background) or `make ai` (foreground, for debugging).
+`make ai` refuses to start when a worker already runs.
+
+**One worker only.** The service polls the queue, so a second worker can pick the same run and
+post duplicate proposals. `make demo` reuses a worker that is already running; it never starts
+a second one. If `ops/ai-workers.sh` prints more than one PID:
+
+```bash
+make stop            # stops backend, web, AI worker and containers
+make demo            # starts one worker again
+```
+
+The worker needs the backend: it logs in as the `ai` service user and reads/writes through the
+REST API. It holds no database credentials. A worker that cannot log in exits at once with a
+traceback in `ops/logs/ai.log`; `make demo` reports `AI worker exited during startup` and stops.
+
+Provider: `make demo` uses `AI_PROVIDER=auto`. `auto` honours the provider recorded on the run
+when it is `rules` or `ollama`; otherwise it uses Ollama when available, else the deterministic
+rules provider. An explicit `AI_PROVIDER=rules` or `AI_PROVIDER=ollama` overrides the recorded
+value for every run.
+
 ## 7. Pre-demo checklist (T-15 minutes)
 
 - [ ] Docker Desktop is running: `docker info` prints a server version.
 - [ ] `make reset && make demo` completes, final line `Result: OK — full demo stack is healthy.`
+- [ ] AI worker: `ops/ai-workers.sh` prints exactly one PID, and `make demo` shows
+      `AI worker: <pid> — consumes queued extraction runs`.
+- [ ] `tail -n 20 ops/logs/ai.log` has no `ai.poll_error` or `ai.run_error` lines.
 - [ ] `curl -fsS http://127.0.0.1:8090/fhir/metadata` returns a `CapabilityStatement`.
 - [ ] `curl -fsS http://127.0.0.1:8000/health` returns `{"status":"ok",...}`.
 - [ ] `open http://127.0.0.1:8080` shows the login screen; log in with a demo role.
@@ -197,6 +243,9 @@ are newer than `app/build/web/index.html`.
 ## 8. Notes and boundaries
 
 - No production systems, no cloud resources, no paid APIs. `claude` AI provider stays off (Gate 3).
+- Run **one** AI worker. `make demo` enforces this; do not start a second by hand.
+- `make stage-arrivals` loads the three live-sync arrival patients into HAPI without changing the
+  platform data. Use it to make the pre-demo state one command: `make reset && make stage-arrivals && make demo`.
 - HAPI FHIR uses the local PostgreSQL database `hapi`. Do not point it at a real FHIR endpoint.
 - Do not change `docker-compose.yml` ports or volume names without telling the other workstreams:
   W3 (FHIR seed) expects `:8090`, W1/W5 expect Postgres on `:5433`.

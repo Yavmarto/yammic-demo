@@ -2,7 +2,7 @@
 # Health check for the local Yammic demo stack.
 #
 #   ops/health.sh            infrastructure must be up; app checks are reported as SKIP when down
-#   ops/health.sh --strict   every component must be up (used by `make demo`)
+#   ops/health.sh --strict   every component must be up, including the AI worker (used by `make demo`)
 #
 # Exit codes: 0 all required checks pass, 1 otherwise.
 set -uo pipefail
@@ -79,6 +79,23 @@ if body="$(timeout 8 curl -fsS --max-time 5 "${BACKEND_BASE}/health" 2>/dev/null
   fi
 else
   skip backend "${BACKEND_BASE}/health not running (start: make backend, or make demo)"
+fi
+
+# ---------- AI extraction worker (outside Docker) ----------
+ai_pids="$(ops/ai-workers.sh 2>/dev/null | tr '\n' ' ' | sed 's/ $//')"
+if [ -n "$ai_pids" ]; then
+  ai_n="$(printf '%s\n' "$ai_pids" | wc -w | tr -d '[:space:]')"
+  if [ "$ai_n" -gt 1 ]; then
+    bad ai "pid ${ai_pids} — ${ai_n} workers run; one worker only (make stop, then make demo)"
+  else
+    ok ai "pid ${ai_pids}  consumes queued extraction runs  log: ops/logs/ai.log"
+  fi
+elif [ "$BACKEND_STATE" = "down" ]; then
+  skip ai "AI worker not started (start: make demo, or make ai)"
+elif [ "$STRICT" = "1" ]; then
+  bad ai "no AI worker — queued runs stay queued and live extraction times out (start: make demo)"
+else
+  skip ai "no AI worker — queued runs will not be consumed (start: make ai, or make demo)"
 fi
 
 # ---------- Flutter web ----------

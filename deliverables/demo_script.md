@@ -55,14 +55,13 @@ make reset
 #    Expect: HAPI 11 patients; the platform still has 8 participants.
 python3 fhir-seed/load.py --set arrivals
 
-# 3. Start backend + web and health-check all four components.
+# 3. Start backend + AI worker + web and health-check all five components.
 make demo
 make health STRICT=1          # Result: OK — full demo stack is healthy.
 
-# 4. Start exactly ONE AI worker (not started by `make demo`).
-pkill -f "app.ai" 2>/dev/null || true
-( cd backend && nohup uv run python -m app.ai --provider auto > ../ops/logs/ai.log 2>&1 & )
-sleep 2 && tail -3 ops/logs/ai.log        # expect ai.poll / no queued runs
+# 4. Confirm exactly ONE AI worker runs (make demo starts it; CEL-1784).
+ops/ai-workers.sh             # expect one pid; make demo prints "AI worker: <pid>"
+tail -3 ops/logs/ai.log        # expect no ai.poll_error lines (silent when the queue is empty)
 
 # 5. Record the build you are presenting.
 git rev-parse --short HEAD    # write it here: ________
@@ -81,7 +80,7 @@ git rev-parse --short HEAD    # write it here: ________
 | 9 | Export (PI) | "Generate export" enabled |
 | 10 | Laptop: power, Do Not Disturb, notifications off, screen saver off | No interruption |
 | 11 | Backup recording: 2–3 minutes of silent clicks on the frozen build, played once from local disk | Plays offline |
-| 12 | PIDs: exactly one `app.ai` process | `pgrep -fl "app.ai"` shows one worker |
+| 12 | PIDs: exactly one AI worker | `ops/ai-workers.sh` prints one pid; `make health STRICT=1` shows `[ OK ] ai` |
 
 **If step 4 shows "Last sync" not "never":** someone synced after the reset. Run `make reset` and repeat from step 2. A sync on stage must create the 3 arrivals; otherwise the live beat is dead.
 
@@ -534,8 +533,8 @@ Content ends at **~8:35–9:20** in practice; the 10:00 slot leaves **40 s of de
 `0:00 open · 0:30 PI login · 1:00 dashboard (8/24, 46 queue) · 1:40 integrations → Sync now (3 patients, 7 docs, 7 runs) · 2:45 Participants → GBM-NL-009 · 3:10 review 009 (ollama, abstains) · 3:55 accept histology · 4:30 002 → correct MGMT · 5:20 009 → defer RANO · 5:45 audit → Verify chain → Human → EXT-0020 · 6:30 AI quality (100 % synthetic, say why) · 7:10 ODM → FHIR 002 → Push (6 resources) · 8:05 tab B monitor → 002 → Mark SDV · 8:40 is/is not + ask · 9:20 stop`
 
 **Remaining for the human/engineer before Monday**
-1. **`make demo` does not start the AI worker** (`backend/app/ai`). The pre-flight starts it manually. DevOps should add it to `make demo` (and to `ops/RUNBOOK.md`), or the live extraction beat depends on a manual step. Code freeze is Sunday 20:00; if it is not fixed, keep the pre-flight.
-2. **`make seed` loads the FHIR baseline only.** The arrivals are a documented manual step (`fhir-seed/load.py --set arrivals`). Keep it in the pre-flight, or add `make stage-arrivals`.
+1. **`make demo` starts the AI worker** (`backend/app/ai`) since CEL-1784: background process, `ops/run/ai.pid`, log `ops/logs/ai.log`, stopped by `make stop`. Pre-flight step 4 now only confirms one worker runs. Keep `make demo` in front of the audience, never `make ai`.
+2. **`make seed` loads the FHIR baseline only.** The arrivals are staged by `make stage-arrivals` (`fhir-seed/load.py --set arrivals`). Keep it in the pre-flight; it does not touch platform data.
 3. **`deliverables/demo_script.md` must be re-pointed at the freeze commit** on Sunday 20:00 (record `git rev-parse --short HEAD` in §2 and §9).
 4. **Record the 2–3 minute backup** of silent clicks on the frozen build, then play it once from local disk.
 5. **One full dress rehearsal in the presenter's voice** with a listener; take two hostile questions from §7. If the human read is slower than 140 wpm, cut in this order: AI-quality per-field detail → dashboard alert detail → participant summary. **Never cut** the sync result, the correction, the abstention, the audit verify, or the "is not" slide.
@@ -547,8 +546,8 @@ Content ends at **~8:35–9:20** in practice; the 10:00 slot leaves **40 s of de
 
 | # | Item | Owner | Effect on the demo |
 |---|---|---|---|
-| R1 | `make demo` starts backend + web but **not** the AI worker; live extraction needs `uv run python -m app.ai --provider auto` | DevOps / Engineer | Pre-flight starts it manually; if it dies on stage, no live proposals (recovery §8) |
-| R2 | Arrivals are a manual FHIR loader step, not part of `make reset`/`make seed` | DevOps / Junior Engineer | Pre-flight step 2; without it the sync creates 0 participants |
+| R1 | `make demo` now starts **one** AI worker (CEL-1784); `make health STRICT=1` fails if it is missing or if two run | DevOps / Engineer | Pre-flight step 4 confirms one pid; if it dies on stage, no live proposals (recovery §8) |
+| R2 | Arrivals are staged by `make stage-arrivals`, not by `make reset`/`make seed` | DevOps / Junior Engineer | Pre-flight step 2; without it the sync creates 0 participants |
 | R3 | Ollama is a single local server; QA + demo workers share it, and concurrent runs serialise | Engineer | Live extraction is treated as background; never wait on stage |
 | R4 | Security High findings (SEC-01 JWT default, SEC-02 unkeyed audit, SEC-03 HAPI auth/CVEs, SEC-04 pseudonym key) | CTO / Security | Say "local demo"; do not claim "secure"; fix before any pilot |
 | R5 | `Session.demoToday` is fixed at 2026-11-23; after Monday the UI date is stale | Engineer | Cosmetic; keep the clock for the demo |

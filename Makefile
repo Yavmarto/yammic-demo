@@ -2,8 +2,8 @@
 # Owner: DevOps (CEL-1773). See ops/RUNBOOK.md.
 #
 #   make reset   drop volumes, start Postgres + HAPI FHIR, seed
-#   make demo    start everything (infra, seed if empty, backend, web) and health-check it
-#   make health  check Postgres, FHIR, backend, web
+#   make demo    start everything (infra, seed if empty, backend, AI worker, web) and health-check it
+#   make health  check Postgres, FHIR, backend, AI worker, web
 #
 # Everything is local: synthetic data only, no hosting, no paid APIs.
 
@@ -24,6 +24,7 @@ FHIR_PORT ?= 8090
 BACKEND_PORT ?= 8000
 WEB_PORT ?= 8080
 STRICT ?= 0
+AI_PROVIDER ?= auto
 
 FHIR_LOCAL := http://127.0.0.1:$(FHIR_PORT)
 BACKEND_LOCAL := http://127.0.0.1:$(BACKEND_PORT)
@@ -33,7 +34,7 @@ LOG_DIR := ops/logs
 RUN_DIR := ops/run
 BUILD_DIR := app/build/web
 
-.PHONY: help up down seed reset backend web demo stop health psql fhir
+.PHONY: help up down seed reset backend web ai demo stop health psql fhir stage-arrivals
 
 help:
 	@echo "Yammic demo platform (local only)"
@@ -43,10 +44,12 @@ help:
 	@echo "  make seed      load synthetic data (fhir-seed/load.py and backend seed, when present)"
 	@echo "  make reset     remove volumes, up, seed   (clean slate)"
 	@echo "  make backend   run the FastAPI backend with reload on :$(BACKEND_PORT) (foreground)"
+	@echo "  make ai        run the AI extraction worker in the foreground (debug; one worker only)"
 	@echo "  make web       build Flutter web and serve it on :$(WEB_PORT) (foreground)"
-	@echo "  make demo      up + seed if empty + backend + web in the background, then health --strict"
-	@echo "  make health    check Postgres, FHIR /fhir/metadata, backend /health, web (STRICT=1 to require all)"
-	@echo "  make stop      stop backend + web processes and containers"
+	@echo "  make stage-arrivals  load the live-sync arrivals into HAPI (demo state in one command)"
+	@echo "  make demo      up + seed if empty + backend + AI worker + web in the background, then health --strict"
+	@echo "  make health    check Postgres, FHIR /fhir/metadata, backend /health, AI worker, web (STRICT=1 to require all)"
+	@echo "  make stop      stop backend + AI worker + web processes and containers"
 	@echo "  make psql      open psql on the yammic database"
 	@echo ""
 	@echo "Logs: $(LOG_DIR)/  PIDs: $(RUN_DIR)/"
@@ -95,6 +98,18 @@ backend:
 	@echo "== backend: uvicorn on $(BACKEND_LOCAL)"
 	cd backend && exec $(UV) run uvicorn app.main:app --host 127.0.0.1 --port $(BACKEND_PORT) --reload
 
+ai:
+	@if [ ! -f backend/app/ai/__main__.py ]; then echo "ERROR: AI service not present (backend/app/ai)"; exit 1; fi
+	@pids="$$(ops/ai-workers.sh | tr '\n' ' ' | sed 's/ $$//')"; \
+	if [ -n "$$pids" ]; then \
+		echo "ERROR: an AI worker is already running (pid $$pids) — one worker only; stop it first (make stop)"; exit 1; \
+	fi
+	@if ! timeout 3 curl -fsS "$(BACKEND_LOCAL)/health" >/dev/null 2>&1; then \
+		echo "WARNING: backend is not answering on :$(BACKEND_PORT) — the worker cannot log in (start: make demo)"; \
+	fi
+	@echo "== ai: foreground worker (provider $(AI_PROVIDER)), API $(BACKEND_LOCAL); Ctrl-C to stop"
+	cd backend && exec $(UV) run python -m app.ai --provider $(AI_PROVIDER)
+
 web:
 	@if [ ! -x "$(FLUTTER)" ]; then echo "ERROR: flutter not found (looked at '$(FLUTTER)'; set FLUTTER=...)"; exit 1; fi
 	@echo "== web: flutter build web --release"
@@ -107,12 +122,15 @@ demo: up
 	@mkdir -p $(LOG_DIR) $(RUN_DIR)
 	@$(MAKE) --no-print-directory _seed-if-empty
 	@$(MAKE) --no-print-directory _start-backend
+	@$(MAKE) --no-print-directory _start-ai
 	@$(MAKE) --no-print-directory _start-web
 	@echo ""
 	@STRICT=1 ops/health.sh --strict
 	@echo ""
 	@echo "Demo is up: web $(WEB_LOCAL)  |  API $(BACKEND_LOCAL)/docs  |  FHIR $(FHIR_LOCAL)/fhir/metadata"
-	@echo "Logs: $(LOG_DIR)/backend.log $(LOG_DIR)/web.log (web build: $(LOG_DIR)/web-build.log)"
+	@ai_pids="$$(ops/ai-workers.sh | tr '\n' ' ' | sed 's/ $$//')"; \
+	echo "AI worker: $${ai_pids:-NOT RUNNING} — consumes queued extraction runs (one worker only)"
+	@echo "Logs: $(LOG_DIR)/backend.log $(LOG_DIR)/ai.log $(LOG_DIR)/web.log (web build: $(LOG_DIR)/web-build.log)"
 
 _seed-if-empty:
 	@backend_n=$$($(COMPOSE) exec -T postgres psql -U yammic -d yammic -tAc "SELECT count(*) FROM study" 2>/dev/null | tr -d '[:space:]'); \
@@ -141,6 +159,36 @@ _start-backend:
 			sleep 1; \
 		done; \
 		echo "ERROR: backend did not become ready in 40 s; see $(LOG_DIR)/backend.log"; exit 1; \
+	fi
+
+_start-ai:
+	@mkdir -p $(LOG_DIR) $(RUN_DIR)
+	@pids="$$(ops/ai-workers.sh | tr '\n' ' ' | sed 's/ $$//')"; \
+	if [ -n "$$pids" ]; then \
+		echo "== demo: AI worker already running (pid $$pids) — one worker only"; \
+	else \
+		if ! timeout 3 curl -fsS "$(BACKEND_LOCAL)/health" >/dev/null 2>&1; then \
+			echo "ERROR: backend is not answering on :$(BACKEND_PORT); the AI worker needs it"; exit 1; \
+		fi; \
+		if [ ! -f backend/app/ai/__main__.py ]; then echo "ERROR: AI service not present (backend/app/ai)"; exit 1; fi; \
+		echo "== demo: starting AI worker (provider $(AI_PROVIDER)), log $(LOG_DIR)/ai.log"; \
+		( cd backend && exec nohup $(UV) run python -m app.ai --provider $(AI_PROVIDER) ) \
+			> "$(CURDIR)/$(LOG_DIR)/ai.log" 2>&1 & echo $$! > "$(CURDIR)/$(RUN_DIR)/ai.pid"; \
+		ready=0; \
+		for i in $$(seq 1 15); do \
+			if ! kill -0 $$(cat "$(CURDIR)/$(RUN_DIR)/ai.pid") 2>/dev/null; then \
+				echo "ERROR: AI worker exited during startup; see $(LOG_DIR)/ai.log"; \
+				tail -n 5 "$(LOG_DIR)/ai.log" 2>/dev/null; rm -f "$(RUN_DIR)/ai.pid"; exit 1; \
+			fi; \
+			if [ -n "$$(ops/ai-workers.sh)" ]; then ready=1; break; fi; \
+			sleep 1; \
+		done; \
+		if [ "$$ready" != "1" ]; then \
+			echo "ERROR: AI worker did not start in 15 s; see $(LOG_DIR)/ai.log"; \
+			tail -n 5 "$(LOG_DIR)/ai.log" 2>/dev/null; exit 1; \
+		fi; \
+		pids="$$(ops/ai-workers.sh | tr '\n' ' ' | sed 's/ $$//')"; \
+		echo "== demo: AI worker ready (pid $$pids), provider $(AI_PROVIDER)"; \
 	fi
 
 _start-web:
@@ -174,6 +222,10 @@ _start-web:
 stop:
 	@if [ -f $(RUN_DIR)/web.pid ]; then kill $$(cat $(RUN_DIR)/web.pid) 2>/dev/null || true; rm -f $(RUN_DIR)/web.pid; echo "== stop: web"; fi
 	@if [ -f $(RUN_DIR)/backend.pid ]; then kill $$(cat $(RUN_DIR)/backend.pid) 2>/dev/null || true; rm -f $(RUN_DIR)/backend.pid; echo "== stop: backend"; fi
+	@pids="$$(ops/ai-workers.sh | tr '\n' ' ' | sed 's/ $$//')"; \
+	if [ -f $(RUN_DIR)/ai.pid ]; then kill $$(cat $(RUN_DIR)/ai.pid) 2>/dev/null || true; fi; \
+	if [ -n "$$pids" ]; then kill $$pids 2>/dev/null || true; echo "== stop: ai worker (pid $$pids)"; fi; \
+	rm -f $(RUN_DIR)/ai.pid
 	@pkill -f "uvicorn app.main:app.*--port $(BACKEND_PORT)" 2>/dev/null || true
 	@pkill -f "http.server $(WEB_PORT)" 2>/dev/null || true
 	@$(COMPOSE) down --remove-orphans
@@ -182,6 +234,15 @@ stop:
 # ---------------------------------------------------------------- checks / misc
 health:
 	@if [ "$(STRICT)" = "1" ]; then ops/health.sh --strict; else ops/health.sh; fi
+
+stage-arrivals:
+	@if [ ! -f fhir-seed/load.py ]; then echo "ERROR: fhir-seed/load.py not present"; exit 1; fi
+	@if ! timeout 10 curl -fsS "$(FHIR_LOCAL)/fhir/metadata" >/dev/null 2>&1; then \
+		echo "ERROR: HAPI FHIR is not answering on $(FHIR_LOCAL); run: make up"; exit 1; \
+	fi
+	@echo "== stage-arrivals: loading the live-sync arrival bundles into HAPI (platform data not touched)"
+	@$(PY) fhir-seed/load.py --set arrivals
+	@echo "== stage-arrivals: done — press Sync now in the app to pull the new patients"
 
 psql:
 	@$(COMPOSE) exec postgres psql -U yammic -d yammic
