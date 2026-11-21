@@ -6,7 +6,9 @@ import time
 import jwt
 from fastapi import Depends, HTTPException, Query, Request
 
-SECRET = os.environ.get("JWT_SECRET", "yammic-demo-secret-not-for-production-use-1234")
+SECRET = os.environ.get("JWT_SECRET", "")
+if len(SECRET) < 32:  # fail closed: no committed default; `make` generates one into ops/.env.local
+    raise RuntimeError("JWT_SECRET missing or shorter than 32 chars (run via make, or set it)")
 TTL = 8 * 3600
 ITER = 60_000
 

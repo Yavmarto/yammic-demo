@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -207,3 +208,58 @@ def test_queries(client, auth):
 
 def test_committed_openapi_is_current():
     assert (export_openapi.OUT).read_text() == export_openapi.spec(), "run: uv run python -m app.export_openapi"
+
+
+def test_old_default_jwt_secret_rejected(client):
+    import time
+
+    import jwt
+    forged = jwt.encode({"sub": "x", "role": "pi", "name": "x", "exp": int(time.time()) + 600},
+                        "yammic-demo-secret-not-for-production-use-1234", algorithm="HS256")
+    assert client.get("/me", headers={"Authorization": f"Bearer {forged}"}).status_code == 401
+
+
+def test_jwt_secret_required():
+    import subprocess
+    import sys
+    env = {k: v for k, v in os.environ.items() if k != "JWT_SECRET"}
+    r = subprocess.run([sys.executable, "-c", "import app.security"], env=env, capture_output=True, text=True)
+    assert r.returncode != 0 and "JWT_SECRET" in r.stderr
+
+
+def _bypass(sql):
+    with engine.begin() as c:
+        c.execute(text("ALTER TABLE audit_event DISABLE TRIGGER USER"))
+        c.execute(text(sql))
+        c.execute(text("ALTER TABLE audit_event ENABLE TRIGGER USER"))
+
+
+def test_audit_detects_tail_deletion(client, auth):
+    h = auth("nurse")
+    client.post("/extractions/EXT-0001/decision", json=ACCEPT, headers=h)
+    assert client.get("/audit/verify", headers=h).json()["ok"] is True
+    _bypass("DELETE FROM audit_event WHERE seq > (SELECT max(seq) - 3 FROM audit_event)")  # chain stays valid
+    v = client.get("/audit/verify", headers=h).json()
+    assert v["ok"] is False and "deleted from the end" in v["reason"]
+
+
+def test_audit_detects_full_rewrite(client, auth, monkeypatch):
+    from app import audit
+    h = auth("nurse")
+    client.post("/extractions/EXT-0001/decision", json=ACCEPT, headers=h)
+    # attacker with DB write access but without AUDIT_KEY recomputes the whole chain
+    monkeypatch.setattr(audit, "KEY", b"attacker-key")
+    with engine.connect() as c:
+        rows = [dict(r) for r in c.execute(text("SELECT * FROM audit_event ORDER BY seq")).mappings()]
+    prev = audit.GENESIS
+    for r in rows:
+        d = {**r, "ts": audit._iso(r["ts"])}
+        hsh = audit._hash(prev, d)
+        _bypass(f"UPDATE audit_event SET prev_hash='{prev}', hash='{hsh}' WHERE seq={r['seq']}")
+        prev = hsh
+    monkeypatch.undo()
+    v = client.get("/audit/verify", headers=h).json()
+    assert v["ok"] is False and "modified" in v["reason"]
+    # even a rewrite with the right key cannot match the external anchor if the content changed
+    _bypass("UPDATE audit_event SET after = jsonb_build_object('x', 1) WHERE seq=1")
+    assert client.get("/audit/verify", headers=h).json()["ok"] is False

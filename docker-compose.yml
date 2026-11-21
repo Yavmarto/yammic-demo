@@ -1,7 +1,7 @@
 # Local demo infrastructure for the Yammic platform slice.
 # Owner: DevOps (CEL-1773). Only local, synthetic data. No hosting, no real patient data.
 #
-#   postgres  PostgreSQL 16     host 127.0.0.1:5433   db yammic (backend) + hapi (FHIR store)
+#   postgres  PostgreSQL 16     host 127.0.0.1:5433   db yammic (backend, role yammic_app) + hapi (FHIR store, role hapi)
 #   hapi      HAPI FHIR JPA R4  host 127.0.0.1:8090   http://127.0.0.1:8090/fhir/metadata
 #
 # The FastAPI backend and the Flutter web app run outside Docker (see Makefile).
@@ -18,13 +18,15 @@ services:
       POSTGRES_DB: yammic
       POSTGRES_USER: yammic
       POSTGRES_PASSWORD: yammic
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?run via make (ops/ensure-env.sh creates ops/.env.local)}
+      HAPI_DB_PASSWORD: ${HAPI_DB_PASSWORD:?run via make (ops/ensure-env.sh creates ops/.env.local)}
       # Keep initdb output small and fast on a laptop.
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
     ports:
       - "127.0.0.1:5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./ops/postgres-init.sql:/docker-entrypoint-initdb.d/10-hapi-db.sql:ro
+      - ./ops/postgres-init.sh:/docker-entrypoint-initdb.d/10-roles.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U yammic -d yammic"]
       interval: 5s
@@ -43,12 +45,15 @@ services:
     environment:
       # JPA server backed by the same PostgreSQL instance, database "hapi".
       spring.datasource.url: "jdbc:postgresql://postgres:5432/hapi"
-      spring.datasource.username: yammic
-      spring.datasource.password: yammic
+      spring.datasource.username: hapi
+      spring.datasource.password: ${HAPI_DB_PASSWORD:?run via make}
       spring.datasource.driverClassName: org.postgresql.Driver
       spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
       hapi.fhir.fhir_version: R4
-      hapi.fhir.cors.enabled: "true"
+      # SEC-03: HAPI's default config always enables CORS with origin "*". Pin it to the demo web origin,
+      # so a cross-site page (Origin: evil) gets 403 and cannot read patient data from the browser.
+      hapi.fhir.cors.allowed_origin: "http://127.0.0.1:8080"
+      hapi.fhir.cors.allow_Credentials: "false"
       hapi.fhir.server_address: "http://127.0.0.1:8090"
       management.endpoints.web.exposure.include: health,info
       management.endpoint.health.show-details: never

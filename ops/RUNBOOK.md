@@ -14,7 +14,7 @@ Everything runs on this machine. **Synthetic data only. No hosting, no outreach,
 | Flutter web app | host process, `python3 -m http.server` | `http://127.0.0.1:8080` | `make web` (foreground) or `make demo` (background) |
 
 Data volume: Docker named volume `yammic-postgres-data`. It holds both the backend data and the HAPI schema.
-FHIR data is stored in PostgreSQL database `hapi`, created by `ops/postgres-init.sql` on first boot.
+FHIR data is stored in PostgreSQL database `hapi`, created by `ops/postgres-init.sh` on first boot, owned by its own DB role `hapi`.
 
 Ports are bound to `127.0.0.1` on purpose. Other machines cannot reach them. QA runs on this machine.
 
@@ -249,3 +249,23 @@ value for every run.
 - HAPI FHIR uses the local PostgreSQL database `hapi`. Do not point it at a real FHIR endpoint.
 - Do not change `docker-compose.yml` ports or volume names without telling the other workstreams:
   W3 (FHIR seed) expects `:8090`, W1/W5 expect Postgres on `:5433`.
+
+## 9. Secrets, DB roles and known risks (CEL-1785, security review v3)
+
+- **Secrets.** The first `make` run writes `ops/.env.local` (git-ignored, mode 600) with random `JWT_SECRET`,
+  `PSEUDONYM_KEY`, `AUDIT_KEY` and the DB role passwords. The backend refuses to start without them (no committed
+  default). Deleting the file means a new `make reset` (old tokens, pseudonyms and audit hashes no longer match).
+- **DB roles** (made by `ops/postgres-init.sh`, only on a fresh volume, so use `make reset` after pulling this change):
+  `yammic` = owner/superuser for migrations and seed; `yammic_app` = the running backend, INSERT/SELECT only on
+  `audit_event`; `hapi` = HAPI FHIR, can only connect to database `hapi`.
+- **Audit chain.** Hashes are HMAC-SHA256 with `AUDIT_KEY`. Each committed write appends `time count headHash` to
+  `ops/audit-anchor.log`. `/audit/verify` fails on edits, mid-chain deletion, tail deletion and a full rewrite.
+  `make reset` deletes the anchor with the DB. Known limit: the anchor is a plain local file, not WORM storage;
+  someone with both the DB and the file system can edit both. Production needs an external append-only store.
+- **Known risk: HAPI image.** `hapiproject/hapi:latest` (digest in `docker-compose.yml`, HAPI 8.12.0) still carries
+  Spring/OTel CVEs (4 Critical, 25 High at scan). On 2026-11-21 `latest` still pointed to this digest, so no fixed image
+  could be pinned. Mitigation for the demo: port 8090 bound to 127.0.0.1 only (accepted in writing for the demo), HAPI
+  has its own low-privilege DB user, and CORS allows only `http://127.0.0.1:8080`. Re-check upstream before any use
+  outside a local demo. The HAPI server still has no authentication and serves raw MRN and names (synthetic data).
+- `ops/ai-workers.sh` and `make stop` act on every AI worker / `:8000` / `:8080` process on the machine, so do not run
+  them from a second checkout while another stack is up.

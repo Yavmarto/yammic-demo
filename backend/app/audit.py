@@ -1,11 +1,20 @@
 """Hash-chained, append-only audit log. Call `record` inside the business transaction."""
 import hashlib
+import hmac
 import json
+import os
 from datetime import UTC, datetime
+from pathlib import Path
 
-from sqlalchemy import text
+from sqlalchemy import event, text
+from sqlalchemy.engine import Engine
 
 GENESIS = "0" * 64
+# HMAC key, kept outside the DB (ops/.env.local); anchor = append-only (count, head) log outside the DB
+if len(os.environ.get("AUDIT_KEY", "")) < 32:
+    raise RuntimeError("AUDIT_KEY missing or shorter than 32 chars (run via make, or set it)")
+KEY = os.environ["AUDIT_KEY"].encode()
+ANCHOR = Path(os.environ.get("AUDIT_ANCHOR") or Path(__file__).resolve().parents[2] / "ops" / "audit-anchor.log")
 FIELDS = ("ts", "actor", "role", "action", "entity_type", "entity_id", "participant_id",
           "before", "after", "source", "model", "prompt_version")
 
@@ -16,11 +25,32 @@ def _canon(d: dict) -> str:
 
 
 def _hash(prev: str, d: dict) -> str:
-    return hashlib.sha256((prev + _canon(d)).encode()).hexdigest()
+    return hmac.new(KEY, (prev + _canon(d)).encode(), hashlib.sha256).hexdigest()
 
 
 def _iso(ts: datetime) -> str:
     return ts.astimezone(UTC).isoformat()
+
+
+@event.listens_for(Engine, "commit")
+def _anchor_on_commit(conn):  # only committed events are anchored; rollbacks leave no line
+    if p := conn.info.pop("audit_anchor", None):
+        with ANCHOR.open("a") as f:
+            f.write(f"{datetime.now(UTC).isoformat()} {p[0]} {p[1]}\n")
+
+
+@event.listens_for(Engine, "rollback")
+def _drop_pending(conn):
+    conn.info.pop("audit_anchor", None)
+
+
+def _last_anchor():
+    """Highest (count, head) in the anchor log, or None."""
+    try:
+        rows = [l.split() for l in ANCHOR.read_text().splitlines() if l.strip()]
+    except FileNotFoundError:
+        return None
+    return max(((int(r[1]), r[2]) for r in rows), default=None)
 
 
 def record(c, user, action, entity_type, entity_id, *, participant_id=None, before=None,
@@ -39,10 +69,12 @@ def record(c, user, action, entity_type, entity_id, *, participant_id=None, befo
         CAST(:before AS jsonb), CAST(:after AS jsonb), :source, :model, :prompt_version, :prev, :hash)"""),
               {**ev, "before": json.dumps(ev["before"]), "after": json.dumps(ev["after"]),
                "prev": prev, "hash": _hash(prev, ev)})
+    # ponytail: count(*) per write is O(n); fine at demo scale
+    c.info["audit_anchor"] = (c.execute(text("SELECT count(*) FROM audit_event")).scalar(), _hash(prev, ev))
 
 
 def verify(c) -> dict:
-    prev, n = GENESIS, 0
+    prev, n, at = GENESIS, 0, {}
     rows = c.execute(text("SELECT * FROM audit_event ORDER BY seq")).mappings()
     for r in rows:
         n += 1
@@ -53,4 +85,11 @@ def verify(c) -> dict:
         if _hash(prev, d) != d["hash"]:
             return {"ok": False, "count": n, "brokenSeq": d["seq"], "reason": "hash does not match event content (event modified)"}
         prev = d["hash"]
+        at[n] = prev
+    a = _last_anchor()
+    if a is None and n:
+        return {"ok": False, "count": n, "brokenSeq": None, "reason": "anchor log missing (cannot prove no events were deleted)"}
+    if a and (n < a[0] or at[a[0]] != a[1]):
+        why = "events deleted from the end of the chain" if n < a[0] else "chain rewritten (does not match the external anchor)"
+        return {"ok": False, "count": n, "brokenSeq": None, "reason": f"{why}: anchor says {a[0]} events"}
     return {"ok": True, "count": n, "brokenSeq": None, "reason": None, "headHash": prev}

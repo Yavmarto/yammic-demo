@@ -10,6 +10,11 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
+# Per-machine secrets (JWT_SECRET, PSEUDONYM_KEY, AUDIT_KEY, DB passwords): generated once, git-ignored.
+$(shell ops/ensure-env.sh >&2)
+include ops/.env.local
+export
+
 COMPOSE ?= docker compose
 UV ?= uv
 PY ?= python3
@@ -25,6 +30,10 @@ BACKEND_PORT ?= 8000
 WEB_PORT ?= 8080
 STRICT ?= 0
 AI_PROVIDER ?= auto
+
+# Backend runs as the least-privilege role; seed/migrations run as the owner.
+ADMIN_URL := postgresql+psycopg://yammic:yammic@localhost:$(PG_PORT)/yammic
+export DATABASE_URL ?= postgresql+psycopg://yammic_app:$(APP_DB_PASSWORD)@localhost:$(PG_PORT)/yammic
 
 FHIR_LOCAL := http://127.0.0.1:$(FHIR_PORT)
 BACKEND_LOCAL := http://127.0.0.1:$(BACKEND_PORT)
@@ -80,7 +89,7 @@ seed:
 			echo "== seed: skip backend — database already has $$n study row(s) (use make reset for a clean slate)"; \
 		else \
 			echo "== seed: backend (python -m app.seed)"; \
-			( cd backend && $(UV) run python -m app.seed ) || { echo "ERROR: backend seed failed"; exit 1; }; \
+			( cd backend && DATABASE_URL=$(ADMIN_URL) $(UV) run python -m app.seed ) || { echo "ERROR: backend seed failed"; exit 1; }; \
 		fi; \
 	else \
 		echo "== seed: skip backend — backend/app/seed.py not present yet (workstream W1)"; \
@@ -89,6 +98,7 @@ seed:
 reset:
 	@echo "== reset: removing containers and data volume"
 	@$(COMPOSE) down -v --remove-orphans
+	@rm -f ops/audit-anchor.log   # the anchor belongs to the DB it anchors
 	@$(MAKE) --no-print-directory up
 	@$(MAKE) --no-print-directory seed
 

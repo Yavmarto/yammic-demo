@@ -8,6 +8,7 @@
 set -uo pipefail
 
 cd "$(dirname "$0")/.." || exit 1
+[ -f ops/.env.local ] && { set -a; . ops/.env.local; set +a; }  # compose needs the DB passwords
 
 STRICT=0
 case "${1:-}" in

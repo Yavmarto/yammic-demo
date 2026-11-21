@@ -10,7 +10,9 @@ import hmac
 import os
 import re
 
-KEY = os.environ.get("PSEUDONYM_KEY", "yammic-demo-pseudonym-key-not-for-production").encode()
+if len(os.environ.get("PSEUDONYM_KEY", "")) < 32:  # fail closed, no committed default
+    raise RuntimeError("PSEUDONYM_KEY missing or shorter than 32 chars (run via make, or set it)")
+KEY = os.environ["PSEUDONYM_KEY"].encode()
 
 
 def mrn_hmac(mrn: str) -> str:

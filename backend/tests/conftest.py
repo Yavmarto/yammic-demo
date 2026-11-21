@@ -31,6 +31,11 @@ def _make_url():
     return url
 
 
+import tempfile  # noqa: E402
+
+os.environ.update(JWT_SECRET="test-jwt-secret-" + "x" * 32, PSEUDONYM_KEY="test-pseudonym-key-" + "x" * 32,
+                  AUDIT_KEY="test-audit-key-" + "x" * 32,
+                  AUDIT_ANCHOR=os.path.join(tempfile.mkdtemp(), "audit-anchor.log"))
 os.environ["DATABASE_URL"] = _make_url()  # must be set before importing app.*
 
 from fastapi.testclient import TestClient  # noqa: E402
@@ -43,6 +48,7 @@ from app.main import app  # noqa: E402
 
 @pytest.fixture(autouse=True)
 def fresh_db():
+    open(os.environ["AUDIT_ANCHOR"], "w").close()  # new DB, new anchor
     with engine.begin() as c:
         c.execute(text("DROP SCHEMA public CASCADE"))
         c.execute(text("CREATE SCHEMA public"))
