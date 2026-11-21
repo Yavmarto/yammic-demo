@@ -2038,6 +2038,99 @@
         "title": "Site",
         "type": "object"
       },
+      "SyncRunOut": {
+        "properties": {
+          "counts": {
+            "additionalProperties": true,
+            "title": "Counts",
+            "type": "object"
+          },
+          "cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cursor"
+          },
+          "durationMs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Durationms"
+          },
+          "errors": {
+            "items": {},
+            "title": "Errors",
+            "type": "array"
+          },
+          "finishedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finishedat"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "since": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since"
+          },
+          "startedAt": {
+            "title": "Startedat",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "triggeredBy": {
+            "title": "Triggeredby",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "startedAt",
+          "finishedAt",
+          "durationMs",
+          "status",
+          "mode",
+          "since",
+          "cursor",
+          "triggeredBy",
+          "counts",
+          "errors"
+        ],
+        "title": "SyncRunOut",
+        "type": "object"
+      },
       "Task": {
         "properties": {
           "assignee": {
@@ -2776,6 +2869,131 @@
         ]
       }
     },
+    "/integrations": {
+      "get": {
+        "description": "Connection status, probed live from the FHIR server's /metadata.",
+        "operationId": "integrations_integrations_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Integrations",
+        "tags": [
+          "integrations"
+        ]
+      }
+    },
+    "/integrations/fhir/runs": {
+      "get": {
+        "operationId": "fhir_runs_integrations_fhir_runs_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SyncRunOut"
+                  },
+                  "title": "Response Fhir Runs Integrations Fhir Runs Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Fhir Runs",
+        "tags": [
+          "integrations"
+        ]
+      }
+    },
+    "/integrations/fhir/sync": {
+      "post": {
+        "description": "Pull from the hospital FHIR server, pseudonymise, store, and queue AI extraction for new documents.",
+        "operationId": "fhir_sync_integrations_fhir_sync_post",
+        "parameters": [
+          {
+            "description": "Ignore the incremental cursor and pull everything",
+            "in": "query",
+            "name": "full",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "Ignore the incremental cursor and pull everything",
+              "title": "Full",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncRunOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Fhir Sync",
+        "tags": [
+          "integrations"
+        ]
+      }
+    },
     "/me": {
       "get": {
         "operationId": "me_me_get",
@@ -3055,6 +3273,86 @@
         "summary": "Sdv",
         "tags": [
           "ecrf"
+        ]
+      }
+    },
+    "/participants/{pid}/export/fhir": {
+      "get": {
+        "description": "FHIR R4 bundle: QuestionnaireResponse + Provenance (AI vs human agents) + AuditEvents.",
+        "operationId": "export_fhir_participants__pid__export_fhir_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pid",
+            "required": true,
+            "schema": {
+              "title": "Pid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/fhir+json": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Fhir",
+        "tags": [
+          "export"
+        ]
+      }
+    },
+    "/participants/{pid}/export/fhir/push": {
+      "post": {
+        "description": "Validate the bundle on the FHIR server, then write it back as one transaction.",
+        "operationId": "push_fhir_participants__pid__export_fhir_push_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pid",
+            "required": true,
+            "schema": {
+              "title": "Pid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Push Fhir",
+        "tags": [
+          "export"
         ]
       }
     },
@@ -3750,6 +4048,45 @@
         "summary": "Dashboard",
         "tags": [
           "study"
+        ]
+      }
+    },
+    "/studies/{study_id}/export/odm": {
+      "get": {
+        "description": "CDISC ODM 1.3.2 snapshot: eCRF metadata plus every verified value with an AuditRecord.",
+        "operationId": "export_odm_studies__study_id__export_odm_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "study_id",
+            "required": true,
+            "schema": {
+              "title": "Study Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/xml": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Odm",
+        "tags": [
+          "export"
         ]
       }
     }

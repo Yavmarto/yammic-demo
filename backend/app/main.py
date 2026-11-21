@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .ai.routes import r as ai_r
+from .export.routes import r as export_r
+from .ingest.routes import r as ingest_r
 from .routes import r
 
 app = FastAPI(
@@ -13,3 +15,5 @@ app = FastAPI(
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 app.include_router(r)
 app.include_router(ai_r)
+app.include_router(ingest_r)
+app.include_router(export_r)
