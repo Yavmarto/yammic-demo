@@ -1,0 +1,20 @@
+SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE
+Fictional University Medical Center Northhaven - Department of Neuro-Oncology
+
+SUBJECT CODE: GBM-NL-005
+SEX: female
+AGE AT DIAGNOSIS: 52 years
+ADMISSION DATE: 2026-08-28
+DISCHARGE DATE: 2026-09-02
+
+DISCHARGE SUMMARY
+The patient underwent a right frontal craniotomy with gross total resection of a
+glioblastoma, IDH-wildtype. Post-operative course was uneventful.
+
+FUNCTIONAL STATUS
+Karnofsky Performance Status at discharge: 70%.
+
+PLAN
+Adjuvant radiotherapy 60 Gy in 30 fractions with concurrent temozolomide,
+followed by 6 planned adjuvant temozolomide cycles. The patient had grade 1
+nausea during admission; no adverse events above grade 1 were recorded.

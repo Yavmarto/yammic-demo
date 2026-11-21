@@ -1,0 +1,17 @@
+SYNTHETIC DOCUMENT - FICTIONAL - NOT FOR CLINICAL USE
+Fictional University Medical Center Northhaven - Department of Pathology
+Reported by: Dr. T. Sample (fictional)
+
+SUBJECT CODE: GBM-NL-005
+SPECIMEN RECEIVED: 2026-09-01
+REPORT DATE: 2026-09-03
+PROCEDURE: Stereotactic biopsy, right frontal lobe
+
+MICROSCOPY
+High-grade astrocytic tumour with necrosis and microvascular proliferation.
+IDH1 R132H immunohistochemistry is negative. MGMT promoter is methylated by
+pyrosequencing. ATRX expression retained.
+
+DIAGNOSIS
+Glioblastoma, IDH-wildtype (WHO CNS5). ICD-O-3 morphology code 9440/3.
+MGMT promoter: methylated.

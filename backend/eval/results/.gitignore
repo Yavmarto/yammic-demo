@@ -1,0 +1,3 @@
+# Timestamped history stays local; the API and the app read latest-*.
+*-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]T*.json
+*-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]T*.md

@@ -2222,6 +2222,184 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/ai/eval": {
+      "get": {
+        "description": "Latest eval harness result (precision/recall/F1/abstention per field).",
+        "operationId": "ai_eval_ai_eval_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "provider",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Provider"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ai Eval",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/ai/prompts": {
+      "get": {
+        "description": "Versioned prompt files with the SHA-256 hash recorded in each run.",
+        "operationId": "ai_prompts_ai_prompts_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ai Prompts",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/ai/providers": {
+      "get": {
+        "description": "Provider availability. `rules` is always on; `ollama` checks localhost:11434.",
+        "operationId": "ai_providers_ai_providers_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ai Providers",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/ai/runs": {
+      "get": {
+        "description": "Same rows as GET /runs, exposed under /ai for the AI quality screen.",
+        "operationId": "ai_runs_ai_runs_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "participant_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Participant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Run"
+                  },
+                  "title": "Response Ai Runs Ai Runs Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ai Runs",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
     "/audit": {
       "get": {
         "description": "Newest first. `action` matches exactly or as a prefix when it ends with '*'.",
@@ -2877,6 +3055,76 @@
         "summary": "Sdv",
         "tags": [
           "ecrf"
+        ]
+      }
+    },
+    "/participants/{pid}/extract": {
+      "post": {
+        "description": "Queue a run and record the requested provider on it (`rules`, `ollama`, `auto`).\n\nThe AI service picks the run up from `GET /runs?status=queued` and uses the\nrecorded provider; `auto` means Ollama when it is up, else rules.",
+        "operationId": "queue_provider_run_participants__pid__extract_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pid",
+            "required": true,
+            "schema": {
+              "title": "Pid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "provider",
+            "required": false,
+            "schema": {
+              "default": "auto",
+              "title": "Provider",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RunIn"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Queue Provider Run",
+        "tags": [
+          "ai"
         ]
       }
     },

@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .ai.routes import r as ai_r
 from .routes import r
 
 app = FastAPI(
@@ -11,3 +12,4 @@ app = FastAPI(
 # ponytail: wide-open CORS, fine for a local-only demo (Flutter web dev server)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 app.include_router(r)
+app.include_router(ai_r)

@@ -1,0 +1,112 @@
+{
+  "synthetic": true,
+  "disclaimer": "Synthetic data — prototype, not for clinical use",
+  "participantId": "GBM-NL-005",
+  "documents": [
+    {
+      "id": "DOC-005-PATH",
+      "participantId": "GBM-NL-005",
+      "type": "pathology_report",
+      "title": "Pathology report — stereotactic biopsy (fictional, new arrival)",
+      "language": "en",
+      "documentDate": "2026-09-03",
+      "fields": {
+        "SUBJID": {
+          "status": "proposed",
+          "value": "GBM-NL-005",
+          "normalizedValue": "GBM-NL-005"
+        },
+        "SITEID": {
+          "status": "proposed",
+          "value": "SITE-02",
+          "normalizedValue": "SITE-02"
+        },
+        "HISTOLOGY": {
+          "status": "proposed",
+          "value": "Glioblastoma, IDH-wildtype",
+          "normalizedValue": "glioblastoma_idh_wildtype"
+        },
+        "IDHSTAT": {
+          "status": "proposed",
+          "value": "IDH-wildtype",
+          "normalizedValue": "wildtype"
+        },
+        "MGMTPROM": {
+          "status": "proposed",
+          "value": "Methylated",
+          "normalizedValue": "methylated"
+        },
+        "MHSTDAT": {
+          "status": "proposed",
+          "value": "2026-09-01",
+          "normalizedValue": "2026-09-01"
+        }
+      }
+    },
+    {
+      "id": "DOC-005-MRI",
+      "participantId": "GBM-NL-005",
+      "type": "radiology_report",
+      "title": "MRI report, post-operative (fictional, new arrival)",
+      "language": "en",
+      "documentDate": "2026-09-05",
+      "fields": {
+        "EXTRES": {
+          "status": "proposed",
+          "value": "Gross total resection",
+          "normalizedValue": "gross_total"
+        },
+        "PROGDAT": {
+          "status": "abstained",
+          "value": null,
+          "normalizedValue": null
+        }
+      }
+    },
+    {
+      "id": "DOC-005-DIS",
+      "participantId": "GBM-NL-005",
+      "type": "discharge_letter",
+      "title": "Discharge summary, neuro-oncology (fictional, new arrival)",
+      "language": "en",
+      "documentDate": "2026-09-02",
+      "fields": {
+        "SEX": {
+          "status": "proposed",
+          "value": "Female",
+          "normalizedValue": "F"
+        },
+        "AGE": {
+          "status": "proposed",
+          "value": "52",
+          "normalizedValue": 52
+        },
+        "KPS": {
+          "status": "proposed",
+          "value": "70",
+          "normalizedValue": 70
+        },
+        "RTDOSE": {
+          "status": "proposed",
+          "value": "60",
+          "normalizedValue": 60
+        },
+        "RTFRAC": {
+          "status": "proposed",
+          "value": "30",
+          "normalizedValue": 30
+        },
+        "TMZPLNC": {
+          "status": "proposed",
+          "value": "6",
+          "normalizedValue": 6
+        },
+        "AEGRADE": {
+          "status": "proposed",
+          "value": "1",
+          "normalizedValue": 1
+        }
+      }
+    }
+  ]
+}
