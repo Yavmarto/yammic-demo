@@ -3,6 +3,7 @@ import json
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy import text
+from pydantic import BaseModel
 
 from .. import audit as A
 from ..db import engine
@@ -73,3 +74,50 @@ def push_fhir(pid: str, user=Depends(require("pi", "monitor"))):
         A.record(c, user, "export.fhir_push", "participant", pid, participant_id=pid,
                  after={"resources": len(written), "target": getattr(src, "base", "fhir")})
     return {"pushed": len(written), "resources": written}
+
+# This endpoint is confined to an explicitly configured local synthetic receiver.
+def _synthetic_receiver(pid):
+    import os
+    from ..writeback import LocalReceiver
+    if os.environ.get("YAMICC_SYNTHETIC_WRITEBACK") != "1":
+        raise HTTPException(503, "Synthetic write-back is disabled")
+    if pid != "GBM-NL-001":
+        raise HTTPException(422, "Only fictional participant GBM-NL-001 is supported")
+    path = os.environ.get("YAMICC_SYNTHETIC_RECEIVER_PATH")
+    if not path:
+        raise HTTPException(503, "Synthetic receiver is unavailable")
+    try:
+        return LocalReceiver(path)
+    except (OSError, __import__('sqlite3').Error):
+        raise HTTPException(503, "Synthetic receiver is unavailable")
+
+
+@r.get("/participants/{pid}/export/synthetic-writeback")
+def preview_synthetic_writeback(pid: str, user=Depends(require("pi", "monitor"))):
+    from ..writeback import prepare
+    receiver = _synthetic_receiver(pid)
+    prepared = prepare(pid, "KPS", receiver)
+    if prepared is None:
+        raise HTTPException(409, "No accepted or corrected KPS value is available")
+    delivery_id, payload = prepared
+    return {"deliveryId": delivery_id, **payload}
+
+
+class SyntheticDeliveryRequest(BaseModel):
+    deliveryId: str
+
+
+@r.post("/participants/{pid}/export/synthetic-writeback")
+def send_synthetic_writeback(pid: str, body: SyntheticDeliveryRequest, user=Depends(require("pi", "monitor"))):
+    import sqlite3
+    from ..writeback import deliver, TemporaryReceiverError
+    receiver = _synthetic_receiver(pid)
+    try:
+        delivery_id = deliver(pid, "KPS", user, receiver, expected_id=body.deliveryId)
+    except (TemporaryReceiverError, sqlite3.Error, OSError):
+        raise HTTPException(503, "Receiver unavailable or acknowledgement lost. Retry the same reviewed value.")
+    except ValueError as e:
+        raise HTTPException(409, str(e))
+    if delivery_id is None:
+        raise HTTPException(409, "No accepted or corrected KPS value is available")
+    return {"deliveryId": delivery_id, "outcome": "delivered", "retryState": "Safe to retry; the receiver keeps one record."}

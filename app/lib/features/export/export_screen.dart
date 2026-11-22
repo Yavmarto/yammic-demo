@@ -23,6 +23,8 @@ class _ExportState extends State<ExportScreen> {
   List participants = [];
   String? pid;
   Session? s;
+  Map? synthetic;
+  String? deliveryState;
 
   @override
   void didChangeDependencies() {
@@ -70,6 +72,26 @@ class _ExportState extends State<ExportScreen> {
     if (mounted) setState(() => busy = false);
   }
 
+  Future<void> _synthetic({bool send = false}) async {
+    setState(() { busy = true; error = null; if (!send) { synthetic = null; deliveryState = null; } });
+    try {
+      if (send) {
+        final result = await s!.api.post('/participants/GBM-NL-001/export/synthetic-writeback', {'deliveryId': synthetic!['deliveryId']}) as Map;
+        deliveryState = "Delivered. ${result['retryState']}";
+      } else {
+        synthetic = await s!.api.get('/participants/GBM-NL-001/export/synthetic-writeback') as Map;
+        deliveryState = 'Ready to send.';
+      }
+    } on ApiException catch (e) {
+      deliveryState = send ? 'Delivery not confirmed. Retry the same reviewed value.' : null;
+      error = e.message;
+    } on Unreachable catch (e) {
+      deliveryState = send ? 'Delivery not confirmed. Retry the same reviewed value.' : null;
+      error = e.message;
+    }
+    if (mounted) setState(() => busy = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = SessionScope.of(context);
@@ -79,6 +101,17 @@ class _ExportState extends State<ExportScreen> {
       padding: const EdgeInsets.all(K.s24),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const PageHeader(title: 'Export', subtitle: 'Only human-verified eCRF values leave the platform. AI proposals are never exported. Every export is audited.'),
+        const SizedBox(height: K.s16),
+        Panel(title: 'Local synthetic write-back · GBM-NL-001', child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('Review one KPS value for the simulated receiver. This demo does not establish the FR-063 policy.'),
+          const SizedBox(height: 8),
+          WriteGate(blockedReason: blocked, builder: (en) => OutlinedButton(onPressed: en && !busy ? () => _synthetic() : null, child: const Text('Review synthetic delivery'))),
+          if (synthetic != null) ...[
+            SelectableText('Destination: ${synthetic!['destination_field']}\n${synthetic!['review_state']} value: ${synthetic!['value']}\nSource document ID: ${synthetic!['source_id']}\nExtraction ID: ${synthetic!['extraction_id']}'),
+            Text(deliveryState ?? ''),
+            FilledButton(onPressed: busy ? null : () => _synthetic(send: true), child: Text(deliveryState == 'Ready to send.' ? 'Send reviewed value' : 'Retry delivery')),
+          ],
+        ])),
         const SizedBox(height: K.s16),
         Row(children: [
           for (final (i, l) in ['Choose format', 'Generate', 'Download or push'].indexed) ...[

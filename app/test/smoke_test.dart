@@ -21,6 +21,7 @@ class FakeBackend {
   final posts = <String>[];
   var up = true;
   var state = 'pending';
+  var deliveryAttempts = 0;
   Future<http.Response> handle(http.Request r) async {
     if (!up) throw Exception('connection refused');
     final p = r.url.path;
@@ -30,6 +31,10 @@ class FakeBackend {
       if (p == '/auth/login') {
         final u = jsonDecode(r.body)['username'];
         body = {'accessToken': 't', 'tokenType': 'bearer', 'user': {'username': u, 'role': u, 'name': 'Demo $u'}};
+      } else if (p.endsWith('/synthetic-writeback')) {
+        deliveryAttempts++;
+        if (deliveryAttempts == 1) return http.Response(jsonEncode({'detail': 'Acknowledgement lost'}), 503, headers: {'content-type': 'application/json'});
+        body = {'outcome': 'delivered', 'retryState': 'Safe to retry; the receiver keeps one record.'};
       } else if (p.endsWith('/manual')) {
         return http.Response(jsonEncode({'detail': 'Value does not match the field type or bounds'}), 422, headers: {'content-type': 'application/json'});
       } else if (p.endsWith('/decision')) {
@@ -48,6 +53,8 @@ class FakeBackend {
         'alerts': [{'severity': 'warning', 'message': 'Check MGMT value'}],
         'tasks': [{'title': 'Review extractions', 'due': '2026-11-24', 'assignee': 'Nurse', 'participantId': 'GBM-NL-001'}],
       };
+    } else if (p.endsWith('/synthetic-writeback')) {
+      body = {'deliveryId': 'delivery-1', 'value': '80', 'source_id': 'DOC-001-PATH', 'extraction_id': 'EXT-1', 'review_state': 'corrected', 'destination_field': 'performance.karnofsky'};
     } else if (p == '/participants') {
       body = [{'id': 'GBM-NL-001', 'studyId': 'S', 'siteId': 'SITE-01', 'status': 'active', 'statusDetail': 'on_treatment', 'age': 57, 'sex': 'F', 'enrolledDate': '2026-06-05', 'documentCount': 1, 'extractionsPending': 2, 'ecrfVerified': 0, 'ecrfTotal': 15, 'ecrfCompletePct': 0, 'openQueries': 1}];
     } else if (p.endsWith('/ecrf')) {
@@ -93,6 +100,26 @@ Future<void> settle(WidgetTester t) async {
 }
 
 void main() {
+  testWidgets('synthetic delivery shows reviewed value and retry outcome', (t) async {
+    final (be, _) = await boot(t);
+    await signIn(t, 'pi');
+    await t.tap(find.text('Export').first);
+    await settle(t);
+    await t.tap(find.text('Review synthetic delivery'));
+    await t.pumpAndSettle();
+    expect(find.textContaining('performance.karnofsky'), findsOneWidget);
+    expect(find.textContaining('DOC-001-PATH'), findsOneWidget);
+    expect(find.textContaining('corrected value: 80'), findsOneWidget);
+    await t.tap(find.text('Send reviewed value'));
+    await t.pumpAndSettle();
+    expect(find.textContaining('Delivery not confirmed'), findsOneWidget);
+    await t.tap(find.text('Retry delivery'));
+    await t.pumpAndSettle();
+    expect(find.textContaining('Delivered.'), findsOneWidget);
+    expect(be.deliveryAttempts, 2);
+    expect(find.text('CDISC ODM 1.3.2'), findsOneWidget);
+  });
+
   testWidgets('login picks role, signs in via JWT and shows live dashboard KPIs', (t) async {
     final (be, s) = await boot(t);
     expect(find.text('Sign in'), findsWidgets);
