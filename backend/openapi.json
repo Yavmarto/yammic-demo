@@ -1003,6 +1003,15 @@
             ],
             "title": "Code"
           },
+          "entrySource": {
+            "default": "ai",
+            "enum": [
+              "human",
+              "ai"
+            ],
+            "title": "Entrysource",
+            "type": "string"
+          },
           "field": {
             "title": "Field",
             "type": "string"
@@ -2032,6 +2041,29 @@
           "password"
         ],
         "title": "LoginIn",
+        "type": "object"
+      },
+      "ManualEntryIn": {
+        "properties": {
+          "documentId": {
+            "title": "Documentid",
+            "type": "string"
+          },
+          "evidence": {
+            "title": "Evidence",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "documentId",
+          "evidence"
+        ],
+        "title": "ManualEntryIn",
         "type": "object"
       },
       "Milestone": {
@@ -5494,6 +5526,68 @@
           }
         },
         "summary": "Ecrf",
+        "tags": [
+          "ecrf"
+        ]
+      }
+    },
+    "/participants/{pid}/ecrf/{field}/manual": {
+      "post": {
+        "description": "Enter a verified value with an exact source-document quote.",
+        "operationId": "manual_entry_participants__pid__ecrf__field__manual_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pid",
+            "required": true,
+            "schema": {
+              "title": "Pid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "field",
+            "required": true,
+            "schema": {
+              "title": "Field",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualEntryIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Manual Entry",
         "tags": [
           "ecrf"
         ]

@@ -217,11 +217,18 @@ class DecisionIn(M):
     reason: str | None = None  # required for "reject"
 
 
+class ManualEntryIn(M):
+    value: str
+    document_id: str
+    evidence: str
+
+
 class EcrfValue(M):
     field: str
     value: str
     code: dict[str, Any] | None
     source_extraction_id: str | None
+    entry_source: Literal["human", "ai"] = "ai"
     verified_by: str
     verified_at: datetime
     sdv_by: str | None

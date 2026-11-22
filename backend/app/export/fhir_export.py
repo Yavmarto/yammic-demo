@@ -62,18 +62,18 @@ def build_bundle(c, pid: str) -> dict | None:
                    for v in vals]}
     agents, seen = [], set()
     for v in vals:
-        if v["source_extraction_id"]:
+        if v["source_extraction_id"] and v["provider"] != "human":
             key = ("ai", v["provider"], v["model"], v["prompt_version"])
             if key not in seen:
                 seen.add(key)
                 agents.append({"type": {"coding": [{"system": PTYPE, "code": "author", "display": "Author"}]},
                                "role": [{"text": "AI extraction proposal"}],
                                "who": {"display": f"AI {v['provider']}/{v['model']} (prompt {v['prompt_version']})"}})
-        key = ("human", v["verified_by"])
+        key = ("human", v["verified_by"], v["provider"] == "human")
         if key not in seen:
             seen.add(key)
             agents.append({"type": {"coding": [{"system": PTYPE, "code": "verifier", "display": "Verifier"}]},
-                           "role": [{"text": "human review of AI proposal"}],
+                           "role": [{"text": "human entry" if v["provider"] == "human" else "human review of AI proposal"}],
                            "who": {"display": v["verified_by"]}})
     docs = sorted({v["document_id"] for v in vals if v["document_id"]})
     prov = {"resourceType": "Provenance", "id": f"prov-{pid}", "meta": {"tag": [TAG]},

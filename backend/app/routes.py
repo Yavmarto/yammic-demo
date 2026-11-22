@@ -454,7 +454,10 @@ def decide(eid: str, body: S.DecisionIn, user=Depends(require("nurse", "pi"))):
         if body.decision == "accept" and e["status"] == "abstained":
             raise HTTPException(422, "An abstained extraction has no value to accept; use correct, reject or defer")
         pid, fid = e["participant_id"], e["field_id"]
+        c.execute(text("SELECT id FROM participant WHERE id=:p FOR UPDATE"), {"p": pid})
         prev_val = one(c, "SELECT value, code, source_extraction_id FROM ecrf_value WHERE participant_id=:p AND field_id=:f", p=pid, f=fid)
+        if prev_val and body.decision in ("accept", "correct"):
+            raise HTTPException(409, "Field already has a verified value")
         state = {"accept": "accepted", "correct": "corrected", "reject": "rejected", "defer": "deferred"}[body.decision]
         c.execute(text("""INSERT INTO review_decision (extraction_id, decision, corrected_value, reason, username, role)
           VALUES (:e,:d,:cv,:r,:u,:ro)"""), dict(e=eid, d=body.decision, cv=corrected or None, r=reason,
@@ -491,7 +494,61 @@ def decide(eid: str, body: S.DecisionIn, user=Depends(require("nurse", "pi"))):
 
 
 # ---------- eCRF ----------
-ECRFVAL = """SELECT field_id AS field, value, code, source_extraction_id, verified_by, verified_at, sdv_by, sdv_at, form_version FROM ecrf_value"""
+ECRFVAL = """SELECT field_id AS field, value, code, source_extraction_id, verified_by, verified_at, sdv_by, sdv_at, form_version, CASE WHEN (SELECT provider FROM extraction WHERE id=source_extraction_id)='human' THEN 'human' ELSE 'ai' END AS entry_source FROM ecrf_value"""
+
+
+@r.post("/participants/{pid}/ecrf/{field}/manual", response_model=S.DecisionResult, status_code=201, tags=["ecrf"])
+def manual_entry(pid: str, field: str, body: S.ManualEntryIn, user=Depends(require("nurse", "pi"))):
+    """Enter a verified value with an exact source-document quote."""
+    with engine.begin() as c:
+        p = must(one(c, "SELECT * FROM participant WHERE id=:p FOR UPDATE", p=pid), "Participant")
+        f = must(one(c, "SELECT * FROM ecrf_field WHERE id=:f AND study_id=:s", f=field, s=p["study_id"]), "Field")
+        if one(c, "SELECT 1 FROM ecrf_value WHERE participant_id=:p AND field_id=:f", p=pid, f=field):
+            raise HTTPException(409, "Field already has a verified value")
+        d = must(one(c, "SELECT * FROM source_document WHERE id=:d AND participant_id=:p", d=body.document_id, p=pid), "Participant document")
+        quote = body.evidence
+        if not quote.strip() or quote not in d["text"]:
+            raise HTTPException(422, "Evidence must be an exact, non-empty quote from the selected document")
+        value = body.value.strip()
+        if not value:
+            raise HTTPException(422, "Value is required")
+        kind = f["value_type"]
+        try:
+            if kind == "integer":
+                if not re.fullmatch(r"-?\d+", value): raise ValueError()
+                number = int(value)
+            elif kind == "number":
+                from decimal import Decimal
+                number = Decimal(value)
+                if not number.is_finite(): raise ValueError()
+            elif kind == "date":
+                date.fromisoformat(value)
+                number = None
+            elif kind in ("string", "coded"):
+                number = None
+            else:
+                raise ValueError()
+            if number is not None and ((f["min_val"] is not None and number < f["min_val"]) or (f["max_val"] is not None and number > f["max_val"])):
+                raise ValueError()
+        except (ValueError, ArithmeticError):
+            raise HTTPException(422, "Value does not match the field type or bounds")
+        choices = f.get("allowed_values") or []
+        choice = next((x for x in choices if x.get("value") == value), None)
+        if choices and not choice:
+            raise HTTPException(422, "Value is not an allowed choice")
+        code = choice.get("code") if choice else None
+        start = d["text"].index(quote)
+        evidence = [{"start": start, "end": start + len(quote), "text": quote}]
+        eid = "MAN-" + str(uuid.uuid4())
+        run = c.execute(text("""INSERT INTO extraction_run (participant_id, document_id, status, total, done, provider, model, prompt_version, created_by, finished_at)
+            VALUES (:p,:d,'completed',1,1,'human','manual','manual',:u,now()) RETURNING id"""), dict(p=pid,d=body.document_id,u=user["username"])).scalar_one()
+        c.execute(text("""INSERT INTO extraction (id, run_id, document_id, participant_id, field_id, status, value, unit, confidence, proposed_code, span_start, span_end, evidence, provider, model, prompt_version, review_state)
+            VALUES (:i,:r,:d,:p,:f,'proposed',:v,:unit,1,CAST(:code AS jsonb),:start,:end,CAST(:ev AS jsonb),'human','manual','manual','corrected')"""), dict(i=eid,r=run,d=body.document_id,p=pid,f=field,v=value,unit=f["unit"],code=json.dumps(code) if code else None,start=start,end=start+len(quote),ev=json.dumps(evidence)))
+        c.execute(text("""INSERT INTO review_decision (extraction_id, decision, corrected_value, reason, username, role) VALUES (:i,'correct',:v,'Manual entry',:u,:role)"""), dict(i=eid,v=value,u=user["username"],role=user["role"]))
+        c.execute(text("""INSERT INTO ecrf_value (participant_id, field_id, value, code, source_extraction_id, verified_by, form_version) VALUES (:p,:f,:v,CAST(:code AS jsonb),:i,:u,:fv)"""), dict(p=pid,f=field,v=value,code=json.dumps(code) if code else None,i=eid,u=user["username"],fv=f.get("form_version") or 1))
+        A.record(c,user,"ecrf.value_set","ecrf_value",f"{pid}/{field}",participant_id=pid,after={"value":value,"source":"human","documentId":body.document_id,"evidence":evidence,"extractionId":eid},source="human")
+        Q.evaluate_participant(c,pid,user,trigger="decision")
+        return S.DecisionResult(extraction=one(c, EXSEL + " WHERE e.id=:i", i=eid), ecrf_value=one(c, ECRFVAL + " WHERE participant_id=:p AND field_id=:f", p=pid,f=field))
 
 
 @r.get("/participants/{pid}/ecrf", response_model=S.Ecrf, tags=["ecrf"])
