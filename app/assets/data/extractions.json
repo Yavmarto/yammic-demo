@@ -15,7 +15,7 @@
       "extractionId": "EXT-0022",
       "documentId": "DOC-002-MRI",
       "field": "EXTRES",
-      "confidence": 0.38,
+      "confidence": 0.45,
       "whatToShow": "Hedged wording ('probably subtotal') gives a low-confidence proposal that needs reviewer verification."
     },
     "wrongValue": {
@@ -889,7 +889,7 @@
       "value": "Subtotal resection",
       "normalizedValue": "subtotal",
       "unit": null,
-      "confidence": 0.38,
+      "confidence": 0.45,
       "proposedCode": {
         "system": "SNOMED CT",
         "code": "262143007",

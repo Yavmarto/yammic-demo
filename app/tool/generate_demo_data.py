@@ -920,7 +920,7 @@ add_extraction(DOC_002_PATH, "MHSTDAT", "2026-05-06", 0.92,
 
 # Deliberate demo case: low confidence from hedged radiology wording.
 add_extraction(
-    DOC_002_MRI, "EXTRES", "subtotal", 0.38, "probably subtotal",
+    DOC_002_MRI, "EXTRES", "subtotal", 0.45, "probably subtotal",
     code=codes("SNOMED CT", "262143007", "Extent of surgical resection", False),
     display="Subtotal resection",
     seeded={
@@ -1335,7 +1335,7 @@ def main() -> None:
                 "extractionId": next(e["id"] for e in extractions if (e.get("seededIssue") or {}).get("kind") == "low_confidence"),
                 "documentId": "DOC-002-MRI",
                 "field": "EXTRES",
-                "confidence": 0.38,
+                "confidence": 0.45,
                 "whatToShow": "Hedged wording ('probably subtotal') gives a low-confidence proposal that needs reviewer verification.",
             },
             "wrongValue": {

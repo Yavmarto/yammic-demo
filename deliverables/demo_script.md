@@ -286,7 +286,7 @@ git rev-parse --short HEAD    # write it here: ________
 
 **Click:** **AI quality** in the PLATFORM sidebar.
 
-> "AI quality, as I said while the model ran. Per-field precision, recall and abstention for the local model and the rules fallback; the hard cases — the hedged wording at 0.38, the wrong MGMT, the abstention; and the model and prompt registry with the prompt hash. The hundred percent is on the synthetic gold set only; real evaluation comes with site data under approval."
+> "AI quality, as I said while the model ran. Per-field precision, recall and abstention for the local model and the rules fallback; the hard cases — the hedged wording at 0.45, the wrong MGMT, the abstention; and the model and prompt registry with the prompt hash. The hundred percent is on the synthetic gold set only; real evaluation comes with site data under approval."
 
 **Audience should notice:** segmented **ollama | rules**; metric strip **Precision 100 % · Recall 100 % · F1 100 % · Abstention 7 % · Documents 13**; subtitle "Precision and recall against the gold set, per field and provider. Quality is measured before it is trusted."; per-field table (Support, Precision, Recall, F1, Abstain, Mean conf.). **Scroll once** to the **Model registry** and **Prompt registry**: `rules` and `ollama` available and local; the active prompt is `extract_v4` with a SHA-256.
 
