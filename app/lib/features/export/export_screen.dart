@@ -83,8 +83,14 @@ class _ExportState extends State<ExportScreen> {
         deliveryState = 'Ready to send.';
       }
     } on ApiException catch (e) {
-      deliveryState = send ? 'Delivery not confirmed. Retry the same reviewed value.' : null;
-      error = e.message;
+      if (send && e.status == 409) {
+        synthetic = null;
+        deliveryState = null;
+        error = 'The reviewed value is no longer current. Review the new value before sending.';
+      } else {
+        deliveryState = send ? 'Delivery not confirmed. Retry the same reviewed value.' : null;
+        error = e.message;
+      }
     } on Unreachable catch (e) {
       deliveryState = send ? 'Delivery not confirmed. Retry the same reviewed value.' : null;
       error = e.message;
