@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "name": "dutch-abstention-evidence-challenge-v1",
+  "authoredBeforeProviderRuns": true,
+  "syntheticOnly": true,
+  "documents": [
+    {
+      "id": "NLCH-001",
+      "type": "pathology",
+      "text": "Fictief verslag. Patiëntcode: GBM-NL-901. MGMT-promotor: niet gemethyleerd.",
+      "fields": {
+        "SUBJID": {
+          "status": "proposed",
+          "value": "GBM-NL-901",
+          "evidence": "GBM-NL-901"
+        },
+        "MGMTPROM": {
+          "status": "proposed",
+          "value": "unmethylated",
+          "evidence": "MGMT-promotor: niet gemethyleerd"
+        },
+        "PROGDAT": {
+          "status": "abstained"
+        }
+      }
+    },
+    {
+      "id": "NLCH-002",
+      "type": "oncology",
+      "text": "Leeftijd bij diagnose: 58 jaar. IDH1 R132H immunohistochemie negatief. Geen datum van progressie vermeld.",
+      "fields": {
+        "AGE": {
+          "status": "proposed",
+          "value": 58,
+          "evidence": "Leeftijd bij diagnose: 58 jaar"
+        },
+        "IDHSTAT": {
+          "status": "proposed",
+          "value": "wildtype",
+          "evidence": "IDH1 R132H immunohistochemie negatief"
+        },
+        "PROGDAT": {
+          "status": "abstained"
+        }
+      }
+    },
+    {
+      "id": "NLCH-003",
+      "type": "radiology",
+      "text": "MRI-controle. Er is geen nieuwe meetbare laesie. Progressie kan op basis van deze scan niet worden vastgesteld.",
+      "fields": {
+        "PROGDAT": {
+          "status": "abstained"
+        },
+        "EXTRES": {
+          "status": "abstained"
+        }
+      }
+    },
+    {
+      "id": "NLCH-004",
+      "type": "pathology",
+      "text": "MGMT-promotor: gemethyleerd. Addendum: herbeoordeling toont geen methylatie; eerste uitslag vervalt.",
+      "fields": {
+        "MGMTPROM": {
+          "status": "proposed",
+          "value": "unmethylated",
+          "evidence": "Addendum: herbeoordeling toont geen methylatie"
+        }
+      }
+    },
+    {
+      "id": "NLCH-005",
+      "type": "radiology",
+      "text": "Resectie: waarschijnlijk subtotale resectie. Definitieve operatienotitie ontbreekt.",
+      "fields": {
+        "EXTRES": {
+          "status": "abstained"
+        }
+      }
+    },
+    {
+      "id": "NLCH-006",
+      "type": "oncology",
+      "text": "Progressie vastgesteld op 2026-02-14 volgens RANO. Leeftijd bij diagnose: 63 jaar.",
+      "fields": {
+        "PROGDAT": {
+          "status": "proposed",
+          "value": "2026-02-14",
+          "evidence": "Progressie vastgesteld op 2026-02-14"
+        },
+        "AGE": {
+          "status": "proposed",
+          "value": 63,
+          "evidence": "Leeftijd bij diagnose: 63 jaar"
+        }
+      }
+    },
+    {
+      "id": "NLCH-007",
+      "type": "pathology",
+      "text": "IDH1 R132H: positief. Histologie: glioblastoom, IDH-mutant. MGMT-status is niet bepaald.",
+      "fields": {
+        "IDHSTAT": {
+          "status": "proposed",
+          "value": "mutant",
+          "evidence": "IDH1 R132H: positief"
+        },
+        "HISTOLOGY": {
+          "status": "proposed",
+          "value": "glioblastoma_idh_mutant",
+          "evidence": "glioblastoom, IDH-mutant"
+        },
+        "MGMTPROM": {
+          "status": "abstained"
+        }
+      }
+    },
+    {
+      "id": "NLCH-008",
+      "type": "radiology",
+      "text": "De radioloog noemt mogelijke groei, maar stelt geen progressie vast. RANO-beoordeling volgt.",
+      "fields": {
+        "PROGDAT": {
+          "status": "abstained"
+        }
+      }
+    },
+    {
+      "id": "NLCH-009",
+      "type": "treatment",
+      "text": "Radiotherapie: 60 Gy in 30 fracties. Adjuvante temozolomide: 6 geplande cycli.",
+      "fields": {
+        "RTDOSE": {
+          "status": "proposed",
+          "value": 60,
+          "evidence": "60 Gy"
+        },
+        "RTFRAC": {
+          "status": "proposed",
+          "value": 30,
+          "evidence": "30 fracties"
+        },
+        "TMZPLNC": {
+          "status": "proposed",
+          "value": 6,
+          "evidence": "6 geplande cycli"
+        }
+      }
+    },
+    {
+      "id": "NLCH-010",
+      "type": "oncology",
+      "text": "Maximaal graad 2 vermoeidheid. Progressie werd op 2026-03-01 bevestigd; eerdere verdenking was onzeker.",
+      "fields": {
+        "AEGRADE": {
+          "status": "proposed",
+          "value": 2,
+          "evidence": "Maximaal graad 2"
+        },
+        "PROGDAT": {
+          "status": "proposed",
+          "value": "2026-03-01",
+          "evidence": "Progressie werd op 2026-03-01 bevestigd"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,450 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-22T13:49:50.797452+00:00",
+  "provider": {
+    "name": "ollama",
+    "model": "qwen2.5:7b-instruct",
+    "paid": false
+  },
+  "prompt": {
+    "version": "extract_v4@1ef2060c673d",
+    "sha256": "1ef2060c673d52423df5237ec46a5c4edc03f78e5e0c5e035d946b2ed9b2b0b8"
+  },
+  "limits": {
+    "timeoutSecondsPerDocument": 240.0,
+    "temperature": 0,
+    "seed": 42
+  },
+  "dataset": {
+    "name": "dutch-abstention-evidence-challenge-v1",
+    "path": "backend/eval/challenge/dataset.json",
+    "documentCount": 10
+  },
+  "summary": {
+    "documents": 10,
+    "completedDocuments": 10,
+    "timeouts": 0,
+    "decisionAccuracy": 0.8095,
+    "exactSpanAgreement": "1/14",
+    "invalidSourceSpans": 0,
+    "durationMs": 104137
+  },
+  "fields": {
+    "SUBJID": {
+      "support": 1,
+      "correct": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstain": 0,
+      "correctAbstain": 0,
+      "decisionAccuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "correctAbstentionDenominator": 0
+    },
+    "MGMTPROM": {
+      "support": 3,
+      "correct": 2,
+      "tp": 1,
+      "fp": 1,
+      "fn": 1,
+      "goldAbstain": 1,
+      "correctAbstain": 1,
+      "decisionAccuracy": 0.6667,
+      "precision": 0.5,
+      "recall": 0.5,
+      "f1": 0.5,
+      "correctAbstentionDenominator": 1
+    },
+    "PROGDAT": {
+      "support": 6,
+      "correct": 6,
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstain": 4,
+      "correctAbstain": 4,
+      "decisionAccuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "correctAbstentionDenominator": 4
+    },
+    "AGE": {
+      "support": 2,
+      "correct": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 1,
+      "goldAbstain": 0,
+      "correctAbstain": 0,
+      "decisionAccuracy": 0.5,
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6667,
+      "correctAbstentionDenominator": 0
+    },
+    "IDHSTAT": {
+      "support": 2,
+      "correct": 2,
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstain": 0,
+      "correctAbstain": 0,
+      "decisionAccuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "correctAbstentionDenominator": 0
+    },
+    "EXTRES": {
+      "support": 2,
+      "correct": 1,
+      "tp": 0,
+      "fp": 1,
+      "fn": 0,
+      "goldAbstain": 2,
+      "correctAbstain": 1,
+      "decisionAccuracy": 0.5,
+      "precision": 0.0,
+      "recall": null,
+      "f1": 0.0,
+      "correctAbstentionDenominator": 2
+    },
+    "HISTOLOGY": {
+      "support": 1,
+      "correct": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstain": 0,
+      "correctAbstain": 0,
+      "decisionAccuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "correctAbstentionDenominator": 0
+    },
+    "RTDOSE": {
+      "support": 1,
+      "correct": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstain": 0,
+      "correctAbstain": 0,
+      "decisionAccuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "correctAbstentionDenominator": 0
+    },
+    "RTFRAC": {
+      "support": 1,
+      "correct": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstain": 0,
+      "correctAbstain": 0,
+      "decisionAccuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "correctAbstentionDenominator": 0
+    },
+    "TMZPLNC": {
+      "support": 1,
+      "correct": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstain": 0,
+      "correctAbstain": 0,
+      "decisionAccuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "correctAbstentionDenominator": 0
+    },
+    "AEGRADE": {
+      "support": 1,
+      "correct": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 1,
+      "goldAbstain": 0,
+      "correctAbstain": 0,
+      "decisionAccuracy": 0.0,
+      "precision": null,
+      "recall": 0.0,
+      "f1": 0.0,
+      "correctAbstentionDenominator": 0
+    }
+  },
+  "documents": [
+    {
+      "documentId": "NLCH-001",
+      "status": "ok",
+      "durationMs": 6397,
+      "fields": {
+        "SUBJID": {
+          "goldStatus": "proposed",
+          "predictedStatus": "proposed",
+          "correctDecision": true,
+          "goldValue": "GBM-NL-901",
+          "predictedValue": "GBM-NL-901",
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        },
+        "MGMTPROM": {
+          "goldStatus": "proposed",
+          "predictedStatus": "proposed",
+          "correctDecision": true,
+          "goldValue": "unmethylated",
+          "predictedValue": "unmethylated",
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        },
+        "PROGDAT": {
+          "goldStatus": "abstained",
+          "predictedStatus": "abstained",
+          "correctDecision": true,
+          "goldValue": null,
+          "predictedValue": null,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        }
+      }
+    },
+    {
+      "documentId": "NLCH-002",
+      "status": "ok",
+      "durationMs": 35662,
+      "fields": {
+        "AGE": {
+          "goldStatus": "proposed",
+          "predictedStatus": "proposed",
+          "correctDecision": true,
+          "goldValue": 58,
+          "predictedValue": 58,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        },
+        "IDHSTAT": {
+          "goldStatus": "proposed",
+          "predictedStatus": "proposed",
+          "correctDecision": true,
+          "goldValue": "wildtype",
+          "predictedValue": "wildtype",
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        },
+        "PROGDAT": {
+          "goldStatus": "abstained",
+          "predictedStatus": "abstained",
+          "correctDecision": true,
+          "goldValue": null,
+          "predictedValue": null,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        }
+      }
+    },
+    {
+      "documentId": "NLCH-003",
+      "status": "ok",
+      "durationMs": 2610,
+      "fields": {
+        "PROGDAT": {
+          "goldStatus": "abstained",
+          "predictedStatus": "abstained",
+          "correctDecision": true,
+          "goldValue": null,
+          "predictedValue": null,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        },
+        "EXTRES": {
+          "goldStatus": "abstained",
+          "predictedStatus": "abstained",
+          "correctDecision": true,
+          "goldValue": null,
+          "predictedValue": null,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        }
+      }
+    },
+    {
+      "documentId": "NLCH-004",
+      "status": "ok",
+      "durationMs": 3400,
+      "fields": {
+        "MGMTPROM": {
+          "goldStatus": "proposed",
+          "predictedStatus": "proposed",
+          "correctDecision": false,
+          "goldValue": "unmethylated",
+          "predictedValue": "methylated",
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        }
+      }
+    },
+    {
+      "documentId": "NLCH-005",
+      "status": "ok",
+      "durationMs": 3630,
+      "fields": {
+        "EXTRES": {
+          "goldStatus": "abstained",
+          "predictedStatus": "proposed",
+          "correctDecision": false,
+          "goldValue": null,
+          "predictedValue": "subtotal",
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        }
+      }
+    },
+    {
+      "documentId": "NLCH-006",
+      "status": "ok",
+      "durationMs": 3943,
+      "fields": {
+        "PROGDAT": {
+          "goldStatus": "proposed",
+          "predictedStatus": "proposed",
+          "correctDecision": true,
+          "goldValue": "2026-02-14",
+          "predictedValue": "2026-02-14",
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        },
+        "AGE": {
+          "goldStatus": "proposed",
+          "predictedStatus": "abstained",
+          "correctDecision": false,
+          "goldValue": 63,
+          "predictedValue": null,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        }
+      }
+    },
+    {
+      "documentId": "NLCH-007",
+      "status": "ok",
+      "durationMs": 32462,
+      "fields": {
+        "IDHSTAT": {
+          "goldStatus": "proposed",
+          "predictedStatus": "proposed",
+          "correctDecision": true,
+          "goldValue": "mutant",
+          "predictedValue": "mutant",
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        },
+        "HISTOLOGY": {
+          "goldStatus": "proposed",
+          "predictedStatus": "proposed",
+          "correctDecision": true,
+          "goldValue": "glioblastoma_idh_mutant",
+          "predictedValue": "glioblastoma_idh_mutant",
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        },
+        "MGMTPROM": {
+          "goldStatus": "abstained",
+          "predictedStatus": "abstained",
+          "correctDecision": true,
+          "goldValue": null,
+          "predictedValue": null,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        }
+      }
+    },
+    {
+      "documentId": "NLCH-008",
+      "status": "ok",
+      "durationMs": 2975,
+      "fields": {
+        "PROGDAT": {
+          "goldStatus": "abstained",
+          "predictedStatus": "abstained",
+          "correctDecision": true,
+          "goldValue": null,
+          "predictedValue": null,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        }
+      }
+    },
+    {
+      "documentId": "NLCH-009",
+      "status": "ok",
+      "durationMs": 9310,
+      "fields": {
+        "RTDOSE": {
+          "goldStatus": "proposed",
+          "predictedStatus": "proposed",
+          "correctDecision": true,
+          "goldValue": 60,
+          "predictedValue": 60,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        },
+        "RTFRAC": {
+          "goldStatus": "proposed",
+          "predictedStatus": "proposed",
+          "correctDecision": true,
+          "goldValue": 30,
+          "predictedValue": 30,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        },
+        "TMZPLNC": {
+          "goldStatus": "proposed",
+          "predictedStatus": "proposed",
+          "correctDecision": true,
+          "goldValue": 6,
+          "predictedValue": 6,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        }
+      }
+    },
+    {
+      "documentId": "NLCH-010",
+      "status": "ok",
+      "durationMs": 3748,
+      "fields": {
+        "AEGRADE": {
+          "goldStatus": "proposed",
+          "predictedStatus": "abstained",
+          "correctDecision": false,
+          "goldValue": 2,
+          "predictedValue": null,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        },
+        "PROGDAT": {
+          "goldStatus": "proposed",
+          "predictedStatus": "proposed",
+          "correctDecision": true,
+          "goldValue": "2026-03-01",
+          "predictedValue": "2026-03-01",
+          "exactSpan": true,
+          "invalidSourceSpan": false
+        }
+      }
+    }
+  ],
+  "failures": []
+}
