@@ -8,7 +8,7 @@ Visual direction v2 for the connected demo. The full spec is `../D7b_visual_dire
 |---|---|
 | `critique/v2_*.png` | Screenshots of the committed v2 build at 1440x900 and 1280x800, used in the critique |
 | `tokens/design_tokens.json` | Source of truth for colour, state, type, space, radius, motion, breakpoints |
-| `tokens/zeta_theme_extension.dart` | Copy-ready Flutter `ThemeExtension` + `buildYammicTheme(ThemeData)`; analyzed clean on Flutter 3.47.5 |
+| `tokens/zeta_theme_extension.dart` | Copy-ready Flutter `ThemeExtension` + `buildYamiccTheme(ThemeData)`; analyzed clean on Flutter 3.47.5 |
 | `prototype/index.html` | Static, self-contained visual reference for all eight screens plus a states sheet |
 | `prototype/shots/*.png` | 1440x900 screenshots of each prototype frame |
 

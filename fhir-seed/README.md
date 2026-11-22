@@ -1,7 +1,7 @@
-# `fhir-seed/` — synthetic hospital EHR for the Yammic demo
+# `fhir-seed/` — synthetic hospital EHR for the Yamicc demo
 
 A **fictional** hospital FHIR R4 endpoint, filled with the synthetic GBM dataset
-already used by the Flutter app. The Yammic platform pulls from it (workstream
+already used by the Flutter app. The Yamicc platform pulls from it (workstream
 W5), so the demo is truly connected: no bundled JSON, no hosted service.
 
 - Everything is synthetic. No real patients, names, hospitals or MRNs.
@@ -18,6 +18,10 @@ make up
 
 # 2. Load the 8 baseline participants (this is what `make seed` runs)
 python3 fhir-seed/load.py --set baseline
+
+# 2b. Load hospital 2 (FUMC Noordhaven, 5 baseline GBM patients + 2 arrivals)
+python3 fhir-seed/load.py --hospital 2 --set baseline
+python3 fhir-seed/load.py --hospital 2 --set arrivals
 
 # 3. During the demo: sync the 3 new arrivals
 python3 fhir-seed/load.py --set arrivals
@@ -59,7 +63,7 @@ fhir-seed/
   tests/test_fhir_seed.py  19 offline tests (+1 optional integration test)
 ```
 
-`baseline` is generated from `app/assets/data/` (8 participants, 10 documents).
+`baseline` is generated from `app/assets/data/` (8 participants, 12 documents).
 `arrivals` is generated from `fhir-seed/source/` (3 new patients, 7 new
 documents). Nothing under `app/` is changed.
 
@@ -121,8 +125,8 @@ Each `Patient` has three identifiers:
 | System | Example | Notes |
 |---|---|---|
 | `urn:oid:2.16.840.1.113883.4.9999` | `MRN-01-00101` | Fictional hospital MRN. **The platform must not persist this value.** Store a keyed hash/salt instead; the demo can show the MRN only in the ingest log |
-| `https://yammic.example/fhir/NamingSystem/study-subject-id` | `GBM-NL-001` | Join key to the backend participants. Equals the `Patient.id` |
-| `https://yammic.example/fhir/NamingSystem/study-number` | `GBM-NL-2026-01` | Study id from `app/assets/data/study.json` |
+| `https://yamicc.example/fhir/NamingSystem/study-subject-id` | `GBM-NL-001` | Join key to the backend participants. Equals the `Patient.id` |
+| `https://yamicc.example/fhir/NamingSystem/study-number` | `GBM-NL-2026-01` | Study id from `app/assets/data/study.json` |
 
 `DocumentReference.masterIdentifier` is the hospital document id. Ingestion
 should de-duplicate on it, so syncing twice does not create two documents.
@@ -168,7 +172,7 @@ passes with 0 errors and the resources are readable in any FHIR viewer.
 
 ## Known gaps / deliberate omissions
 
-- Participants `GBM-NL-004`–`008` have no documents in the source dataset, so
+- `GBM-NL-004` has an MRI report and a clinic letter (so its screening check has evidence); participants `GBM-NL-005`–`008` have no documents in the source dataset, so
   they get no `DocumentReference`/`DiagnosticReport` and only the clinical
   facts present in `participants.json` (no KPS/MGMT/IDH/resection observation).
   This is visible as real-world incompleteness, not missing code.

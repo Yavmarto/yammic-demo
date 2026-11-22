@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# Health check for the local Yammic demo stack.
+# Health check for the local Yamicc v5 demo stack (parallel with the frozen v3 stack).
 #
 #   ops/health.sh            infrastructure must be up; app checks are reported as SKIP when down
-#   ops/health.sh --strict   every component must be up, including the AI worker (used by `make demo`)
+#   ops/health.sh --strict   every component must be up, including the AI worker and both hospitals
 #
+# Ports come from the environment and default to the v5 values:
+#   Postgres 5435, hospital 1 8093, hospital 2 8094, backend 8002, web 8082.
 # Exit codes: 0 all required checks pass, 1 otherwise.
 set -uo pipefail
 
@@ -16,11 +18,13 @@ case "${1:-}" in
 esac
 [ "${STRICT:-0}" = "1" ] && STRICT=1
 
-PG_PORT="${PG_PORT:-5433}"
-FHIR_PORT="${FHIR_PORT:-8090}"
-BACKEND_PORT="${BACKEND_PORT:-8000}"
-WEB_PORT="${WEB_PORT:-8080}"
+PG_PORT="${PG_PORT:-5435}"
+FHIR_PORT="${FHIR_PORT:-8093}"
+FHIR2_PORT="${FHIR2_PORT:-8094}"
+BACKEND_PORT="${BACKEND_PORT:-8002}"
+WEB_PORT="${WEB_PORT:-8082}"
 FHIR_BASE="http://127.0.0.1:${FHIR_PORT}"
+FHIR2_BASE="http://127.0.0.1:${FHIR2_PORT}"
 BACKEND_BASE="http://127.0.0.1:${BACKEND_PORT}"
 WEB_BASE="http://127.0.0.1:${WEB_PORT}"
 
@@ -35,39 +39,48 @@ warn() { printf '[WARN] %-10s %s\n' "$1" "$2"; }
 skip() { printf '[SKIP] %-10s %s\n' "$1" "$2"; SKIP=$((SKIP + 1)); }
 bad()  { printf '[FAIL] %-10s %s\n' "$1" "$2"; FAIL=$((FAIL + 1)); }
 
-say "Yammic demo health — $(date '+%Y-%m-%d %H:%M:%S %Z')"
+fhir_metadata() { # $1 = base URL, $2 = label, $3 = compose service name
+  local base="$1" label="$2" service="$3" body
+  if body="$(timeout 10 curl -fsS --max-time 8 "${base}/fhir/metadata" 2>/dev/null)"; then
+    if [[ "$body" == *'"resourceType"'*'"CapabilityStatement"'* ]]; then
+      ok "$label" "${base}/fhir/metadata  CapabilityStatement R4"
+    else
+      bad "$label" "${base}/fhir/metadata answered but is not a FHIR CapabilityStatement"
+    fi
+  else
+    if timeout 10 docker compose ps --status running --services 2>/dev/null | grep -qx "$service"; then
+      warn "$label" "${base}/fhir/metadata not answering yet (HAPI first boot takes 60-180 s)"
+    else
+      bad "$label" "${base}/fhir/metadata not reachable (run: make up)"
+    fi
+  fi
+}
+
+say "Yamicc v5 demo health — $(date '+%Y-%m-%d %H:%M:%S %Z')"
 say ""
 
 # ---------- Docker daemon ----------
 if ! timeout 10 docker info >/dev/null 2>&1; then
   bad docker "Docker daemon is not reachable. Start Docker Desktop (see ops/RUNBOOK.md)."
 else
-  # ---------- PostgreSQL ----------
-  if timeout 15 docker compose exec -T postgres pg_isready -U yammic -d yammic >/dev/null 2>&1; then
-    version="$(timeout 15 docker compose exec -T postgres psql -U yammic -d yammic -tAc 'SHOW server_version' 2>/dev/null | tr -d '[:space:]')"
-    ok postgres "127.0.0.1:${PG_PORT}  PostgreSQL ${version:-16}  db yammic"
-    if ! timeout 15 docker compose exec -T postgres psql -U yammic -d hapi -tAc 'SELECT 1' >/dev/null 2>&1; then
-      bad postgres "database 'hapi' is not reachable (HAPI FHIR schema not initialised yet?)"
+  # ---------- PostgreSQL (backend db + both HAPI dbs) ----------
+  if timeout 15 docker compose exec -T postgres pg_isready -U yamicc -d yamicc >/dev/null 2>&1; then
+    version="$(timeout 15 docker compose exec -T postgres psql -U yamicc -d yamicc -tAc 'SHOW server_version' 2>/dev/null | tr -d '[:space:]')"
+    ok postgres "127.0.0.1:${PG_PORT}  PostgreSQL ${version:-16}  db yamicc"
+    if ! timeout 15 docker compose exec -T postgres psql -U yamicc -d hapi -tAc 'SELECT 1' >/dev/null 2>&1; then
+      bad postgres "database 'hapi' (hospital 1) is not reachable (HAPI schema not initialised yet?)"
+    fi
+    if ! timeout 15 docker compose exec -T postgres psql -U yamicc -d hapi2 -tAc 'SELECT 1' >/dev/null 2>&1; then
+      bad postgres "database 'hapi2' (hospital 2) is not reachable (HAPI schema not initialised yet?)"
     fi
   else
     bad postgres "127.0.0.1:${PG_PORT} not answering pg_isready (run: make up)"
   fi
 fi
 
-# ---------- HAPI FHIR ----------
-if body="$(timeout 10 curl -fsS --max-time 8 "${FHIR_BASE}/fhir/metadata" 2>/dev/null)"; then
-  if [[ "$body" == *'"resourceType"'*'"CapabilityStatement"'* ]]; then
-    ok fhir "${FHIR_BASE}/fhir/metadata  CapabilityStatement R4"
-  else
-    bad fhir "${FHIR_BASE}/fhir/metadata answered but is not a FHIR CapabilityStatement"
-  fi
-else
-  if timeout 10 docker compose ps --status running --services 2>/dev/null | grep -qx hapi; then
-    warn fhir "${FHIR_BASE}/fhir/metadata not answering yet (HAPI first boot takes 60-180 s)"
-  else
-    bad fhir "${FHIR_BASE}/fhir/metadata not reachable (run: make up)"
-  fi
-fi
+# ---------- HAPI FHIR, both hospitals ----------
+fhir_metadata "$FHIR_BASE" "fhir-h1" hapi
+fhir_metadata "$FHIR2_BASE" "fhir-h2" hapi2
 
 # ---------- Backend (outside Docker) ----------
 if body="$(timeout 8 curl -fsS --max-time 5 "${BACKEND_BASE}/health" 2>/dev/null)"; then
@@ -82,8 +95,8 @@ else
   skip backend "${BACKEND_BASE}/health not running (start: make backend, or make demo)"
 fi
 
-# ---------- AI extraction worker (outside Docker) ----------
-ai_pids="$(ops/ai-workers.sh 2>/dev/null | tr '\n' ' ' | sed 's/ $//')"
+# ---------- AI extraction worker (outside Docker, this stack only) ----------
+ai_pids="$(YAMICC_API_URL="$BACKEND_BASE" ops/ai-workers.sh 2>/dev/null | tr '\n' ' ' | sed 's/ $//')"
 if [ -n "$ai_pids" ]; then
   ai_n="$(printf '%s\n' "$ai_pids" | wc -w | tr -d '[:space:]')"
   if [ "$ai_n" -gt 1 ]; then
@@ -94,7 +107,7 @@ if [ -n "$ai_pids" ]; then
 elif [ "$BACKEND_STATE" = "down" ]; then
   skip ai "AI worker not started (start: make demo, or make ai)"
 elif [ "$STRICT" = "1" ]; then
-  bad ai "no AI worker — queued runs stay queued and live extraction times out (start: make demo)"
+  bad ai "no AI worker for ${BACKEND_BASE} — queued runs stay queued and live extraction times out (start: make demo)"
 else
   skip ai "no AI worker — queued runs will not be consumed (start: make ai, or make demo)"
 fi
@@ -120,7 +133,7 @@ if [ "$FAIL" -eq 0 ]; then
       say "Result: FAIL — strict mode but ${SKIP} component(s) not running."
       exit 1
     fi
-    say "Result: OK — full demo stack is healthy."
+    say "Result: OK — full v5 demo stack is healthy (both hospitals)."
   else
     say "Result: OK — infrastructure healthy$([ "$SKIP" -ne 0 ] && echo " (${SKIP} app component(s) not started; use 'make demo')")."
   fi

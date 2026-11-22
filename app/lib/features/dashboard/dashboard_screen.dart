@@ -13,9 +13,9 @@ class _Data {
   _Data(this.dash, this.participants, this.pendingTop, this.activity);
 }
 
-Future<_Data> _load(Session s) => s.run((a) async {
-      final dash = await a.get('/studies/$studyId/dashboard') as Map;
-      final parts = await a.get('/participants') as List;
+Future<_Data> _load(Session s, String? site) => s.run((a) async {
+      final dash = await a.get('/studies/$studyId/dashboard', query: site == null ? null : {'siteId': site}) as Map;
+      final parts = [for (final p in await a.get('/participants') as List) if (site == null || p['siteId'] == site) p];
       final top = <Map>[];
       for (final p in parts.where((p) => (p['extractionsPending'] as int) > 0)) {
         for (final e in await a.get('/participants/${p['id']}/extractions') as List) {
@@ -32,19 +32,28 @@ Future<_Data> _load(Session s) => s.run((a) async {
       return _Data(dash, parts, top, (act['items'] as List));
     });
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
   @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  String? site; // null = all sites
+  @override
   Widget build(BuildContext context) => Loader<_Data>(
-        load: _load,
-        builder: (c, d, reload) => _Body(d, reload),
+        key: ValueKey(site),
+        load: (s) => _load(s, site),
+        builder: (c, d, reload) => _Body(d, reload, site, (v) => setState(() => site = v)),
       );
 }
 
 class _Body extends StatelessWidget {
   final _Data d;
   final VoidCallback reload;
-  const _Body(this.d, this.reload);
+  final String? site;
+  final ValueChanged<String?> onSite;
+  const _Body(this.d, this.reload, this.site, this.onSite);
 
   Map get k => d.dash['kpis'];
   void go(BuildContext c, String r, [Object? a]) => Navigator.of(c).pushReplacementNamed(r, arguments: a);
@@ -63,6 +72,13 @@ class _Body extends StatelessWidget {
             subtitle: '${d.dash['title']} · Phase ${d.dash['phase']} · ${(d.dash['sites'] as List).length} sites',
             trailing: OutlinedButton.icon(onPressed: reload, icon: const Icon(Icons.refresh, size: 18), label: const Text('Refresh')),
           ),
+          const SizedBox(height: K.s12),
+          Wrap(spacing: 8, runSpacing: 6, crossAxisAlignment: WrapCrossAlignment.center, children: [
+            Text('SITE', style: K.label),
+            ChoiceChip(key: const Key('site-all'), label: const Text('All sites'), selected: site == null, onSelected: (_) => onSite(null)),
+            for (final x in (d.dash['sites'] as List).cast<Map>())
+              ChoiceChip(key: Key('site-${x['id']}'), label: Text('${x['shortName'] ?? x['name']}'), selected: site == x['id'], onSelected: (_) => onSite('${x['id']}')),
+          ]),
           const SizedBox(height: K.s16),
           MetricStrip([
             Metric('Enrolled', '$enrolled/$target', sub: 'of target', progress: enrolled / target),
@@ -147,12 +163,12 @@ class _Body extends StatelessWidget {
 
   Widget _sites(BuildContext context) {
     final sites = d.dash['sites'] as List;
-    final flex = [4, 2, 2, 3];
+    final flex = [4, 2, 2, 2, 2, 2, 2, 3];
     return Panel(
-      title: 'Site performance',
+      title: 'Site comparison',
       padding: EdgeInsets.zero,
       child: Column(children: [
-        const TableHead([('Site', 4, false), ('Enrolled', 2, true), ('Queries', 2, true), ('Enrolment', 3, false)]),
+        const TableHead([('Site', 4, false), ('Screening', 2, true), ('Eligible', 2, true), ('Enrolled', 2, true), ('Queries', 2, true), ('SDV', 2, true), ('AI accept', 2, true), ('Enrolment', 3, false)]),
         for (final s in sites)
           DataRow2(
             flex: flex,
@@ -161,8 +177,12 @@ class _Body extends StatelessWidget {
                 Text('${s['shortName'] ?? s['name']}', style: K.body.copyWith(fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
                 Text('${s['city'] != null ? '${s['city']} · ' : ''}${s['id']}', style: K.small.copyWith(fontSize: 11.5, color: K.ink3)),
               ]),
+              Text('${s['screening'] ?? '—'}', textAlign: TextAlign.right, style: numStyle),
+              Text('${s['eligible'] ?? '—'}', textAlign: TextAlign.right, style: numStyle),
               Text('${s['enrolled']}/${s['targetEnrolment'] ?? '—'}', textAlign: TextAlign.right, style: numStyle),
               Text('${s['openQueries']}', textAlign: TextAlign.right, style: numStyle),
+              Text(s['sdvDone'] == null ? '—' : '${s['sdvDone']}/${(s['sdvDone'] as int) + (s['sdvPending'] as int)}', textAlign: TextAlign.right, style: numStyle),
+              Text(s['aiAcceptanceRate'] == null ? '—' : pct(s['aiAcceptanceRate']), textAlign: TextAlign.right, style: numStyle),
               Padding(
                 padding: const EdgeInsets.only(left: K.s16),
                 child: Bar(((s['targetEnrolment'] ?? 0) == 0) ? 0 : (s['enrolled'] as int) / (s['targetEnrolment'] as int), height: 6),

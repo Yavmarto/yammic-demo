@@ -1,0 +1,32 @@
+SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK
+Fictief Universitair Medisch Centrum Noordhaven - Afdeling Neuro-oncologie
+
+PATIENTCODE: GBM-NL-203
+GESLACHT: man
+LEEFTIJD BIJ DIAGNOSE: 69 jaar
+DATUM BIOPSIE: 2026-11-02
+DATUM POLIKLINIEK: 2026-11-10
+
+POLIKLINISCHE BRIEF
+Patient onderging een stereotactische biopsie van een laesie rechts temporaal.
+Histologie toonde een glioblastoom, IDH-wildtype. Postoperatieve MRI met contrast
+is beschikbaar en evalueerbaar conform RANO; patient is hersteld van de biopsie
+(meer dan 1 week na biopsie).
+
+VOORGESCHIEDENIS EN MEDICATIE
+Geen eerdere radiotherapie op de hersenen.
+Geen eerdere systemische anti-glioomtherapie.
+
+FUNCTIONELE STATUS
+Karnofsky Performance Status: 50%.
+
+LABORATORIUM (2026-11-10)
+Beenmergfunctie adequaat: ANC 3.1 x10^9/L, trombocyten 185 x10^9/L, hemoglobine 11.9 g/dL.
+Leverfunctie adequaat: ALT 28 U/L (<=3 xULN), totaal bilirubine 0.8 mg/dL (<=1.5 xULN).
+Nierfunctie adequaat: serumcreatinine 1.05 mg/dL (<=1.5 xULN), eGFR 72 mL/min/1.73 m2.
+Zwangerschapstest: niet van toepassing (mannelijke deelnemer).
+
+TOESTEMMING EN BELEID
+Schriftelijk informed consent is getekend; patient is in staat het bezoekschema te volgen.
+Screen failure: Karnofsky Performance Status is 50% (onder de drempel van 60%).
+Maximaal graad 2 vermoeidheid.

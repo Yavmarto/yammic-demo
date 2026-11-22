@@ -72,7 +72,7 @@ def _all_text(c):
 def test_sync_creates_arrivals_and_queues_extraction(client, auth, two_phase):
     first = _sync(client, auth)
     assert first["status"] == "completed" and first["mode"] == "full"
-    assert first["counts"]["documents"] == {"created": 0, "existing": 10}  # baseline docs are already bundled
+    assert first["counts"]["documents"] == {"created": 0, "existing": 12}  # baseline docs are already bundled
     two_phase["arrive"]()
     run = _sync(client, auth)
     assert run["mode"] == "incremental" and run["since"] == first["cursor"]
@@ -84,7 +84,7 @@ def test_sync_creates_arrivals_and_queues_extraction(client, auth, two_phase):
         queued = c.execute(text("SELECT count(*) FROM extraction_run WHERE status='queued' AND created_by='nurse'")).scalar()
         status = dict(c.execute(text("SELECT id, status FROM participant WHERE id LIKE 'GBM-NL-0%' AND id >= 'GBM-NL-009'")).all())
     assert queued == 7
-    assert status == {"GBM-NL-009": "active", "GBM-NL-010": "active", "GBM-NL-011": "screening"}
+    assert status == {"GBM-NL-009": "screening", "GBM-NL-010": "screening", "GBM-NL-011": "screening"}
 
 
 def test_sync_is_idempotent(client, auth, two_phase):

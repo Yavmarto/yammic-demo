@@ -14,12 +14,15 @@ class _Tab {
 const _study = [
   _Tab('/', 'Dashboard', Icons.space_dashboard_outlined),
   _Tab('/participants', 'Participants', Icons.people_outline),
-  _Tab('/review', 'AI review', Icons.fact_check_outlined),
+  _Tab('/screening', 'Screening', Icons.fact_check_outlined),
+  _Tab('/review', 'AI review', Icons.auto_awesome_outlined),
+  _Tab('/queries', 'Queries', Icons.forum_outlined),
   _Tab('/audit', 'Audit trail', Icons.history),
 ];
 const _platform = [
   _Tab('/integrations', 'Integrations', Icons.hub_outlined),
   _Tab('/ai-quality', 'AI quality', Icons.insights_outlined),
+  _Tab('/protocol', 'Protocol → form', Icons.account_tree_outlined),
   _Tab('/export', 'Export', Icons.ios_share_outlined),
 ];
 
@@ -108,7 +111,7 @@ class _ReadOnlyBanner extends StatelessWidget {
         child: const Row(children: [
           Icon(Icons.visibility_outlined, size: 16, color: K.infoInk),
           SizedBox(width: 8),
-          Text('Monitor role is read-only in this demo.', style: TextStyle(fontSize: 13, color: K.infoInk, fontWeight: FontWeight.w500)),
+          Text('Monitor · queries and source verification only. The eCRF is read-only.', style: TextStyle(fontSize: 13, color: K.infoInk, fontWeight: FontWeight.w500)),
         ]),
       );
 }
@@ -227,7 +230,7 @@ class _Sidebar extends StatelessWidget {
               ),
               if (wide) ...[
                 const SizedBox(width: 10),
-                const Text('Yammic', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, letterSpacing: -.2, color: K.ink)),
+                const Text('Yamicc', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, letterSpacing: -.2, color: K.ink)),
               ],
             ]),
           ),

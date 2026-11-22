@@ -5,24 +5,24 @@
   "timestamp": "2026-11-21T10:30:00+01:00",
   "entry": [
     {
-      "fullUrl": "http://127.0.0.1:8090/fhir/CodeSystem/yammic-data-provenance",
+      "fullUrl": "http://127.0.0.1:8090/fhir/CodeSystem/yamicc-data-provenance",
       "resource": {
         "resourceType": "CodeSystem",
-        "id": "yammic-data-provenance",
-        "url": "https://yammic.example/fhir/CodeSystem/yammic-data-provenance",
+        "id": "yamicc-data-provenance",
+        "url": "https://yamicc.example/fhir/CodeSystem/yamicc-data-provenance",
         "identifier": [
           {
             "system": "urn:ietf:rfc:3986",
-            "value": "https://yammic.example/fhir/CodeSystem/yammic-data-provenance"
+            "value": "https://yamicc.example/fhir/CodeSystem/yamicc-data-provenance"
           }
         ],
         "version": "1.0.0",
-        "name": "YammicDataProvenance",
-        "title": "Yammic data provenance",
+        "name": "YamiccDataProvenance",
+        "title": "Yamicc data provenance",
         "status": "active",
         "experimental": true,
-        "publisher": "Yammic demo (synthetic)",
-        "description": "Provenance markers used by the Yammic demo platform.",
+        "publisher": "Yamicc demo (synthetic)",
+        "description": "Provenance markers used by the Yamicc demo platform.",
         "caseSensitive": true,
         "content": "fragment",
         "concept": [
@@ -34,7 +34,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -49,12 +49,12 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Yammic data provenance — synthetic local code system</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Yamicc data provenance — synthetic local code system</p></div>"
         }
       },
       "request": {
         "method": "PUT",
-        "url": "CodeSystem/yammic-data-provenance"
+        "url": "CodeSystem/yamicc-data-provenance"
       }
     },
     {
@@ -62,11 +62,11 @@
       "resource": {
         "resourceType": "CodeSystem",
         "id": "mgmt-promoter-status",
-        "url": "https://yammic.example/fhir/CodeSystem/mgmt-promoter-status",
+        "url": "https://yamicc.example/fhir/CodeSystem/mgmt-promoter-status",
         "identifier": [
           {
             "system": "urn:ietf:rfc:3986",
-            "value": "https://yammic.example/fhir/CodeSystem/mgmt-promoter-status"
+            "value": "https://yamicc.example/fhir/CodeSystem/mgmt-promoter-status"
           }
         ],
         "version": "1.0.0",
@@ -74,7 +74,7 @@
         "title": "MGMT promoter methylation status",
         "status": "active",
         "experimental": true,
-        "publisher": "Yammic demo (synthetic)",
+        "publisher": "Yamicc demo (synthetic)",
         "description": "Demo value set for MGMT promoter methylation. Not a licensed terminology.",
         "caseSensitive": true,
         "content": "fragment",
@@ -95,7 +95,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -123,19 +123,19 @@
       "resource": {
         "resourceType": "CodeSystem",
         "id": "procedure-type",
-        "url": "https://yammic.example/fhir/CodeSystem/procedure-type",
+        "url": "https://yamicc.example/fhir/CodeSystem/procedure-type",
         "identifier": [
           {
             "system": "urn:ietf:rfc:3986",
-            "value": "https://yammic.example/fhir/CodeSystem/procedure-type"
+            "value": "https://yamicc.example/fhir/CodeSystem/procedure-type"
           }
         ],
         "version": "1.0.0",
-        "name": "YammicDemoProcedureType",
-        "title": "Yammic demo procedure type",
+        "name": "YamiccDemoProcedureType",
+        "title": "Yamicc demo procedure type",
         "status": "active",
         "experimental": true,
-        "publisher": "Yammic demo (synthetic)",
+        "publisher": "Yamicc demo (synthetic)",
         "description": "Demo procedure categories used where no verified SNOMED CT code is available in the source dataset.",
         "caseSensitive": true,
         "content": "fragment",
@@ -156,7 +156,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }
@@ -171,7 +171,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Yammic demo procedure type — synthetic local code system</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Yamicc demo procedure type — synthetic local code system</p></div>"
         }
       },
       "request": {
@@ -184,11 +184,11 @@
       "resource": {
         "resourceType": "CodeSystem",
         "id": "resection-extent",
-        "url": "https://yammic.example/fhir/CodeSystem/resection-extent",
+        "url": "https://yamicc.example/fhir/CodeSystem/resection-extent",
         "identifier": [
           {
             "system": "urn:ietf:rfc:3986",
-            "value": "https://yammic.example/fhir/CodeSystem/resection-extent"
+            "value": "https://yamicc.example/fhir/CodeSystem/resection-extent"
           }
         ],
         "version": "1.0.0",
@@ -196,7 +196,7 @@
         "title": "Extent of surgical resection",
         "status": "active",
         "experimental": true,
-        "publisher": "Yammic demo (synthetic)",
+        "publisher": "Yamicc demo (synthetic)",
         "description": "Demo value set for the extent of tumour resection.",
         "caseSensitive": true,
         "content": "fragment",
@@ -221,7 +221,7 @@
         "meta": {
           "tag": [
             {
-              "system": "https://yammic.example/fhir/CodeSystem/data-provenance",
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
               "code": "SYNTHETIC",
               "display": "Synthetic demo data"
             }

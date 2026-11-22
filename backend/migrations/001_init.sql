@@ -1,4 +1,4 @@
--- Yammic demo backend schema v1. All data is synthetic.
+-- Yamicc demo backend schema v1. All data is synthetic.
 CREATE TABLE study (
   id text PRIMARY KEY, short_name text NOT NULL, title text NOT NULL, phase text,
   status text, target_enrolment int, meta jsonb NOT NULL DEFAULT '{}'

@@ -10,6 +10,8 @@ from dataclasses import dataclass, field
 from typing import Any, Literal
 
 Status = Literal["proposed", "abstained"]
+ScreeningVerdict = Literal["met", "not_met", "unknown"]
+CriterionType = Literal["inclusion", "exclusion"]
 
 
 @dataclass(frozen=True)
@@ -115,6 +117,175 @@ class ExtractionResult:
 
     def by_field(self) -> dict[str, Proposal]:
         return {p.field: p for p in self.proposals}
+
+
+@dataclass(frozen=True)
+class CriterionDef:
+    id: str
+    type: CriterionType
+    text: str
+    data_needed: str | None = None
+
+    @classmethod
+    def from_api(cls, raw: dict[str, Any]) -> "CriterionDef":
+        return cls(
+            id=raw["id"],
+            type=raw.get("type", "inclusion"),
+            text=raw["text"],
+            data_needed=raw.get("dataNeeded") or raw.get("data_needed"),
+        )
+
+    def as_api(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "type": self.type,
+            "text": self.text,
+            "dataNeeded": self.data_needed,
+        }
+
+
+@dataclass
+class CriterionCheck:
+    criterion_id: str
+    type: CriterionType
+    text: str
+    verdict: ScreeningVerdict
+    confidence: float = 0.0
+    rationale: str | None = None
+    document_id: str | None = None
+    evidence: list[Evidence] = field(default_factory=list)
+    abstention_reason: str | None = None
+
+    def as_api(self) -> dict[str, Any]:
+        e0 = self.evidence[0] if self.evidence else None
+        return {
+            "criterionId": self.criterion_id,
+            "id": self.criterion_id,
+            "type": self.type,
+            "text": self.text,
+            "verdict": self.verdict,
+            "status": self.verdict,
+            "confidence": round(max(0.0, min(1.0, float(self.confidence))), 4),
+            "rationale": self.rationale,
+            "documentId": self.document_id,
+            "spanStart": e0.start if e0 else None,
+            "spanEnd": e0.end if e0 else None,
+            "evidence": [e.as_api() for e in self.evidence],
+            "abstentionReason": self.abstention_reason,
+        }
+
+
+@dataclass
+class ScreeningResult:
+    participant_id: str
+    overall: Literal["eligible", "screen_fail", "unknown"]
+    checks: list[CriterionCheck]
+    metadata: RunMetadata
+
+    def by_criterion(self) -> dict[str, CriterionCheck]:
+        return {c.criterion_id: c for c in self.checks}
+
+    def as_api(self) -> dict[str, Any]:
+        counts = {
+            "met": sum(1 for c in self.checks if c.verdict == "met"),
+            "notMet": sum(1 for c in self.checks if c.verdict == "not_met"),
+            "unknown": sum(1 for c in self.checks if c.verdict == "unknown"),
+            "total": len(self.checks),
+        }
+        return {
+            "participantId": self.participant_id,
+            "overall": self.overall,
+            "counts": counts,
+            "criteria": [c.as_api() for c in self.checks],
+            "checks": [c.as_api() for c in self.checks],
+            "metadata": self.metadata.as_dict(),
+        }
+
+
+@dataclass
+class ProposedFormField:
+    id: str
+    label: str
+    value_type: str
+    section: str | None = None
+    required: bool = True
+    unit: str | None = None
+    coding: dict[str, Any] | None = None
+    cdisc_domain: str | None = None
+    cdisc_variable: str | None = None
+    source_sentence: str = ""
+    evidence: list[Evidence] = field(default_factory=list)
+    confidence: float = 0.95
+    rationale: str | None = None
+
+    def as_api(self) -> dict[str, Any]:
+        e0 = self.evidence[0] if self.evidence else None
+        return {
+            "id": self.id,
+            "label": self.label,
+            "type": self.value_type,
+            "valueType": self.value_type,
+            "section": self.section,
+            "required": self.required,
+            "unit": self.unit,
+            "coding": self.coding,
+            "terminology": self.coding,
+            "cdiscDomain": self.cdisc_domain,
+            "cdiscVariable": self.cdisc_variable,
+            "sourceSentence": self.source_sentence,
+            "spanStart": e0.start if e0 else None,
+            "spanEnd": e0.end if e0 else None,
+            "evidence": [e.as_api() for e in self.evidence],
+            "confidence": round(max(0.0, min(1.0, float(self.confidence))), 4),
+            "rationale": self.rationale,
+        }
+
+
+@dataclass
+class ProposedCriterion:
+    id: str
+    type: CriterionType
+    text: str
+    data_needed: str | None = None
+    source_sentence: str = ""
+    evidence: list[Evidence] = field(default_factory=list)
+    confidence: float = 0.95
+    rationale: str | None = None
+
+    def as_api(self) -> dict[str, Any]:
+        e0 = self.evidence[0] if self.evidence else None
+        return {
+            "id": self.id,
+            "type": self.type,
+            "text": self.text,
+            "dataNeeded": self.data_needed,
+            "sourceSentence": self.source_sentence,
+            "spanStart": e0.start if e0 else None,
+            "spanEnd": e0.end if e0 else None,
+            "evidence": [e.as_api() for e in self.evidence],
+            "confidence": round(max(0.0, min(1.0, float(self.confidence))), 4),
+            "rationale": self.rationale,
+        }
+
+
+@dataclass
+class ProtocolFormProposalResult:
+    study_id: str
+    form_id: str
+    proposed_version: str
+    fields: list[ProposedFormField]
+    criteria: list[ProposedCriterion]
+    metadata: RunMetadata
+
+    def as_api(self) -> dict[str, Any]:
+        return {
+            "studyId": self.study_id,
+            "formId": self.form_id,
+            "proposedVersion": self.proposed_version,
+            "fields": [f.as_api() for f in self.fields],
+            "criteria": [c.as_api() for c in self.criteria],
+            "metadata": self.metadata.as_dict(),
+        }
 
 
 class ProviderUnavailable(RuntimeError):

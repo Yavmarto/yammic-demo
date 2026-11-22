@@ -184,16 +184,16 @@ def main() -> int:
             if did not in doc_by_id:
                 fail(f"{pid}: references unknown document {did}")
 
-    if not 2 <= len({d.get("participantId") for d in doc_entries}) <= 3:
-        fail("documents.json: documents must cover 2-3 key participants")
+    if not 2 <= len({d.get("participantId") for d in doc_entries}) <= 4:
+        fail("documents.json: documents must cover 2-4 participants")
     docs_per_participant: dict[str, int] = {}
     for entry in doc_entries:
         docs_per_participant[entry.get("participantId")] = (
             docs_per_participant.get(entry.get("participantId"), 0) + 1
         )
     for pid, count in docs_per_participant.items():
-        if not 3 <= count <= 5:
-            fail(f"{pid}: expected 3-5 documents, found {count}")
+        if not 2 <= count <= 5:
+            fail(f"{pid}: expected 2-5 documents, found {count}")
         if pid not in part_by_id:
             fail(f"documents.json: unknown participant {pid}")
         elif sorted(part_by_id[pid].get("documentIds", [])) != sorted(

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Load the synthetic Yammic FHIR R4 bundles into a local HAPI FHIR server.
+"""Load the synthetic Yamicc FHIR R4 bundles into a local HAPI FHIR server.
 
 Stdlib only (no third-party packages). Every bundle entry is a transaction PUT
 with a client-assigned id, so running the loader again updates the same
@@ -33,7 +33,8 @@ import urllib.request
 from typing import Any
 
 SEED_DIR = pathlib.Path(__file__).resolve().parent
-DEFAULT_BASE = os.environ.get("FHIR_BASE_URL", "http://127.0.0.1:8090/fhir")
+DEFAULT_BASE = os.environ.get("FHIR_BASE_URL", "http://127.0.0.1:8093/fhir")
+DEFAULT_BASE_H2 = os.environ.get("FHIR_BASE_URL_2", "http://127.0.0.1:8092/fhir")
 SETS = ("baseline", "arrivals")
 
 
@@ -117,8 +118,9 @@ def supports_validate(capability: dict[str, Any], resource_type: str) -> bool:
     return False
 
 
-def load_manifest(name: str) -> dict[str, Any]:
-    path = SEED_DIR / name / "manifest.json"
+def load_manifest(name: str, *, hospital: int = 1) -> dict[str, Any]:
+    prefix = SEED_DIR if hospital == 1 else SEED_DIR / f"hospital{hospital}"
+    path = prefix / name / "manifest.json"
     if not path.exists():
         raise LoadError(
             f"{path} is missing. Run: python3 fhir-seed/generate.py"
@@ -127,13 +129,13 @@ def load_manifest(name: str) -> dict[str, Any]:
         return json.load(handle)
 
 
-def plan_files(sets: list[str]) -> tuple[list[str], list[dict[str, Any]]]:
+def plan_files(sets: list[str], *, hospital: int = 1) -> tuple[list[str], list[dict[str, Any]]]:
     """Return ordered, de-duplicated bundle files and the manifests that define them."""
     seen: set[str] = set()
     ordered: list[str] = []
     manifests = []
     for name in sets:
-        manifest = load_manifest(name)
+        manifest = load_manifest(name, hospital=hospital)
         manifests.append(manifest)
         for relative in manifest["order"]:
             if relative in seen:
@@ -252,8 +254,9 @@ def print_counts(expected: dict[str, int], actual: dict[str, int]) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Load synthetic FHIR R4 bundles into HAPI FHIR.")
+    parser.add_argument("--hospital", type=int, default=1, choices=(1, 2), help="Hospital endpoint to seed (1 or 2)")
     parser.add_argument("--set", dest="sets", default="baseline", choices=("baseline", "arrivals", "all"))
-    parser.add_argument("--base-url", default=DEFAULT_BASE, help=f"FHIR base URL (default: {DEFAULT_BASE})")
+    parser.add_argument("--base-url", default=None, help=f"FHIR base URL (default: {DEFAULT_BASE} for hospital 1, {DEFAULT_BASE_H2} for hospital 2)")
     parser.add_argument("--timeout", type=float, default=60.0, help="per-request timeout in seconds")
     parser.add_argument("--dry-run", action="store_true", help="print the plan, do not touch the server")
     parser.add_argument("--no-validate", action="store_true", help="skip $validate")
@@ -262,16 +265,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--quiet", action="store_true", help="only print the final summary")
     args = parser.parse_args(argv)
 
+    if args.base_url is None:
+        args.base_url = DEFAULT_BASE if args.hospital == 1 else DEFAULT_BASE_H2
+
     sets = list(SETS) if args.sets == "all" else [args.sets]
     try:
-        files, manifests = plan_files(sets)
+        files, manifests = plan_files(sets, hospital=args.hospital)
     except LoadError as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
     expected = expected_counts(files)
     total = sum(expected.values())
 
-    print(f"FHIR seed: set={args.sets} files={len(files)} resources={total} base={args.base_url}")
+    print(f"FHIR seed: hospital={args.hospital} set={args.sets} files={len(files)} resources={total} base={args.base_url}")
     if not args.quiet:
         for relative in files:
             bundle = read_bundle(relative)

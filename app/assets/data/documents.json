@@ -124,6 +124,30 @@
       "charLength": 625,
       "sha256": "446896116c45e282c72211ddbb50c5c89dced21238b3abf248a0d22bbe20c025",
       "synthetic": true
+    },
+    {
+      "id": "DOC-004-MRI",
+      "participantId": "GBM-NL-004",
+      "type": "radiology_report",
+      "title": "MRI-verslag hersenen, eerste presentatie (fictief)",
+      "language": "nl",
+      "documentDate": "2026-11-17",
+      "assetPath": "assets/data/documents/DOC-004-MRI.txt",
+      "charLength": 558,
+      "sha256": "3fd58b8a8bd9389d9b2c6a98c2a1f9d140061110d7c1e38de6881409bab3d940",
+      "synthetic": true
+    },
+    {
+      "id": "DOC-004-CLIN",
+      "participantId": "GBM-NL-004",
+      "type": "clinic_letter",
+      "title": "Poliklinische brief neurochirurgie (fictief)",
+      "language": "nl",
+      "documentDate": "2026-11-18",
+      "assetPath": "assets/data/documents/DOC-004-CLIN.txt",
+      "charLength": 552,
+      "sha256": "f9c2291f05b31c3be516720a0745abe51e4161d7914124c9e4eb81c1dc28ba19",
+      "synthetic": true
     }
   ]
 }

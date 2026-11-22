@@ -1,0 +1,80 @@
+[
+  {
+    "id": "INC-01",
+    "type": "inclusion",
+    "text": "Age 18 years or older at diagnosis.",
+    "dataNeeded": "Age at diagnosis in whole years and the diagnosis date. Source: demographics or clinic letter. eCRF fields: AGE (years), MHSTDAT (date of diagnosis)."
+  },
+  {
+    "id": "INC-02",
+    "type": "inclusion",
+    "text": "Histologically confirmed glioblastoma, ICD-O-3 morphology 9440/3, IDH-wildtype (WHO CNS5, 2021).",
+    "dataNeeded": "Pathology report with ICD-O-3 morphology code and an IDH1/2 result of wildtype. Source: pathology and molecular report. eCRF fields: HISTOLOGY, IDHSTAT."
+  },
+  {
+    "id": "INC-03",
+    "type": "inclusion",
+    "text": "MGMT promoter methylation status is known (methylated or unmethylated).",
+    "dataNeeded": "MGMT promoter methylation result that is methylated or unmethylated. Source: molecular pathology report. eCRF field: MGMTPROM."
+  },
+  {
+    "id": "INC-04",
+    "type": "inclusion",
+    "text": "Karnofsky Performance Status 60 or higher, recorded within 7 days before registration.",
+    "dataNeeded": "KPS score (0-100, steps of 10) and its assessment date. Source: clinic or discharge letter. eCRF field: KPS."
+  },
+  {
+    "id": "INC-05",
+    "type": "inclusion",
+    "text": "Adequate bone-marrow function: ANC 1.5 x10^9/L or higher, platelets 100 x10^9/L or higher, haemoglobin 9.0 g/dL or higher.",
+    "dataNeeded": "ANC, platelet count and haemoglobin values with specimen date and reference ranges. Source: haematology laboratory report."
+  },
+  {
+    "id": "INC-06",
+    "type": "inclusion",
+    "text": "Adequate hepatic function: ALT 3 xULN or lower and total bilirubin 1.5 xULN or lower (3 xULN or lower if Gilbert syndrome).",
+    "dataNeeded": "ALT and total bilirubin values with the local upper limit of normal (ULN) and specimen date. Source: chemistry laboratory report."
+  },
+  {
+    "id": "INC-07",
+    "type": "inclusion",
+    "text": "Adequate renal function: serum creatinine 1.5 xULN or lower, or eGFR 50 mL/min/1.73 m2 or higher.",
+    "dataNeeded": "Serum creatinine with local ULN, or eGFR value, and specimen date. Source: chemistry laboratory report."
+  },
+  {
+    "id": "INC-08",
+    "type": "inclusion",
+    "text": "Post-surgical contrast-enhanced MRI is available and evaluable per RANO, and the participant has recovered from surgery (2 weeks or more after craniotomy, or 1 week or more after biopsy).",
+    "dataNeeded": "MRI report with date and RANO assessment, operative note with surgery type and date, and a clinical note on post-surgical recovery. eCRF field: EXTRES."
+  },
+  {
+    "id": "INC-09",
+    "type": "inclusion",
+    "text": "Participant is able to give written informed consent and to comply with the visit schedule.",
+    "dataNeeded": "Signed and dated informed consent form, plus a clinical note on ability to comply. Source: consent form and clinic letter."
+  },
+  {
+    "id": "EXC-01",
+    "type": "exclusion",
+    "text": "Any prior radiotherapy to the brain.",
+    "dataNeeded": "Radiotherapy history for the brain, with dates and site. Source: oncology history in the clinic letter or radiotherapy record."
+  },
+  {
+    "id": "EXC-02",
+    "type": "exclusion",
+    "text": "Prior systemic anti-glioma therapy (chemotherapy, targeted therapy or immunotherapy), except corticosteroids.",
+    "dataNeeded": "Systemic treatment history with agent names and dates. Source: treatment history in the clinic letter."
+  },
+  {
+    "id": "EXC-03",
+    "type": "exclusion",
+    "text": "Tumour is IDH-mutant, or IDH status is indeterminate or not assessable.",
+    "dataNeeded": "IDH1/2 result (mutant, wildtype or indeterminate). Source: pathology and molecular report. eCRF field: IDHSTAT."
+  },
+  {
+    "id": "EXC-04",
+    "type": "exclusion",
+    "text": "Participant is pregnant or breastfeeding; participants with reproductive potential must have a negative pregnancy test.",
+    "dataNeeded": "Pregnancy test result with date, and a clinical note on breastfeeding status. Source: laboratory report and clinic letter. eCRF field: SEX."
+  }
+]

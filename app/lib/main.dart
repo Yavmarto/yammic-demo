@@ -9,6 +9,10 @@ import 'features/export/export_screen.dart';
 import 'features/integrations/integrations_screen.dart';
 import 'features/login/login_screen.dart';
 import 'features/participant/participant_screen.dart';
+import 'features/protocol/protocol_screen.dart';
+import 'features/queries/queries_screen.dart';
+import 'features/screening/screening_screen.dart';
+import 'features/timeline/timeline_screen.dart';
 import 'features/review/review_screen.dart';
 import 'shell/shell.dart';
 import 'theme/tokens.dart';
@@ -16,7 +20,7 @@ import 'ui/env.dart';
 import 'ui/shot.dart';
 
 void main() {
-  final api = envVar('YAMMIC_API');
+  final api = envVar('YAMICC_API');
   runApp(DemoApp(session: Session(http: api.isEmpty ? null : HttpApi(baseUrl: api))));
 }
 
@@ -34,8 +38,8 @@ class _DemoAppState extends State<DemoApp> {
   String? _who;
 
   // Demo/CI helpers: --dart-define=AUTO_LOGIN=pi --dart-define=START_ROUTE=/review
-  static final _autoLogin = envVar('YAMMIC_ROLE').isNotEmpty ? envVar('YAMMIC_ROLE') : const String.fromEnvironment('AUTO_LOGIN');
-  static final _startRoute = envVar('YAMMIC_ROUTE').isNotEmpty ? envVar('YAMMIC_ROUTE') : const String.fromEnvironment('START_ROUTE', defaultValue: '/');
+  static final _autoLogin = envVar('YAMICC_ROLE').isNotEmpty ? envVar('YAMICC_ROLE') : const String.fromEnvironment('AUTO_LOGIN');
+  static final _startRoute = envVar('YAMICC_ROUTE').isNotEmpty ? envVar('YAMICC_ROUTE') : const String.fromEnvironment('START_ROUTE', defaultValue: '/');
   bool _first = true;
 
   @override
@@ -70,12 +74,16 @@ class _DemoAppState extends State<DemoApp> {
       page = const LoginScreen();
       nav = '';
     } else if (name.startsWith('/participants/')) {
-      page = ParticipantScreen(id: name.substring('/participants/'.length));
+      final rest = name.substring('/participants/'.length);
+      page = rest.endsWith('/timeline') ? TimelineScreen(id: rest.substring(0, rest.length - '/timeline'.length)) : ParticipantScreen(id: rest);
       nav = '/participants';
     } else {
       nav = name == '/login' ? '/' : name;
       page = switch (name) {
         '/participants' => const ParticipantListScreen(),
+        '/screening' => const ScreeningScreen(),
+        '/protocol' => const ProtocolScreen(),
+        '/queries' => const QueriesScreen(),
         '/review' => ReviewScreen(participantId: s.arguments as String?),
         '/audit' => const AuditScreen(),
         '/integrations' => const IntegrationsScreen(),
@@ -103,7 +111,7 @@ class _DemoAppState extends State<DemoApp> {
           // if that read fails, ZetaProvider throws LateInitializationError (red screen).
           initialContrast: ZetaContrast.aa,
           builder: (context, light, dark, themeMode) => MaterialApp(
-            title: 'Yammic demo',
+            title: 'Yamicc demo',
             debugShowCheckedModeBanner: false,
             theme: applyLook(light),
             darkTheme: applyLook(light), // light-only product look

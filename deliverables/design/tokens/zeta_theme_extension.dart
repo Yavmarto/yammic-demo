@@ -1,4 +1,4 @@
-// Yammic visual direction v2 - copy-ready theme extension.
+// Yamicc visual direction v2 - copy-ready theme extension.
 // Target: Flutter 3.47+, zeta_flutter 1.4.5, zeta_flutter_theme 1.3.0.
 //
 // Usage:
@@ -7,7 +7,7 @@
 //     initialContrast: ZetaContrast.aa,
 //     initialRounded: true,
 //     builder: (context, light, dark, mode) => MaterialApp(
-//       theme: buildYammicTheme(light),
+//       theme: buildYamiccTheme(light),
 //       themeMode: ThemeMode.light,
 //       ...
 //     ),
@@ -15,11 +15,11 @@
 //
 // Zeta remains the base. AppColors / AppStatusColors / AppType are the product layer.
 // Do not fork ZetaColors. Use Zeta.of(context).colors for Zeta components and
-// AppColors.of(context) for Yammic surfaces.
+// AppColors.of(context) for Yamicc surfaces.
 
 import 'package:flutter/material.dart';
 
-const String kYammicFontFamily = 'packages/zeta_flutter_theme/IBMPlexSans';
+const String kYamiccFontFamily = 'packages/zeta_flutter_theme/IBMPlexSans';
 
 @immutable
 class StatePalette {
@@ -327,7 +327,7 @@ class AppStatusColors extends ThemeExtension<AppStatusColors> {
 /// Zeta ships IBM Plex Sans at 300 / 400 / 500 only. Do not use 600 or 700.
 abstract final class AppType {
   static const display = TextStyle(
-    fontFamily: kYammicFontFamily,
+    fontFamily: kYamiccFontFamily,
     fontSize: 32,
     height: 40 / 32,
     fontWeight: FontWeight.w500,
@@ -335,7 +335,7 @@ abstract final class AppType {
   );
 
   static const h1 = TextStyle(
-    fontFamily: kYammicFontFamily,
+    fontFamily: kYamiccFontFamily,
     fontSize: 24,
     height: 32 / 24,
     fontWeight: FontWeight.w500,
@@ -343,42 +343,42 @@ abstract final class AppType {
   );
 
   static const h2 = TextStyle(
-    fontFamily: kYammicFontFamily,
+    fontFamily: kYamiccFontFamily,
     fontSize: 20,
     height: 28 / 20,
     fontWeight: FontWeight.w500,
   );
 
   static const h3 = TextStyle(
-    fontFamily: kYammicFontFamily,
+    fontFamily: kYamiccFontFamily,
     fontSize: 16,
     height: 24 / 16,
     fontWeight: FontWeight.w500,
   );
 
   static const body = TextStyle(
-    fontFamily: kYammicFontFamily,
+    fontFamily: kYamiccFontFamily,
     fontSize: 14,
     height: 21 / 14,
     fontWeight: FontWeight.w400,
   );
 
   static const bodyLarge = TextStyle(
-    fontFamily: kYammicFontFamily,
+    fontFamily: kYamiccFontFamily,
     fontSize: 15,
     height: 26 / 15,
     fontWeight: FontWeight.w400,
   );
 
   static const small = TextStyle(
-    fontFamily: kYammicFontFamily,
+    fontFamily: kYamiccFontFamily,
     fontSize: 12.5,
     height: 18 / 12.5,
     fontWeight: FontWeight.w400,
   );
 
   static const label = TextStyle(
-    fontFamily: kYammicFontFamily,
+    fontFamily: kYamiccFontFamily,
     fontSize: 11,
     height: 16 / 11,
     fontWeight: FontWeight.w500,
@@ -386,7 +386,7 @@ abstract final class AppType {
   );
 
   static const numeric = TextStyle(
-    fontFamily: kYammicFontFamily,
+    fontFamily: kYamiccFontFamily,
     fontSize: 14,
     height: 20 / 14,
     fontWeight: FontWeight.w500,
@@ -394,7 +394,7 @@ abstract final class AppType {
   );
 
   static const metric = TextStyle(
-    fontFamily: kYammicFontFamily,
+    fontFamily: kYamiccFontFamily,
     fontSize: 28,
     height: 34 / 28,
     fontWeight: FontWeight.w500,
@@ -465,8 +465,8 @@ const List<BoxShadow> kOverlayShadow = [
   BoxShadow(color: Color(0x0F101828), blurRadius: 6, offset: Offset(0, 2)),
 ];
 
-/// Layer the Yammic product look over the Zeta Material theme.
-ThemeData buildYammicTheme(ThemeData base) {
+/// Layer the Yamicc product look over the Zeta Material theme.
+ThemeData buildYamiccTheme(ThemeData base) {
   const c = AppColors.light;
   final scheme = base.colorScheme.copyWith(
     primary: c.accent,

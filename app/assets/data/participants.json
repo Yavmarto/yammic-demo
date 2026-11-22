@@ -351,7 +351,10 @@
       "summary": "Fictional participant: screening in progress after MRI showed a right frontal lesion. Histology and biomarker results are pending.",
       "diagnosisDate": null,
       "enrolledDate": null,
-      "documentIds": [],
+      "documentIds": [
+        "DOC-004-MRI",
+        "DOC-004-CLIN"
+      ],
       "visits": [
         {
           "name": "Screening (V0)",

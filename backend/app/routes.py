@@ -1,16 +1,19 @@
 import asyncio
+from datetime import UTC, date, datetime
 from typing import Literal
 import json
 import re
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from fastapi.concurrency import run_in_threadpool
 from sqlalchemy import text
 from sse_starlette.sse import EventSourceResponse
 
 from . import audit as A
+from . import quality as Q
 from . import schemas as S
+from . import workflows as W
 from .db import engine
 from .security import check_password, current_user, make_token, require
 
@@ -67,36 +70,45 @@ def me(user=ANY):
 
 
 # ---------- dashboard ----------
-@r.get("/studies/{study_id}/dashboard", response_model=S.Dashboard, tags=["study"])
-def dashboard(study_id: str, user=ANY):
-    with engine.connect() as c:
-        st = must(one(c, "SELECT * FROM study WHERE id = :i", i=study_id), "Study")
-        k = one(c, """
-          SELECT
-           (SELECT count(*) FROM participant WHERE study_id=:s) enrolled,
-           (SELECT count(DISTINCT p.id) FROM participant p JOIN source_document d ON d.participant_id=p.id WHERE p.study_id=:s) scope,
-           (SELECT count(*) FROM ecrf_field WHERE study_id=:s) fields,
-           (SELECT count(*) FROM ecrf_value v JOIN participant p ON p.id=v.participant_id WHERE p.study_id=:s) verified,
-           (SELECT count(*) FROM ecrf_value v JOIN participant p ON p.id=v.participant_id WHERE p.study_id=:s AND v.sdv_at IS NOT NULL) sdv,
-           (SELECT count(*) FROM extraction e JOIN participant p ON p.id=e.participant_id WHERE p.study_id=:s) ex_total,
-           (SELECT count(*) FROM extraction e JOIN participant p ON p.id=e.participant_id WHERE p.study_id=:s AND review_state='pending') ex_pending,
-           (SELECT count(*) FROM extraction e JOIN participant p ON p.id=e.participant_id WHERE p.study_id=:s AND review_state='accepted') ex_acc,
-           (SELECT count(*) FROM extraction e JOIN participant p ON p.id=e.participant_id WHERE p.study_id=:s AND review_state='corrected') ex_cor,
-           (SELECT count(*) FROM extraction e JOIN participant p ON p.id=e.participant_id WHERE p.study_id=:s AND review_state='rejected') ex_rej,
-           (SELECT count(*) FROM extraction e JOIN participant p ON p.id=e.participant_id WHERE p.study_id=:s AND review_state='deferred') ex_def,
-           (SELECT count(*) FROM extraction e JOIN participant p ON p.id=e.participant_id WHERE p.study_id=:s AND review_state='pending'
-              AND (e.status='abstained' OR e.confidence < :lc)) attention,
-           (SELECT count(*) FROM data_query q JOIN site s ON s.id=q.site_id WHERE s.study_id=:s AND q.status='open') queries,
-           (SELECT count(*) FROM audit_event) audit
-        """, s=study_id, lc=LOW_CONF)
-        sites = rows(c, """
-          SELECT s.*, (SELECT count(*) FROM participant p WHERE p.site_id=s.id) enrolled,
-                 (SELECT count(*) FROM data_query q WHERE q.site_id=s.id AND q.status='open') open_queries
-          FROM site s WHERE s.study_id=:s ORDER BY s.id""", s=study_id)
+# Enrolled = the seeded baseline cohort plus synced patients only once the platform enrols them.
+# Synced patients in screening/eligible/consented/screen_fail are not enrolled.
+ENROLLED = "(NOT p.synced_from_fhir OR p.status IN ('enrolled','active'))"
+
+
+def _kpis_for(c, study_id: str, site_id: str | None = None, target: int = 0) -> S.Kpis:
+    k = one(c, """
+      SELECT
+       (SELECT count(*) FROM participant p WHERE p.study_id=:s AND (:si IS NULL OR p.site_id=:si) AND """ + ENROLLED + """) enrolled,
+       (SELECT count(DISTINCT p.id) FROM participant p JOIN extraction_run r ON r.participant_id=p.id
+          WHERE p.study_id=:s AND (:si IS NULL OR p.site_id=:si)) scope,
+       (SELECT count(*) FROM ecrf_field WHERE study_id=:s) fields,
+       (SELECT count(*) FROM ecrf_value v JOIN participant p ON p.id=v.participant_id
+          WHERE p.study_id=:s AND (:si IS NULL OR p.site_id=:si)) verified,
+       (SELECT count(*) FROM ecrf_value v JOIN participant p ON p.id=v.participant_id
+          WHERE p.study_id=:s AND (:si IS NULL OR p.site_id=:si) AND v.sdv_at IS NOT NULL) sdv,
+       (SELECT count(*) FROM extraction e JOIN participant p ON p.id=e.participant_id
+          WHERE p.study_id=:s AND (:si IS NULL OR p.site_id=:si)) ex_total,
+       (SELECT count(*) FROM extraction e JOIN participant p ON p.id=e.participant_id
+          WHERE p.study_id=:s AND (:si IS NULL OR p.site_id=:si) AND review_state='pending') ex_pending,
+       (SELECT count(*) FROM extraction e JOIN participant p ON p.id=e.participant_id
+          WHERE p.study_id=:s AND (:si IS NULL OR p.site_id=:si) AND review_state='accepted') ex_acc,
+       (SELECT count(*) FROM extraction e JOIN participant p ON p.id=e.participant_id
+          WHERE p.study_id=:s AND (:si IS NULL OR p.site_id=:si) AND review_state='corrected') ex_cor,
+       (SELECT count(*) FROM extraction e JOIN participant p ON p.id=e.participant_id
+          WHERE p.study_id=:s AND (:si IS NULL OR p.site_id=:si) AND review_state='rejected') ex_rej,
+       (SELECT count(*) FROM extraction e JOIN participant p ON p.id=e.participant_id
+          WHERE p.study_id=:s AND (:si IS NULL OR p.site_id=:si) AND review_state='deferred') ex_def,
+       (SELECT count(*) FROM extraction e JOIN participant p ON p.id=e.participant_id
+          WHERE p.study_id=:s AND (:si IS NULL OR p.site_id=:si) AND review_state='pending'
+          AND (e.status='abstained' OR e.confidence < :lc)) attention,
+       (SELECT count(*) FROM data_query q JOIN site s ON s.id=q.site_id
+          WHERE s.study_id=:s AND (:si IS NULL OR q.site_id=:si) AND q.status IN ('open','answered')) queries,
+       (SELECT count(*) FROM audit_event) audit
+    """, s=study_id, si=site_id, lc=LOW_CONF)
     reviewed = k["ex_acc"] + k["ex_cor"] + k["ex_rej"]
     denom = k["scope"] * k["fields"]
-    kp = S.Kpis(
-        enrolled=k["enrolled"], target=st["target_enrolment"] or 0,
+    return S.Kpis(
+        enrolled=k["enrolled"], target=target,
         participants_in_extraction_scope=k["scope"], ecrf_fields_total=denom,
         ecrf_fields_verified=k["verified"],
         ecrf_completeness=round(k["verified"] / denom, 4) if denom else 0.0,
@@ -107,22 +119,72 @@ def dashboard(study_id: str, user=ANY):
         ai_acceptance_rate=round(k["ex_acc"] / reviewed, 4) if reviewed else None,
         needs_attention=k["attention"], open_queries=k["queries"], sdv_done=k["sdv"],
         sdv_pending=k["verified"] - k["sdv"], audit_events=k["audit"])
+
+
+def _sites_for(c, study_id: str) -> list[S.Site]:
+    raw = rows(c, """
+      SELECT s.*,
+        (SELECT count(*) FROM participant p WHERE p.site_id=s.id AND """ + ENROLLED + """) enrolled,
+        (SELECT count(*) FROM participant p WHERE p.site_id=s.id AND p.status='screening') screening,
+        (SELECT count(*) FROM participant p WHERE p.site_id=s.id AND p.status='eligible') eligible,
+        (SELECT count(*) FROM participant p WHERE p.site_id=s.id AND p.status='consented') consented,
+        (SELECT count(*) FROM participant p WHERE p.site_id=s.id AND (p.status='screen_fail' OR p.status_detail='screen_failure')) screen_fail,
+        (SELECT count(*) FROM data_query q WHERE q.site_id=s.id AND q.status IN ('open','answered')) open_queries
+      FROM site s WHERE s.study_id=:s ORDER BY s.id""", s=study_id)
+    out: list[S.Site] = []
+    for s in raw:
+        sk = _kpis_for(c, study_id, s["id"], s["target_enrolment"] or 0)
+        out.append(S.Site(**s, ecrf_completeness=sk.ecrf_completeness,
+                          ai_acceptance_rate=sk.ai_acceptance_rate,
+                          sdv_done=sk.sdv_done, sdv_pending=sk.sdv_pending, kpis=sk))
+    return out
+
+
+@r.get("/studies/{study_id}/dashboard", response_model=S.Dashboard, tags=["study"])
+def dashboard(study_id: str, site_id: str | None = Query(None, alias="siteId"),
+              site_param: str | None = Query(None, alias="site", include_in_schema=False),
+              site_id_snake: str | None = Query(None, alias="site_id", include_in_schema=False), user=ANY):
+    sid = site_id or site_param or site_id_snake
+    if sid and sid.lower() == "all":
+        sid = None
+    with engine.connect() as c:
+        st = must(one(c, "SELECT * FROM study WHERE id = :i", i=study_id), "Study")
+        if sid:
+            site_row = must(one(c, "SELECT * FROM site WHERE id=:i AND study_id=:s", i=sid, s=study_id), "Site")
+            target = site_row["target_enrolment"] or 0
+        else:
+            target = st["target_enrolment"] or 0
+        kp = _kpis_for(c, study_id, sid, target)
+        sites = _sites_for(c, study_id)
     meta = st["meta"] or {}
     return S.Dashboard(
         study_id=st["id"], title=st["short_name"], phase=st["phase"], status=st["status"],
-        disclaimer=DISCLAIMER, kpis=kp, sites=[S.Site(**s) for s in sites],
+        disclaimer=DISCLAIMER, site_id=sid, kpis=kp, sites=sites, site_comparison=sites,
         milestones=meta.get("milestones", []), alerts=meta.get("alerts", []), tasks=meta.get("tasks", []))
+
+
+@r.get("/studies/{study_id}/sites/compare", response_model=list[S.Site], tags=["study"], include_in_schema=False)
+@r.get("/studies/{study_id}/sites", response_model=list[S.Site], tags=["study"])
+def study_sites(study_id: str, ids: str | None = None, user=ANY):
+    with engine.connect() as c:
+        must(one(c, "SELECT 1 FROM study WHERE id=:i", i=study_id), "Study")
+        sites = _sites_for(c, study_id)
+        if ids:
+            wanted = {x.strip() for x in ids.split(",") if x.strip()}
+            sites = [s for s in sites if s.id in wanted]
+        return sites
 
 
 # ---------- participants ----------
 PSUM = """
 SELECT p.id, p.study_id, p.site_id, p.status, p.status_detail, p.age, p.sex, p.enrolled_date,
-  p.summary, p.diagnosis_date,
+  p.summary, p.diagnosis_date, p.screen_fail_reason, p.coordinator_signed_by, p.coordinator_signed_at,
+  p.consented_date, p.enrolled_by, p.enrolled_at,
   (SELECT count(*) FROM source_document d WHERE d.participant_id=p.id) document_count,
   (SELECT count(*) FROM extraction e WHERE e.participant_id=p.id AND e.review_state='pending') extractions_pending,
   (SELECT count(*) FROM ecrf_value v WHERE v.participant_id=p.id) ecrf_verified,
   (SELECT count(*) FROM ecrf_field f WHERE f.study_id=p.study_id) ecrf_total,
-  (SELECT count(*) FROM data_query q WHERE q.participant_id=p.id AND q.status='open') open_queries
+  (SELECT count(*) FROM data_query q WHERE q.participant_id=p.id AND q.status IN ('open','answered')) open_queries
 FROM participant p"""
 
 
@@ -147,6 +209,189 @@ def participant(pid: str, user=ANY):
         x["visits"] = rows(c, "SELECT name, visit_date AS date, status, note FROM visit WHERE participant_id=:i ORDER BY id", i=pid)
         x["document_ids"] = [d["id"] for d in rows(c, "SELECT id FROM source_document WHERE participant_id=:i ORDER BY id", i=pid)]
     return _pct(x)
+
+
+@r.get("/participants/{pid}/timeline", response_model=S.Timeline, tags=["participants"])
+def participant_timeline(pid: str, user=ANY):
+    """Ordered clinical timeline (surgery, radiotherapy, chemotherapy cycles, scans, visits), each linked to its source document/resource."""
+    with engine.connect() as c:
+        return must(W.build_timeline(c, pid), "Participant")
+
+
+# ---------- screening workflow ----------
+@r.get("/screening", response_model=list[S.Screening], tags=["screening"])
+def list_screenings(site_id: str | None = None, status: str | None = None, user=ANY):
+    """Screening queue across participants (optionally filtered by site_id or status)."""
+    with engine.connect() as c:
+        ps = rows(c, "SELECT id FROM participant WHERE (:s IS NULL OR site_id=:s) AND (:st IS NULL OR status=:st) ORDER BY id",
+                  s=site_id, st=status)
+        return [W.build_screening(c, p["id"]) for p in ps]
+
+
+@r.get("/screening/{pid}", response_model=S.Screening, tags=["screening"], include_in_schema=False)
+@r.get("/participants/{pid}/screening", response_model=S.Screening, tags=["screening"])
+def get_screening(pid: str, user=ANY):
+    with engine.connect() as c:
+        must(one(c, "SELECT 1 FROM participant WHERE id=:i", i=pid), "Participant")
+        return W.build_screening(c, pid)
+
+
+@r.post("/participants/{pid}/screening/check", response_model=S.Screening, tags=["screening"])
+def run_screening_check(pid: str, provider: str = Query("rules"), user=Depends(require("nurse", "pi", "service"))):
+    """Run the AI screening checker against all trial entry criteria for a participant."""
+    if provider.lower() not in ("auto", "rules", "ollama"):
+        raise HTTPException(422, "provider must be one of ['auto', 'ollama', 'rules']")
+    with engine.begin() as c:
+        must(one(c, "SELECT 1 FROM participant WHERE id=:i", i=pid), "Participant")
+        W.run_ai_screening(c, pid, user, provider=provider)
+        return W.build_screening(c, pid)
+
+
+@r.post("/participants/{pid}/screening/checks", response_model=S.Screening, tags=["screening"])
+def post_screening_checks(pid: str, body: list[S.ScreeningChecksIn], user=Depends(require("service"))):
+    """Ingest per-criterion AI screening results (from task C worker or test harness)."""
+    with engine.begin() as c:
+        p = must(one(c, "SELECT * FROM participant WHERE id=:i", i=pid), "Participant")
+        for x in body:
+            must(one(c, "SELECT 1 FROM screening_criterion WHERE study_id=:s AND id=:cid", s=p["study_id"], cid=x.criterion_id),
+                 f"Criterion {x.criterion_id}")
+            if x.document_id:
+                d = must(one(c, "SELECT participant_id, text FROM source_document WHERE id=:i", i=x.document_id), "Document")
+                if d["participant_id"] != pid:
+                    raise HTTPException(422, f"Document {x.document_id} belongs to another participant")
+                for ev in x.evidence:
+                    if d["text"][ev.start:ev.end] != ev.text:
+                        raise HTTPException(422, f"Evidence span {ev.start}-{ev.end} does not match document text")
+            e0 = x.evidence[0] if x.evidence else None
+            c.execute(text("""INSERT INTO screening_check
+                (participant_id, criterion_id, ai_status, confidence, rationale, document_id, span_start, span_end,
+                 evidence, provider, model, prompt_version, updated_at)
+                VALUES (:p,:cid,:st,:conf,:rat,:doc,:ss,:se,CAST(:ev AS jsonb),:prov,:model,:pv,now())
+                ON CONFLICT (participant_id, criterion_id) DO UPDATE SET
+                  ai_status=:st, confidence=:conf, rationale=:rat, document_id=:doc,
+                  span_start=:ss, span_end=:se, evidence=CAST(:ev AS jsonb),
+                  provider=:prov, model=:model, prompt_version=:pv, updated_at=now()"""),
+                      dict(p=pid, cid=x.criterion_id, st=x.status, conf=x.confidence, rat=x.rationale,
+                           doc=x.document_id, ss=e0.start if e0 else None, se=e0.end if e0 else None,
+                           ev=json.dumps([e.model_dump() for e in x.evidence]),
+                           prov=x.provider, model=x.model, pv=x.prompt_version))
+        A.record(c, user, "screening.ai_ingested", "participant", pid, participant_id=pid,
+                 after={"count": len(body)}, source="ai",
+                 model=body[0].model if body else None, prompt_version=body[0].prompt_version if body else None)
+        return W.build_screening(c, pid)
+
+
+@r.post("/screening/{pid}/criteria/{cid}", response_model=S.Screening, tags=["screening"], include_in_schema=False)
+@r.post("/participants/{pid}/screening/criteria/{cid}/confirm", response_model=S.Screening, tags=["screening"])
+def confirm_criterion(pid: str, cid: str, body: S.ScreeningCriterionConfirmIn,
+                      user=Depends(require("nurse", "pi"))):
+    """Coordinator (nurse or PI) confirms or overrides one criterion check."""
+    st = body.status or body.state
+    if not st:
+        raise HTTPException(422, "status is required")
+    with engine.begin() as c:
+        p = must(one(c, "SELECT * FROM participant WHERE id=:i FOR UPDATE", i=pid), "Participant")
+        must(one(c, "SELECT 1 FROM screening_criterion WHERE study_id=:s AND id=:cid", s=p["study_id"], cid=cid), "Criterion")
+        prev = one(c, "SELECT * FROM screening_check WHERE participant_id=:p AND criterion_id=:cid", p=pid, cid=cid)
+        c.execute(text("""INSERT INTO screening_check
+            (participant_id, criterion_id, ai_status, coordinator_status, confirmed_by, confirmed_at, note, updated_at)
+            VALUES (:p,:cid,:st,:st,:u,now(),:n,now())
+            ON CONFLICT (participant_id, criterion_id) DO UPDATE SET
+              coordinator_status=:st, confirmed_by=:u, confirmed_at=now(), note=:n, updated_at=now()"""),
+                  dict(p=pid, cid=cid, st=st, u=user["username"], n=body.note))
+        A.record(c, user, "screening.criterion_confirmed", "screening_check", f"{pid}/{cid}", participant_id=pid,
+                 before={"coordinatorStatus": prev["coordinator_status"] if prev else None,
+                         "aiStatus": prev["ai_status"] if prev else None},
+                 after={"coordinatorStatus": st, "note": body.note})
+        return W.build_screening(c, pid)
+
+
+@r.post("/screening/{pid}/signoff", response_model=S.Screening, tags=["screening"], include_in_schema=False)
+@r.post("/participants/{pid}/screening/sign-off", response_model=S.Screening, tags=["screening"])
+def sign_off_screening(pid: str, body: S.ScreeningSignOffIn | None = Body(default=None),
+                       user=Depends(require("nurse", "pi"))):
+    """Coordinator signs off on the criteria checklist (`screening -> eligible` or `screen_fail`)."""
+    body = body or S.ScreeningSignOffIn()
+    with engine.begin() as c:
+        p = must(one(c, "SELECT * FROM participant WHERE id=:i FOR UPDATE", i=pid), "Participant")
+        scr = W.build_screening(c, pid)
+        outcome = body.outcome or body.decision
+        if outcome is None:
+            outcome = "screen_fail" if scr.not_met_count > 0 else "eligible"
+        if outcome == "screen_fail":
+            reason = (body.reason or "").strip() or "Failed one or more eligibility criteria"
+            c.execute(text("""UPDATE participant SET status='screen_fail', status_detail='screen_failure',
+                screen_fail_reason=:r, coordinator_signed_by=:u, coordinator_signed_at=now() WHERE id=:i"""),
+                      dict(r=reason, u=user["username"], i=pid))
+            A.record(c, user, "screening.screen_fail", "participant", pid, participant_id=pid,
+                     before={"status": p["status"]},
+                     after={"status": "screen_fail", "reason": reason, "signedBy": user["username"]})
+        else:
+            if scr.not_met_count > 0:
+                raise HTTPException(422, "Cannot mark eligible while any criterion is not_met")
+            if scr.unknown_count > 0:
+                raise HTTPException(422, f"Cannot mark eligible while {scr.unknown_count} criteria are unknown")
+            if scr.confirmed_count < scr.total_count:
+                raise HTTPException(422, f"Cannot mark eligible before all criteria are confirmed ({scr.confirmed_count}/{scr.total_count} confirmed)")
+            c.execute(text("""UPDATE participant SET status='eligible', status_detail='eligible',
+                screen_fail_reason=NULL, coordinator_signed_by=:u, coordinator_signed_at=now() WHERE id=:i"""),
+                      dict(u=user["username"], i=pid))
+            A.record(c, user, "screening.signed_off", "participant", pid, participant_id=pid,
+                     before={"status": p["status"]},
+                     after={"status": "eligible", "signedBy": user["username"], "metCount": scr.met_count})
+        return W.build_screening(c, pid)
+
+
+@r.post("/participants/{pid}/screening/consent", response_model=S.Screening, tags=["screening"])
+def record_consent(pid: str, body: S.ScreeningConsentIn | None = Body(default=None),
+                   user=Depends(require("nurse", "pi"))):
+    """Coordinator records written informed consent (`eligible -> consented`)."""
+    body = body or S.ScreeningConsentIn()
+    with engine.begin() as c:
+        p = must(one(c, "SELECT * FROM participant WHERE id=:i FOR UPDATE", i=pid), "Participant")
+        if p["status"] not in ("eligible", "consented"):
+            raise HTTPException(409, f"Participant must be 'eligible' before consent (current: {p['status']})")
+        cdate = body.consented_date or date.today()
+        c.execute(text("""UPDATE participant SET status='consented', status_detail='consented',
+            consented_date=:d WHERE id=:i"""), dict(d=cdate, i=pid))
+        A.record(c, user, "screening.consented", "participant", pid, participant_id=pid,
+                 before={"status": p["status"]}, after={"status": "consented", "consentedDate": str(cdate), "note": body.note})
+        return W.build_screening(c, pid)
+
+
+@r.post("/participants/{pid}/screening/enrol", response_model=S.Screening, tags=["screening"])
+def enrol_participant(pid: str, body: S.ScreeningEnrolIn | None = Body(default=None),
+                      user=Depends(require("pi"))):
+    """Only the PI may enrol a participant (`consented -> enrolled`)."""
+    body = body or S.ScreeningEnrolIn()
+    with engine.begin() as c:
+        p = must(one(c, "SELECT * FROM participant WHERE id=:i FOR UPDATE", i=pid), "Participant")
+        if p["status"] not in ("consented", "enrolled") or p.get("consented_date") is None:
+            raise HTTPException(409, f"Participant must have recorded consent ('consented') before PI enrolment (current: {p['status']})")
+        edate = body.enrolled_date or date.today()
+        c.execute(text("""UPDATE participant SET status='enrolled', status_detail='enrolled',
+            enrolled_date=:ed, enrolled_by=:u, enrolled_at=now() WHERE id=:i"""),
+                  dict(ed=edate, u=user["username"], i=pid))
+        A.record(c, user, "screening.enrolled", "participant", pid, participant_id=pid,
+                 before={"status": p["status"]},
+                 after={"status": "enrolled", "enrolledDate": str(edate), "enrolledBy": user["username"], "note": body.note})
+        return W.build_screening(c, pid)
+
+
+@r.post("/participants/{pid}/screening/screen-fail", response_model=S.Screening, tags=["screening"])
+def screen_fail_participant(pid: str, body: S.ScreenFailIn, user=Depends(require("nurse", "pi"))):
+    """Mark a participant as `screen_fail` with a mandatory reason."""
+    reason = (body.reason or "").strip()
+    if not reason:
+        raise HTTPException(422, "reason is required for screen_fail")
+    with engine.begin() as c:
+        p = must(one(c, "SELECT * FROM participant WHERE id=:i FOR UPDATE", i=pid), "Participant")
+        c.execute(text("""UPDATE participant SET status='screen_fail', status_detail='screen_failure',
+            screen_fail_reason=:r, coordinator_signed_by=:u, coordinator_signed_at=now() WHERE id=:i"""),
+                  dict(r=reason, u=user["username"], i=pid))
+        A.record(c, user, "screening.screen_fail", "participant", pid, participant_id=pid,
+                 before={"status": p["status"]}, after={"status": "screen_fail", "reason": reason})
+        return W.build_screening(c, pid)
 
 
 DOCSUM = """
@@ -209,7 +454,10 @@ def decide(eid: str, body: S.DecisionIn, user=Depends(require("nurse", "pi"))):
         if body.decision == "accept" and e["status"] == "abstained":
             raise HTTPException(422, "An abstained extraction has no value to accept; use correct, reject or defer")
         pid, fid = e["participant_id"], e["field_id"]
+        c.execute(text("SELECT id FROM participant WHERE id=:p FOR UPDATE"), {"p": pid})
         prev_val = one(c, "SELECT value, code, source_extraction_id FROM ecrf_value WHERE participant_id=:p AND field_id=:f", p=pid, f=fid)
+        if prev_val and body.decision in ("accept", "correct"):
+            raise HTTPException(409, "Field already has a verified value")
         state = {"accept": "accepted", "correct": "corrected", "reject": "rejected", "defer": "deferred"}[body.decision]
         c.execute(text("""INSERT INTO review_decision (extraction_id, decision, corrected_value, reason, username, role)
           VALUES (:e,:d,:cv,:r,:u,:ro)"""), dict(e=eid, d=body.decision, cv=corrected or None, r=reason,
@@ -221,15 +469,17 @@ def decide(eid: str, body: S.DecisionIn, user=Depends(require("nurse", "pi"))):
                         "proposedValue": e["value"], "correctedValue": corrected or None, "reason": reason},
                  source="human", model=e["model"], prompt_version=e["prompt_version"])
         new_val = None
+        f_row = one(c, "SELECT form_version FROM ecrf_field WHERE id=:f", f=fid)
+        f_ver = (f_row["form_version"] if f_row else 1) or 1
         if body.decision in ("accept", "correct"):
             v = e["value"] if body.decision == "accept" else corrected
             code = json.dumps(e["proposed_code"]) if body.decision == "accept" and e["proposed_code"] else None
-            c.execute(text("""INSERT INTO ecrf_value (participant_id, field_id, value, code, source_extraction_id, verified_by)
-              VALUES (:p,:f,:v,CAST(:c AS jsonb),:e,:u)
+            c.execute(text("""INSERT INTO ecrf_value (participant_id, field_id, value, code, source_extraction_id, verified_by, form_version)
+              VALUES (:p,:f,:v,CAST(:c AS jsonb),:e,:u,:fv)
               ON CONFLICT (participant_id, field_id) DO UPDATE SET value=:v, code=CAST(:c AS jsonb),
-                source_extraction_id=:e, verified_by=:u, verified_at=now(), sdv_by=NULL, sdv_at=NULL"""),
-                      dict(p=pid, f=fid, v=v, c=code, e=eid, u=user["username"]))
-            new_val = {"value": v, "code": e["proposed_code"] if code else None}
+                source_extraction_id=:e, verified_by=:u, verified_at=now(), sdv_by=NULL, sdv_at=NULL, form_version=:fv"""),
+                      dict(p=pid, f=fid, v=v, c=code, e=eid, u=user["username"], fv=f_ver))
+            new_val = {"value": v, "code": e["proposed_code"] if code else None, "formVersion": f_ver}
         elif prev_val and prev_val["source_extraction_id"] == eid:
             c.execute(text("DELETE FROM ecrf_value WHERE participant_id=:p AND field_id=:f"), dict(p=pid, f=fid))
         old = {"value": prev_val["value"], "code": prev_val["code"]} if prev_val else None
@@ -237,13 +487,68 @@ def decide(eid: str, body: S.DecisionIn, user=Depends(require("nurse", "pi"))):
             A.record(c, user, "ecrf.value_set" if new_val else "ecrf.value_cleared", "ecrf_value", f"{pid}/{fid}",
                      participant_id=pid, before=old, after=new_val, source="human",
                      model=e["model"], prompt_version=e["prompt_version"])
+        Q.evaluate_participant(c, pid, user, trigger="decision")
         ex = _ex(one(c, EXSEL + " WHERE e.id=:i", i=eid))
         val = one(c, ECRFVAL + " WHERE participant_id=:p AND field_id=:f", p=pid, f=fid)
     return S.DecisionResult(extraction=ex, ecrf_value=val)
 
 
 # ---------- eCRF ----------
-ECRFVAL = """SELECT field_id AS field, value, code, source_extraction_id, verified_by, verified_at, sdv_by, sdv_at FROM ecrf_value"""
+ECRFVAL = """SELECT field_id AS field, value, code, source_extraction_id, verified_by, verified_at, sdv_by, sdv_at, form_version, CASE WHEN (SELECT provider FROM extraction WHERE id=source_extraction_id)='human' THEN 'human' ELSE 'ai' END AS entry_source FROM ecrf_value"""
+
+
+@r.post("/participants/{pid}/ecrf/{field}/manual", response_model=S.DecisionResult, status_code=201, tags=["ecrf"])
+def manual_entry(pid: str, field: str, body: S.ManualEntryIn, user=Depends(require("nurse", "pi"))):
+    """Enter a verified value with an exact source-document quote."""
+    with engine.begin() as c:
+        p = must(one(c, "SELECT * FROM participant WHERE id=:p FOR UPDATE", p=pid), "Participant")
+        f = must(one(c, "SELECT * FROM ecrf_field WHERE id=:f AND study_id=:s", f=field, s=p["study_id"]), "Field")
+        if one(c, "SELECT 1 FROM ecrf_value WHERE participant_id=:p AND field_id=:f", p=pid, f=field):
+            raise HTTPException(409, "Field already has a verified value")
+        d = must(one(c, "SELECT * FROM source_document WHERE id=:d AND participant_id=:p", d=body.document_id, p=pid), "Participant document")
+        quote = body.evidence
+        if not quote.strip() or quote not in d["text"]:
+            raise HTTPException(422, "Evidence must be an exact, non-empty quote from the selected document")
+        value = body.value.strip()
+        if not value:
+            raise HTTPException(422, "Value is required")
+        kind = f["value_type"]
+        try:
+            if kind == "integer":
+                if not re.fullmatch(r"-?\d+", value): raise ValueError()
+                number = int(value)
+            elif kind == "number":
+                from decimal import Decimal
+                number = Decimal(value)
+                if not number.is_finite(): raise ValueError()
+            elif kind == "date":
+                date.fromisoformat(value)
+                number = None
+            elif kind in ("string", "coded"):
+                number = None
+            else:
+                raise ValueError()
+            if number is not None and ((f["min_val"] is not None and number < f["min_val"]) or (f["max_val"] is not None and number > f["max_val"])):
+                raise ValueError()
+        except (ValueError, ArithmeticError):
+            raise HTTPException(422, "Value does not match the field type or bounds")
+        choices = f.get("allowed_values") or []
+        choice = next((x for x in choices if x.get("value") == value), None)
+        if choices and not choice:
+            raise HTTPException(422, "Value is not an allowed choice")
+        code = choice.get("code") if choice else None
+        start = d["text"].index(quote)
+        evidence = [{"start": start, "end": start + len(quote), "text": quote}]
+        eid = "MAN-" + str(uuid.uuid4())
+        run = c.execute(text("""INSERT INTO extraction_run (participant_id, document_id, status, total, done, provider, model, prompt_version, created_by, finished_at)
+            VALUES (:p,:d,'completed',1,1,'human','manual','manual',:u,now()) RETURNING id"""), dict(p=pid,d=body.document_id,u=user["username"])).scalar_one()
+        c.execute(text("""INSERT INTO extraction (id, run_id, document_id, participant_id, field_id, status, value, unit, confidence, proposed_code, span_start, span_end, evidence, provider, model, prompt_version, review_state)
+            VALUES (:i,:r,:d,:p,:f,'proposed',:v,:unit,1,CAST(:code AS jsonb),:start,:end,CAST(:ev AS jsonb),'human','manual','manual','corrected')"""), dict(i=eid,r=run,d=body.document_id,p=pid,f=field,v=value,unit=f["unit"],code=json.dumps(code) if code else None,start=start,end=start+len(quote),ev=json.dumps(evidence)))
+        c.execute(text("""INSERT INTO review_decision (extraction_id, decision, corrected_value, reason, username, role) VALUES (:i,'correct',:v,'Manual entry',:u,:role)"""), dict(i=eid,v=value,u=user["username"],role=user["role"]))
+        c.execute(text("""INSERT INTO ecrf_value (participant_id, field_id, value, code, source_extraction_id, verified_by, form_version) VALUES (:p,:f,:v,CAST(:code AS jsonb),:i,:u,:fv)"""), dict(p=pid,f=field,v=value,code=json.dumps(code) if code else None,i=eid,u=user["username"],fv=f.get("form_version") or 1))
+        A.record(c,user,"ecrf.value_set","ecrf_value",f"{pid}/{field}",participant_id=pid,after={"value":value,"source":"human","documentId":body.document_id,"evidence":evidence,"extractionId":eid},source="human")
+        Q.evaluate_participant(c,pid,user,trigger="decision")
+        return S.DecisionResult(extraction=one(c, EXSEL + " WHERE e.id=:i", i=eid), ecrf_value=one(c, ECRFVAL + " WHERE participant_id=:p AND field_id=:f", p=pid,f=field))
 
 
 @r.get("/participants/{pid}/ecrf", response_model=S.Ecrf, tags=["ecrf"])
@@ -254,43 +559,99 @@ def ecrf(pid: str, user=ANY):
         vals = {v["field"]: v for v in rows(c, ECRFVAL + " WHERE participant_id=:p", p=pid)}
         pend = {x["field_id"]: x["id"] for x in rows(c, """SELECT DISTINCT ON (field_id) field_id, id FROM extraction
             WHERE participant_id=:p AND review_state='pending' ORDER BY field_id, created_at DESC, id DESC""", p=pid)}
+        cur_v = one(c, "SELECT coalesce(max(version), 1) v FROM ecrf_form_version WHERE study_id=:s AND status='approved'", s=p["study_id"])["v"]
     out = [S.EcrfField(id=f["id"], label=f["label"], section=f["section"], value_type=f["value_type"],
                        required=f["required"], unit=f["unit"], terminology=f["terminology"], help=f["help"],
+                       min=f.get("min_val"), max=f.get("max_val"), allowed_values=f.get("allowed_values"),
+                       form_version=f.get("form_version") or 1,
                        value=vals.get(f["id"]), pending_extraction_id=pend.get(f["id"])) for f in fs]
     n = sum(1 for f in out if f.value)
-    return S.Ecrf(participant_id=pid, form_id=fs[0]["form_id"] if fs else "", verified=n, total=len(out),
+    return S.Ecrf(participant_id=pid, form_id=fs[0]["form_id"] if fs else "", form_version=cur_v,
+                  verified=n, total=len(out),
                   complete_pct=round(100 * n / len(out)) if out else 0, fields=out)
 
 
 @r.post("/participants/{pid}/ecrf/{field}/sdv", response_model=S.EcrfValue, tags=["ecrf"])
-def sdv(pid: str, field: str, user=Depends(require("monitor"))):
-    """Monitor marks a verified eCRF value as source-data verified."""
+def sdv(pid: str, field: str, body: S.SdvIn | None = Body(default=None), user=Depends(require("monitor"))):
+    """Monitor marks or unmarks a verified eCRF value as source-data verified."""
     with engine.begin() as c:
         v = must(one(c, ECRFVAL + " WHERE participant_id=:p AND field_id=:f FOR UPDATE", p=pid, f=field), "Verified eCRF value")
-        c.execute(text("UPDATE ecrf_value SET sdv_by=:u, sdv_at=now() WHERE participant_id=:p AND field_id=:f"),
-                  dict(u=user["username"], p=pid, f=field))
-        A.record(c, user, "ecrf.sdv", "ecrf_value", f"{pid}/{field}", participant_id=pid,
-                 before={"sdv": v["sdv_at"] is not None}, after={"sdv": True, "value": v["value"]})
+        want_sdv = True if (body is None or body.sdv is None) else body.sdv
+        if want_sdv:
+            c.execute(text("UPDATE ecrf_value SET sdv_by=:u, sdv_at=now() WHERE participant_id=:p AND field_id=:f"),
+                      dict(u=user["username"], p=pid, f=field))
+            A.record(c, user, "ecrf.sdv", "ecrf_value", f"{pid}/{field}", participant_id=pid,
+                     before={"sdv": v["sdv_at"] is not None}, after={"sdv": True, "value": v["value"]})
+        else:
+            c.execute(text("UPDATE ecrf_value SET sdv_by=NULL, sdv_at=NULL WHERE participant_id=:p AND field_id=:f"),
+                      dict(p=pid, f=field))
+            A.record(c, user, "ecrf.sdv_cleared", "ecrf_value", f"{pid}/{field}", participant_id=pid,
+                     before={"sdv": v["sdv_at"] is not None}, after={"sdv": False, "value": v["value"]})
         return one(c, ECRFVAL + " WHERE participant_id=:p AND field_id=:f", p=pid, f=field)
 
 
-# ---------- data queries ----------
+# ---------- data queries & data-quality rules ----------
+@r.get("/data-quality/rules", response_model=list[S.DataQualityRule], tags=["queries"])
+def list_data_quality_rules(user=ANY):
+    """Catalog of automated data-quality rules (>=5 rules)."""
+    return Q.RULES
+
+
+@r.post("/participants/{pid}/data-quality/run", response_model=S.DataQualityResult, tags=["queries"])
+def run_data_quality(pid: str, user=Depends(require("monitor", "nurse", "pi", "service"))):
+    """Evaluate all data-quality rules for `pid` and auto-open queries for any new discrepancies."""
+    with engine.begin() as c:
+        must(one(c, "SELECT 1 FROM participant WHERE id=:i", i=pid), "Participant")
+        opened = Q.evaluate_participant(c, pid, user, trigger="manual")
+    return S.DataQualityResult(participant_id=pid, checked=len(Q.RULES), opened=opened)
+
+
 @r.get("/queries", response_model=list[S.DataQuery], tags=["queries"])
-def queries(participant_id: str | None = None, site_id: str | None = None, status: str | None = None, user=ANY):
+def queries(participant_id: str | None = None, site_id: str | None = None, field_id: str | None = None,
+            status: str | None = None, user=ANY):
     with engine.connect() as c:
         return rows(c, """SELECT * FROM data_query WHERE (:p IS NULL OR participant_id=:p)
-          AND (:s IS NULL OR site_id=:s) AND (:st IS NULL OR status=:st) ORDER BY id""", p=participant_id, s=site_id, st=status)
+          AND (:s IS NULL OR site_id=:s) AND (:f IS NULL OR field_id=:f)
+          AND (:st IS NULL OR status=:st) ORDER BY id""",
+                    p=participant_id, s=site_id, f=field_id, st=status)
 
 
 @r.post("/queries", response_model=S.DataQuery, status_code=201, tags=["queries"])
 def open_query(body: S.QueryIn, user=Depends(require("monitor", "pi"))):
     with engine.begin() as c:
-        p = must(one(c, "SELECT site_id FROM participant WHERE id=:i", i=body.participant_id), "Participant")
-        q = one(c, """INSERT INTO data_query (participant_id, site_id, field_id, severity, text, opened_by)
-          VALUES (:p,:s,:f,:sev,:t,:u) RETURNING *""", p=body.participant_id, s=p["site_id"], f=body.field_id,
-                sev=body.severity, t=body.text, u=user["username"])
-        A.record(c, user, "query.opened", "data_query", q["id"], participant_id=body.participant_id, after={"text": body.text, "field": body.field_id})
+        p = must(one(c, "SELECT site_id, study_id FROM participant WHERE id=:i", i=body.participant_id), "Participant")
+        if body.field_id:
+            if not one(c, "SELECT 1 FROM ecrf_field WHERE id=:f AND study_id=:s", f=body.field_id, s=p["study_id"]):
+                raise HTTPException(422, f"Field {body.field_id!r} does not belong to participant {body.participant_id}'s study")
+        if body.rule_id:
+            valid_rules = {r.id for r in Q.RULES}
+            if body.rule_id not in valid_rules:
+                raise HTTPException(422, f"Unknown ruleId {body.rule_id!r}")
+        q = one(c, """INSERT INTO data_query (participant_id, site_id, field_id, severity, text, opened_by, rule_id)
+          VALUES (:p,:s,:f,:sev,:t,:u,:r) RETURNING *""", p=body.participant_id, s=p["site_id"], f=body.field_id,
+                sev=body.severity, t=body.text, u=user["username"], r=body.rule_id)
+        A.record(c, user, "query.opened", "data_query", q["id"], participant_id=body.participant_id,
+                 after={"text": body.text, "field": body.field_id, "ruleId": body.rule_id})
     return q
+
+
+@r.post("/queries/{qid}/reply", response_model=S.DataQuery, tags=["queries"], include_in_schema=False)
+@r.post("/queries/{qid}/answer", response_model=S.DataQuery, tags=["queries"])
+def answer_query(qid: int, body: S.QueryAnswerIn, user=Depends(require("nurse", "pi"))):
+    """Nurse (or PI) answers an open query (`open -> answered`)."""
+    ans = (body.answer or body.text or "").strip()
+    if not ans:
+        raise HTTPException(422, "answer is required")
+    with engine.begin() as c:
+        q = must(one(c, "SELECT * FROM data_query WHERE id=:i FOR UPDATE", i=qid), "Query")
+        if q["status"] == "closed":
+            raise HTTPException(409, "Query is already closed")
+        q_new = one(c, """UPDATE data_query SET status='answered', answer=:a, answered_by=:u, answered_at=now()
+                          WHERE id=:i RETURNING *""", i=qid, a=ans, u=user["username"])
+        A.record(c, user, "query.answered", "data_query", qid, participant_id=q["participant_id"],
+                 before={"status": q["status"], "answer": q.get("answer")},
+                 after={"status": "answered", "answer": ans})
+    return q_new
 
 
 @r.post("/queries/{qid}/close", response_model=S.DataQuery, tags=["queries"])
@@ -299,9 +660,146 @@ def close_query(qid: int, user=Depends(require("nurse", "pi", "monitor"))):
         q = must(one(c, "SELECT * FROM data_query WHERE id=:i FOR UPDATE", i=qid), "Query")
         if q["status"] == "closed":
             raise HTTPException(409, "Query is already closed")
+        if user["role"] != "monitor" and user["username"] != q["opened_by"]:
+            raise HTTPException(403, "Only the monitor or the person who raised the query may close it")
+        if q.get("answered_by") == user["username"]:
+            raise HTTPException(403, "The person who answered a query cannot close it")
+        prev_status = q["status"]
         q = one(c, "UPDATE data_query SET status='closed', closed_by=:u, closed_at=now() WHERE id=:i RETURNING *", i=qid, u=user["username"])
-        A.record(c, user, "query.closed", "data_query", qid, participant_id=q["participant_id"], before={"status": "open"}, after={"status": "closed"})
+        A.record(c, user, "query.closed", "data_query", qid, participant_id=q["participant_id"],
+                 before={"status": prev_status}, after={"status": "closed"})
     return q
+
+
+# ---------- form versions (protocol-to-form) ----------
+@r.get("/studies/{study_id}/form-versions", response_model=list[S.FormVersion], tags=["forms"], include_in_schema=False)
+@r.get("/studies/{study_id}/forms", response_model=list[S.FormVersion], tags=["forms"])
+def list_form_versions(study_id: str, status: str | None = None, user=ANY):
+    with engine.connect() as c:
+        must(one(c, "SELECT 1 FROM study WHERE id=:i", i=study_id), "Study")
+        return rows(c, """SELECT * FROM ecrf_form_version
+                          WHERE study_id=:s AND (:st IS NULL OR status=:st)
+                          ORDER BY version DESC, id DESC""", s=study_id, st=status)
+
+
+@r.get("/studies/{study_id}/forms/current", response_model=S.FormVersion, tags=["forms"])
+def current_form_version(study_id: str, user=ANY):
+    with engine.connect() as c:
+        must(one(c, "SELECT 1 FROM study WHERE id=:i", i=study_id), "Study")
+        return must(one(c, """SELECT * FROM ecrf_form_version WHERE study_id=:s AND status='approved'
+                              ORDER BY version DESC, id DESC LIMIT 1""", s=study_id), "Approved form version")
+
+
+@r.post("/studies/{study_id}/form-versions", response_model=S.FormVersion, status_code=201, tags=["forms"], include_in_schema=False)
+@r.post("/studies/{study_id}/forms/propose", response_model=S.FormVersion, status_code=201, tags=["forms"])
+def propose_form_version(study_id: str, body: S.FormVersionIn | None = Body(default=None),
+                         user=Depends(require("nurse", "pi", "service"))):
+    """Create a proposed eCRF form version (from AI protocol-to-form extraction or coordinator draft)."""
+    body = body or S.FormVersionIn()
+    with engine.begin() as c:
+        must(one(c, "SELECT 1 FROM study WHERE id=:i", i=study_id), "Study")
+        nxt = one(c, "SELECT coalesce(max(version), 0) + 1 v FROM ecrf_form_version WHERE study_id=:s AND form_id=:f",
+                  s=study_id, f=body.form_id)["v"]
+        fields_payload = [f.model_dump(by_alias=True) for f in body.fields]
+        criteria_payload = [cr.model_dump(by_alias=True) for cr in body.criteria]
+        if body.protocol_text is not None and not body.protocol_text.strip():
+            raise HTTPException(422, "protocolText cannot be blank")
+        proto = body.protocol_text or W.default_synopsis()
+        prov = body.provider or "rules"
+        mod = body.model or "protocol-rules-v4"
+        pv = body.prompt_version or "form_v1"
+        if not fields_payload and not criteria_payload:
+            try:
+                from .ai import protocol as ai_protocol
+                ai_prop = ai_protocol.propose_from_synopsis(
+                    proto, provider=body.provider or "rules", allow_fallback=True,
+                    study_id=study_id, form_id=body.form_id, proposed_version=f"1.{nxt - 1}"
+                )
+                fields_payload = [f.as_api() for f in ai_prop.fields]
+                criteria_payload = [cr.as_api() for cr in ai_prop.criteria]
+                prov, mod, pv = ai_prop.metadata.provider, ai_prop.metadata.model, ai_prop.metadata.prompt_version
+            except Exception:
+                pass
+        if not fields_payload:
+            cur = one(c, "SELECT fields FROM ecrf_form_version WHERE study_id=:s AND status='approved' ORDER BY version DESC LIMIT 1", s=study_id)
+            fields_payload = list(cur["fields"]) if cur else []
+        if not criteria_payload:
+            criteria_payload = W.default_criteria()
+        fv = one(c, """INSERT INTO ecrf_form_version
+            (study_id, form_id, version, status, fields, criteria, protocol_text, proposed_by, provider, model, prompt_version, note)
+            VALUES (:s,:f,:v,'proposed',CAST(:fs AS jsonb),CAST(:cs AS jsonb),:pt,:u,:prov,:m,:pv,:n)
+            RETURNING *""",
+                 s=study_id, f=body.form_id, v=nxt, fs=json.dumps(fields_payload), cs=json.dumps(criteria_payload),
+                 pt=proto, u=user["username"], prov=prov, m=mod,
+                 pv=pv, n=body.note)
+        A.record(c, user, "form.version_proposed", "ecrf_form_version", fv["id"],
+                 after={"studyId": study_id, "formId": body.form_id, "version": nxt,
+                        "fieldCount": len(fields_payload), "criteriaCount": len(criteria_payload)},
+                 source="ai" if user["role"] == "service" else "human",
+                 model=fv["model"], prompt_version=fv["prompt_version"])
+    return fv
+
+
+@r.post("/studies/{study_id}/form-versions/{version}/approve", response_model=S.FormVersion, tags=["forms"], include_in_schema=False)
+@r.post("/studies/{study_id}/forms/{version}/approve", response_model=S.FormVersion, tags=["forms"])
+def approve_form_version(study_id: str, version: int, body: S.FormApproveIn | None = Body(default=None),
+                         user=Depends(require("pi"))):
+    """Only the PI may approve a proposed eCRF version. Existing `ecrf_value` rows keep the version they were captured under."""
+    body = body or S.FormApproveIn()
+    with engine.begin() as c:
+        must(one(c, "SELECT 1 FROM study WHERE id=:i", i=study_id), "Study")
+        fv = must(one(c, """SELECT * FROM ecrf_form_version
+                            WHERE study_id=:s AND (version=:v OR id=:v)
+                            ORDER BY version DESC LIMIT 1 FOR UPDATE""", s=study_id, v=version), "Form version")
+        ver_num = fv["version"]
+        fv = one(c, """UPDATE ecrf_form_version SET status='approved', approved_by=:u, approved_at=now(),
+                       note=coalesce(:n, note) WHERE id=:i RETURNING *""",
+                 u=user["username"], n=body.note, i=fv["id"])
+        # Apply newly approved fields to ecrf_field with form_version=ver_num (values already captured keep their own form_version)
+        max_ord = one(c, "SELECT coalesce(max(ord), -1) m FROM ecrf_field WHERE study_id=:s", s=study_id)["m"]
+        for idx, f in enumerate(fv["fields"] or []):
+            fid = f.get("id")
+            if not fid:
+                continue
+            existing = one(c, "SELECT ord FROM ecrf_field WHERE id=:id AND study_id=:s", id=fid, s=study_id)
+            ord_num = existing["ord"] if existing else (max_ord + 1 + idx)
+            c.execute(text("""INSERT INTO ecrf_field
+                (id, study_id, form_id, ord, label, section, value_type, required, unit, terminology, help, cdisc, min_val, max_val, allowed_values, form_version)
+                VALUES (:id,:s,:fm,:ord,:l,:sec,:vt,:req,:u,CAST(:term AS jsonb),:h,CAST(:cd AS jsonb),:mi,:ma,CAST(:av AS jsonb),:fv)
+                ON CONFLICT (id) DO UPDATE SET
+                  label=:l, section=coalesce(:sec, ecrf_field.section), value_type=coalesce(:vt, ecrf_field.value_type),
+                  required=:req, unit=coalesce(:u, ecrf_field.unit),
+                  terminology=coalesce(CAST(:term AS jsonb), ecrf_field.terminology),
+                  help=coalesce(:h, ecrf_field.help), min_val=coalesce(:mi, ecrf_field.min_val),
+                  max_val=coalesce(:ma, ecrf_field.max_val),
+                  allowed_values=coalesce(CAST(:av AS jsonb), ecrf_field.allowed_values),
+                  form_version=:fv"""),
+                      dict(id=fid, s=study_id, fm=fv["form_id"], ord=ord_num,
+                           l=f.get("label") or fid, sec=f.get("section") or "clinical_status",
+                           vt=f.get("valueType") or f.get("value_type") or "string",
+                           req=bool(f.get("required", True)), u=f.get("unit"),
+                           term=json.dumps(f["terminology"]) if f.get("terminology") else None,
+                           h=f.get("help") or f.get("sourceSentence") or f.get("source_sentence"),
+                           cd=json.dumps(f["cdisc"]) if f.get("cdisc") else None,
+                           mi=f.get("min"), ma=f.get("max"),
+                           av=json.dumps(f.get("allowedValues") or f.get("allowed_values")) if (f.get("allowedValues") or f.get("allowed_values")) else None,
+                           fv=ver_num))
+        # Apply criteria from the approved version
+        for idx, cr in enumerate(fv["criteria"] or []):
+            cid = cr.get("id")
+            if not cid:
+                continue
+            c.execute(text("""INSERT INTO screening_criterion (study_id, id, ord, type, text, data_needed, version)
+                VALUES (:s,:id,:ord,:t,:txt,:dn,:v)
+                ON CONFLICT (study_id, id) DO UPDATE SET
+                  type=:t, text=:txt, data_needed=coalesce(:dn, screening_criterion.data_needed), version=:v"""),
+                      dict(s=study_id, id=cid, ord=idx, t=cr.get("type") or "inclusion",
+                           txt=cr.get("text") or cid, dn=cr.get("dataNeeded") or cr.get("data_needed"), v=ver_num))
+        A.record(c, user, "form.version_approved", "ecrf_form_version", fv["id"],
+                 before={"status": "proposed"},
+                 after={"status": "approved", "version": ver_num, "approvedBy": user["username"],
+                        "fields": len(fv["fields"] or []), "criteria": len(fv["criteria"] or [])})
+    return fv
 
 
 # ---------- audit ----------

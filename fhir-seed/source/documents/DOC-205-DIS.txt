@@ -1,0 +1,32 @@
+SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK
+Fictief Universitair Medisch Centrum Noordhaven - Afdeling Neuro-oncologie
+
+PATIENTCODE: GBM-NL-205
+GESLACHT: man
+LEEFTIJD BIJ DIAGNOSE: 44 jaar
+DATUM OPNAME: 2026-11-03
+DATUM POLIKLINIEK: 2026-11-14
+
+POLIKLINISCHE BRIEF
+Patient onderging een rechts frontale craniotomie met gross total resectie.
+Postoperatieve MRI met contrast is beschikbaar en evalueerbaar conform RANO;
+patient is goed hersteld van de operatie (meer dan 2 weken na craniotomie).
+Histologie en moleculaire diagnostiek toonden echter een IDH-mutant glioom
+(IDH1 R132H positief).
+
+VOORGESCHIEDENIS EN MEDICATIE
+Geen eerdere radiotherapie op de hersenen.
+Geen eerdere systemische anti-glioomtherapie.
+
+FUNCTIONELE STATUS
+Karnofsky Performance Status: 90%.
+
+LABORATORIUM (2026-11-14)
+Beenmergfunctie adequaat: ANC 4.5 x10^9/L, trombocyten 260 x10^9/L, hemoglobine 14.4 g/dL.
+Leverfunctie adequaat: ALT 18 U/L (<=3 xULN), totaal bilirubine 0.5 mg/dL (<=1.5 xULN).
+Nierfunctie adequaat: serumcreatinine 0.88 mg/dL (<=1.5 xULN), eGFR 96 mL/min/1.73 m2.
+Zwangerschapstest: niet van toepassing (mannelijke deelnemer).
+
+TOESTEMMING EN BELEID
+Schriftelijk informed consent is getekend; patient is in staat het bezoekschema te volgen.
+Screen failure wegens IDH-mutant genotype (exclusiecriterium EXC-03).

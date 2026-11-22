@@ -3,11 +3,11 @@ import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
-/// Demo tooling: with YAMMIC_SHOT=/path.png, render the app to a PNG after YAMMIC_SHOT_DELAY seconds, then exit.
+/// Demo tooling: with YAMICC_SHOT=/path.png, render the app to a PNG after YAMICC_SHOT_DELAY seconds, then exit.
 void maybeShoot(GlobalKey boundary) {
-  final out = Platform.environment['YAMMIC_SHOT'];
+  final out = Platform.environment['YAMICC_SHOT'];
   if (out == null || out.isEmpty) return;
-  final secs = int.tryParse(Platform.environment['YAMMIC_SHOT_DELAY'] ?? '') ?? 6;
+  final secs = int.tryParse(Platform.environment['YAMICC_SHOT_DELAY'] ?? '') ?? 6;
   Future.delayed(Duration(seconds: secs), () async {
     final b = boundary.currentContext?.findRenderObject() as RenderRepaintBoundary?;
     if (b == null) exit(2);
@@ -20,7 +20,7 @@ void maybeShoot(GlobalKey boundary) {
 
 /// Shot mode only: lay the app out at 1440x900 even when the (virtual) display is smaller.
 Widget shotFrame(Widget child) {
-  final out = Platform.environment['YAMMIC_SHOT'];
+  final out = Platform.environment['YAMICC_SHOT'];
   if (out == null || out.isEmpty) return child;
   return LayoutBuilder(builder: (context, _) {
     final mq = MediaQuery.of(context);

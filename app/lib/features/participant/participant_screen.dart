@@ -145,6 +145,13 @@ class _WorkspaceState extends State<_Workspace> {
           trailing: Row(mainAxisSize: MainAxisSize.min, children: [
             Pill('${p['statusDetail'] ?? p['status']}'.replaceAll('_', ' '), tone: statusTone('${p['status']}')),
             const SizedBox(width: 12),
+            OutlinedButton.icon(
+              key: const Key('open-timeline'),
+              onPressed: () => _go(context, '/participants/${p['id']}/timeline'),
+              icon: const Icon(Icons.timeline, size: 16),
+              label: const Text('Timeline'),
+            ),
+            const SizedBox(width: 8),
             FilledButton.icon(
               onPressed: () => _go(context, '/review', p['id']),
               icon: const Icon(Icons.auto_awesome, size: 16),

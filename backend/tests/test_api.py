@@ -165,7 +165,7 @@ def test_audit_filters(client, auth):
     h = auth("nurse")
     client.post("/extractions/EXT-0001/decision", json=ACCEPT, headers=h)
     a = client.get("/audit", params={"source": "ai", "limit": 5}, headers=h).json()
-    assert a["total"] == 46 and len(a["items"]) == 5 and a["items"][0]["seq"] > a["items"][1]["seq"]
+    assert a["total"] == 54 and len(a["items"]) == 5 and a["items"][0]["seq"] > a["items"][1]["seq"]
     assert client.get("/audit", params={"actor": "nurse", "action": "extraction.decision"}, headers=h).json()["total"] == 1
     assert client.get("/audit", params={"since": "2999-01-01T00:00:00Z"}, headers=h).json()["total"] == 0
 
@@ -198,12 +198,14 @@ def test_run_flow_and_sse(client, auth):
 
 
 def test_queries(client, auth):
-    mon = auth("monitor")
+    mon, nurse = auth("monitor"), auth("nurse")
+    base = dash(client, mon)["openQueries"]
     q = client.post("/queries", json={"participantId": "GBM-NL-001", "text": "Confirm KPS", "fieldId": "KPS"}, headers=mon).json()
-    before = dash(client, mon)["openQueries"]
-    assert client.post(f"/queries/{q['id']}/close", headers=auth("nurse")).json()["status"] == "closed"
-    assert client.post(f"/queries/{q['id']}/close", headers=auth("nurse")).status_code == 409
-    assert dash(client, mon)["openQueries"] == before - 1
+    assert client.post(f"/queries/{q['id']}/answer", json={"answer": "KPS 80"}, headers=nurse).status_code == 200
+    assert client.post(f"/queries/{q['id']}/close", headers=nurse).status_code == 403
+    assert client.post(f"/queries/{q['id']}/close", headers=mon).json()["status"] == "closed"
+    assert client.post(f"/queries/{q['id']}/close", headers=mon).status_code == 409
+    assert dash(client, mon)["openQueries"] == base
 
 
 def test_committed_openapi_is_current():
@@ -215,7 +217,7 @@ def test_old_default_jwt_secret_rejected(client):
 
     import jwt
     forged = jwt.encode({"sub": "x", "role": "pi", "name": "x", "exp": int(time.time()) + 600},
-                        "yammic-demo-secret-not-for-production-use-1234", algorithm="HS256")
+                        "yamicc-demo-secret-not-for-production-use-1234", algorithm="HS256")
     assert client.get("/me", headers={"Authorization": f"Bearer {forged}"}).status_code == 401
 
 

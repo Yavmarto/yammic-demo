@@ -1,0 +1,18 @@
+SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK
+Fictief Universitair Medisch Centrum Noordhaven
+Afdeling Pathologie
+Prof. dr. K. Voorbeeld (fictief)
+
+PATIENTCODE: GBM-NL-205
+DATUM ONTVANGST: 2026-11-04
+DATUM VERSLAG: 2026-11-07
+ONDERZOEK: Resectiepreparaat, rechts frontaal
+
+MICROSCOPIE
+Diffuus hooggradig astrocytair glioom met necrose.
+Immunohistochemie: GFAP positief. IDH1 R132H positief (IDH-mutant). ATRX verlies.
+MGMT-promotermethylering: methylatie aangetoond (MS-PCR).
+
+CONCLUSIE
+1. Astrocytoma, IDH-mutant, WHO CNS5 graad 4.
+2. MGMT-promoter is gemethyleerd.

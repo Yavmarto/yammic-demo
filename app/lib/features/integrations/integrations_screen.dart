@@ -15,7 +15,8 @@ class _Data {
 Future<_Data> _load(Session s) => s.run((a) async {
       final list = await a.get('/integrations') as List;
       final runs = await a.get('/integrations/fhir/runs', query: {'limit': '10'}) as List;
-      return _Data(list.cast<Map>().where((x) => x['id'] == 'fhir').firstOrNull, runs);
+      final maps = list.cast<Map>();
+      return _Data(maps.where((x) => x['id'] == 'hospital-1' || x['id'] == 'fhir').firstOrNull ?? maps.firstOrNull, runs);
     });
 
 class IntegrationsScreen extends StatelessWidget {

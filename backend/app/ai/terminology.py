@@ -32,7 +32,12 @@ CODED = {"SEX", "HISTOLOGY", "IDHSTAT", "MGMTPROM", "EXTRES"}
 INTEGER = {"AGE", "KPS", "RTFRAC", "TMZPLNC", "AEGRADE"}
 NUMBER = {"RTDOSE"}
 
-SITE_CODES = {"zuidhaven": "SITE-01", "northhaven": "SITE-02", "westpark": "SITE-03"}
+SITE_CODES = {
+    "zuidhaven": "SITE-01",
+    "northhaven": "SITE-02",
+    "noordhaven": "SITE-02",
+    "westpark": "SITE-03",
+}
 
 _UNMETHYLATED = ("unmethylated", "niet gemethyleerd", "niet-gemethyleerd", "not methylated",
                  "non-methylated", "negative for methylation", "geen methylatie")

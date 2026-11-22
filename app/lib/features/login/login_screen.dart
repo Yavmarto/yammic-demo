@@ -73,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
           const Row(children: [
             Icon(Icons.hub_outlined, color: Colors.white, size: 28),
             SizedBox(width: 12),
-            Text('Yammic', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w500, letterSpacing: -.3)),
+            Text('Yamicc', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w500, letterSpacing: -.3)),
           ]),
           const Spacer(),
           const Text('Clinical research,\nconnected.', style: TextStyle(color: Colors.white, fontSize: 40, height: 1.15, fontWeight: FontWeight.w500, letterSpacing: -.5)),

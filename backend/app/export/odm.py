@@ -29,7 +29,7 @@ def build_odm(c, study_id: str) -> bytes | None:
         return None
     fields = q("SELECT * FROM ecrf_field WHERE study_id=:s ORDER BY ord", s=study_id)
     sites = q("SELECT * FROM site WHERE study_id=:s ORDER BY id", s=study_id)
-    vals = q("""SELECT v.*, p.site_id, e.provider, e.model, e.prompt_version, e.confidence, e.value AS proposed,
+    vals = q("""SELECT v.*, p.site_id, e.provider, e.model, e.prompt_version, e.confidence, e.value AS proposed, e.document_id, e.evidence,
           (SELECT d.reason FROM review_decision d WHERE d.extraction_id=v.source_extraction_id ORDER BY d.id DESC LIMIT 1) AS reason,
           (SELECT d.decision FROM review_decision d WHERE d.extraction_id=v.source_extraction_id ORDER BY d.id DESC LIMIT 1) AS decision
         FROM ecrf_value v JOIN participant p ON p.id=v.participant_id
@@ -38,8 +38,8 @@ def build_odm(c, study_id: str) -> bytes | None:
     now = datetime.now(UTC)
     root = ET.Element(f"{{{NS}}}ODM", {
         "FileType": "Snapshot", "FileOID": f"ODM.{study_id}.{now:%Y%m%d%H%M%S}", "CreationDateTime": _iso(now),
-        "ODMVersion": "1.3.2", "Granularity": "All", "Originator": "Yammic demo platform (synthetic data)",
-        "SourceSystem": "Yammic demo backend", "SourceSystemVersion": "0.1.0",
+        "ODMVersion": "1.3.2", "Granularity": "All", "Originator": "Yamicc demo platform (synthetic data)",
+        "SourceSystem": "Yamicc demo backend", "SourceSystemVersion": "0.1.0",
         "Description": f"Verified eCRF data for {st['short_name']}. Synthetic data, not for clinical use."})
     # --- metadata ---
     s = _e(root, "Study", OID=study_id)
@@ -108,7 +108,9 @@ def build_odm(c, study_id: str) -> bytes | None:
                 origin = f"{v['provider']}/{v['model']} prompt {v['prompt_version']}, confidence {v['confidence']:.2f}"
                 an = _e(idt, "Annotation", SeqNum=1)
                 _e(an, "Comment", SponsorOrSite="Sponsor").text = (
-                    f"Proposed by AI ({origin}); human decision: {v['decision'] or 'accept'} by {v['verified_by']}.")
+                    (f"Human entry by {v['verified_by']}; document {v['document_id']}; evidence: "
+                     f"{v['evidence'][0]['text']}" if v["provider"] == "human" else
+                     f"Proposed by AI ({origin}); human decision: {v['decision'] or 'accept'} by {v['verified_by']}.") )
             if v["sdv_at"]:
                 ar2 = _e(idt, "Annotation", SeqNum=2)
                 _e(ar2, "Comment", SponsorOrSite="Sponsor").text = (

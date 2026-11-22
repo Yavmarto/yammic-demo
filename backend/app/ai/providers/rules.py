@@ -52,6 +52,7 @@ def rule_subjid(text: str):
 SITES = {
     "fictief universitair medisch centrum zuidhaven": "SITE-01",
     "fictional university medical center northhaven": "SITE-02",
+    "fictief universitair medisch centrum noordhaven": "SITE-02",
     "fictief streekziekenhuis westpark": "SITE-03",
 }
 
