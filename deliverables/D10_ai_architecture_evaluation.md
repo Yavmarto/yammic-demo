@@ -111,7 +111,7 @@ Pass criteria for the demo. Status shows whether the check is already measured o
 
 ## 8. Open items for QA
 
-1. **Two confidence values for the same hedged case.** The live engine (code cap and committed eval, `latest-rules.md`, `latest-ollama.md`, `w4_report.md`) gives **0.45**. The seeded demo record EXT-0022 in `app/assets/data/extractions.json` gives **0.38**, and `backend/eval/gold.py` copies that 0.38 into the eval output as gold metadata. `deliverables/demo_script.md:289` quotes 0.38. Decision needed: either regenerate the seeded record (`app/tool/generate_demo_data.py`, Engineering-owned) to 0.45, or keep 0.38 and say in the script that it is the seeded value. This plan does not change either file.
+1. **Hedged-case confidence, resolved.** The live engine, the seeded demo record EXT-0022 (`app/assets/data/extractions.json`) and `deliverables/demo_script.md:289` all give **0.45** (CEL-1823, commit `22db9a8`). The committed eval output `backend/eval/results/latest*.json` still holds 0.38 until the next eval run regenerates it. It is not hand-edited.
 2. **Pending checks.** AC-6 (API run), AC-7, AC-10, the `rules` failure row in §5, and the repeat runs for AC-8 and AC-9 have not been executed.
 3. **Timing figures in the demo script are not measured.** `demo_script.md:226` says "35–66 s per document", and `demo_script.md:534` says "mean ≈45 s". The committed eval gives 12.2–45.1 s and a mean of 38 s. The 323 s queue time is script-reported only.
 4. **Script claim not re-measured.** The script says the live GBM-NL-009 pathology run produces "nine abstentions". The committed eval shows 9 abstentions on DOC-005-PATH, the same pattern. This plan has not re-run GBM-NL-009.
