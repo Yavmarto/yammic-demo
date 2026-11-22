@@ -43,10 +43,7 @@ class LocalReceiver:
             raise TemporaryReceiverError("Simulated lost acknowledgement after receiver commit")
 
 
-def deliver(participant_id, field_id, user, receiver, *, fail_after_commit=False):
-    # Same export roles as the existing FHIR push, not a new authorization policy.
-    if user.get("role") not in ("pi", "monitor"):
-        raise PermissionError("Write-back requires pi or monitor")
+def prepare(participant_id, field_id, receiver):
     destination = receiver.fields.get(field_id)
     if destination is None:
         raise ValueError("No receiver mapping for field")
@@ -67,6 +64,21 @@ def deliver(participant_id, field_id, user, receiver, *, fail_after_commit=False
                "review_state": row["review_state"]}
     identity = json.dumps([participant_id, field_id, row["extraction_id"], row["verified_at"].isoformat()], separators=(",", ":"))
     delivery_id = hashlib.sha256(identity.encode()).hexdigest()
+    return delivery_id, payload
+
+
+def deliver(participant_id, field_id, user, receiver, *, fail_after_commit=False, expected_id=None):
+    # Demo export roles only; FR-063 remains open.
+    if user.get("role") not in ("pi", "monitor"):
+        raise PermissionError("Write-back requires pi or monitor")
+    prepared = prepare(participant_id, field_id, receiver)
+    if prepared is None:
+        return None
+    delivery_id, payload = prepared
+    if expected_id is not None and delivery_id != expected_id:
+        raise ValueError("Reviewed value changed; review it again")
+    destination = payload["destination_field"]
+    row = {"document_id": payload["source_id"]}
     try:
         receiver.receive(delivery_id, payload, fail_after_commit=fail_after_commit)
     except TemporaryReceiverError:

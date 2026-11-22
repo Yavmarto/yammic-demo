@@ -15,3 +15,23 @@ uv run python -m app.export_openapi    # refresh openapi.json (a test fails if i
 Swagger UI: http://localhost:8000/docs. Contract: `openapi.json`. Design: `../deliverables/backend_architecture.md`.
 Demo users (password `demo`): `nurse`, `monitor`, `pi`; `ai` is the service role for the AI service.
 Env: `DATABASE_URL` (default `postgresql+psycopg://yamicc:yamicc@localhost:5433/yamicc`), `JWT_SECRET`.
+
+### Local synthetic write-back
+
+The receiver is disabled unless `YAMICC_SYNTHETIC_WRITEBACK=1` and
+`YAMICC_SYNTHETIC_RECEIVER_PATH` names a local SQLite file. Enable both only
+for a separate synthetic backend with a dedicated synthetic database, bound to
+loopback and a spare port. For example, after configuring the usual database and
+secrets for that isolated runtime:
+
+```sh
+YAMICC_SYNTHETIC_WRITEBACK=1 \
+YAMICC_SYNTHETIC_RECEIVER_PATH="$PWD/synthetic-receiver.sqlite" \
+uv run uvicorn app.main:app --host 127.0.0.1 --port 8013
+```
+
+The Flutter export page reviews and sends the corrected or accepted KPS for
+fictional participant GBM-NL-001. PI and monitor are the existing demo export
+roles; this restriction does not decide FR-063. A retry uses the reviewed
+identity, and the receiver retains one record. ODM remains available. This is
+local synthetic feasibility only; it is not an EDC integration.
