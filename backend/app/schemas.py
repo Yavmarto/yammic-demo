@@ -209,6 +209,13 @@ class Extraction(M):
     review_state: ReviewState
     seeded_issue: Any | None
     last_decision: LastDecision | None
+    assigned_to: str | None = None
+    due_date: date | None = None
+
+
+class AssignmentIn(M):
+    assigned_to: str
+    due_date: date
 
 
 class DecisionIn(M):

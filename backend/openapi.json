@@ -19,6 +19,25 @@
         "title": "Alert",
         "type": "object"
       },
+      "AssignmentIn": {
+        "properties": {
+          "assignedTo": {
+            "title": "Assignedto",
+            "type": "string"
+          },
+          "dueDate": {
+            "format": "date",
+            "title": "Duedate",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assignedTo",
+          "dueDate"
+        ],
+        "title": "AssignmentIn",
+        "type": "object"
+      },
       "AuditEvent": {
         "properties": {
           "action": {
@@ -1118,6 +1137,17 @@
             ],
             "title": "Abstentionreason"
           },
+          "assignedTo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignedto"
+          },
           "confidence": {
             "title": "Confidence",
             "type": "number"
@@ -1129,6 +1159,18 @@
           "documentType": {
             "title": "Documenttype",
             "type": "string"
+          },
+          "dueDate": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duedate"
           },
           "evidence": {
             "items": {
@@ -4986,6 +5028,58 @@
         ]
       }
     },
+    "/extractions/{eid}/assignment": {
+      "post": {
+        "operationId": "assign_review_extractions__eid__assignment_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "schema": {
+              "title": "Eid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignmentIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Extraction"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Assign Review",
+        "tags": [
+          "extractions"
+        ]
+      }
+    },
     "/extractions/{eid}/decision": {
       "post": {
         "operationId": "decide_extractions__eid__decision_post",
@@ -6789,6 +6883,41 @@
         "summary": "Close Query",
         "tags": [
           "queries"
+        ]
+      }
+    },
+    "/reviewers": {
+      "get": {
+        "operationId": "reviewers_reviewers_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  },
+                  "title": "Response Reviewers Reviewers Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reviewers",
+        "tags": [
+          "extractions"
         ]
       }
     },
