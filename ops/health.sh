@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Health check for the local Yamicc v5 demo stack (parallel with the frozen v3 stack).
+# Health check for the local Yamicc dev demo stack (parallel with the frozen v3 stack).
 #
 #   ops/health.sh            infrastructure must be up; app checks are reported as SKIP when down
 #   ops/health.sh --strict   every component must be up, including the AI worker and both hospitals
 #
-# Ports come from the environment and default to the v5 values:
-#   Postgres 5435, hospital 1 8093, hospital 2 8094, backend 8002, web 8082.
+# Ports come from the environment and default to the dev values:
+#   Postgres 5436, hospital 1 8095, hospital 2 8096, backend 8003, web 8083.
 # Exit codes: 0 all required checks pass, 1 otherwise.
 set -uo pipefail
 
@@ -18,11 +18,11 @@ case "${1:-}" in
 esac
 [ "${STRICT:-0}" = "1" ] && STRICT=1
 
-PG_PORT="${PG_PORT:-5435}"
-FHIR_PORT="${FHIR_PORT:-8093}"
-FHIR2_PORT="${FHIR2_PORT:-8094}"
-BACKEND_PORT="${BACKEND_PORT:-8002}"
-WEB_PORT="${WEB_PORT:-8082}"
+PG_PORT="${PG_PORT:-5436}"
+FHIR_PORT="${FHIR_PORT:-8095}"
+FHIR2_PORT="${FHIR2_PORT:-8096}"
+BACKEND_PORT="${BACKEND_PORT:-8003}"
+WEB_PORT="${WEB_PORT:-8083}"
 FHIR_BASE="http://127.0.0.1:${FHIR_PORT}"
 FHIR2_BASE="http://127.0.0.1:${FHIR2_PORT}"
 BACKEND_BASE="http://127.0.0.1:${BACKEND_PORT}"
@@ -56,7 +56,7 @@ fhir_metadata() { # $1 = base URL, $2 = label, $3 = compose service name
   fi
 }
 
-say "Yamicc v5 demo health — $(date '+%Y-%m-%d %H:%M:%S %Z')"
+say "Yamicc dev demo health — $(date '+%Y-%m-%d %H:%M:%S %Z')"
 say ""
 
 # ---------- Docker daemon ----------
@@ -133,7 +133,7 @@ if [ "$FAIL" -eq 0 ]; then
       say "Result: FAIL — strict mode but ${SKIP} component(s) not running."
       exit 1
     fi
-    say "Result: OK — full v5 demo stack is healthy (both hospitals)."
+    say "Result: OK — full dev demo stack is healthy (both hospitals)."
   else
     say "Result: OK — infrastructure healthy$([ "$SKIP" -ne 0 ] && echo " (${SKIP} app component(s) not started; use 'make demo')")."
   fi

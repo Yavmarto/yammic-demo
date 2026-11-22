@@ -12,7 +12,7 @@ import urllib.error
 import urllib.request
 from typing import Any
 
-DEFAULT_BASE = os.environ.get("YAMICC_API_URL", "http://127.0.0.1:8002").rstrip("/")
+DEFAULT_BASE = os.environ.get("YAMICC_API_URL", "http://127.0.0.1:8003").rstrip("/")
 
 
 class ApiError(RuntimeError):

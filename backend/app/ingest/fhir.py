@@ -5,7 +5,7 @@ import urllib.parse
 import urllib.request
 from urllib.error import URLError
 
-BASE = os.environ.get("FHIR_BASE_URL", "http://127.0.0.1:8093/fhir").rstrip("/")
+BASE = os.environ.get("FHIR_BASE_URL", "http://127.0.0.1:8095/fhir").rstrip("/")
 # Sync order matters: Patient first so participants exist before their facts.
 TYPES = ("Patient", "Condition", "Observation", "Procedure", "MedicationRequest",
          "MedicationStatement", "MedicationAdministration", "Medication",

@@ -24,17 +24,17 @@ ifeq ($(strip $(FLUTTER)),)
 FLUTTER := $(HOME)/flutter/bin/flutter
 endif
 
-# Separate ports keep this worktree independent of the v3 and v4 checkpoints.
-PG_PORT ?= 5435
-FHIR_PORT ?= 8093
-FHIR2_PORT ?= 8094
-BACKEND_PORT ?= 8002
-WEB_PORT ?= 8082
+# Separate ports keep this worktree independent of the presentation checkpoints.
+PG_PORT ?= 5436
+FHIR_PORT ?= 8095
+FHIR2_PORT ?= 8096
+BACKEND_PORT ?= 8003
+WEB_PORT ?= 8083
 STRICT ?= 0
 AI_PROVIDER ?= auto
 # Start the worker through the service entry point, not `-m app.ai`. The frozen
 # v3 ops/ai-workers.sh matches every `python -m app.ai` process; this form keeps
-# v5's worker invisible to it, so v3's make demo/stop do not touch v5 and vice versa.
+# dev's worker invisible to it, so v3's make demo/stop do not touch dev and vice versa.
 AI_RUN := python -c 'import sys; from app.ai.service import main; sys.exit(main(sys.argv[1:]))'
 
 # FHIR seed sets, one per hospital. Task C added `--hospital N` and the
@@ -58,7 +58,7 @@ WEB_LOCAL := http://127.0.0.1:$(WEB_PORT)
 FHIR_BASE := $(FHIR_LOCAL)/fhir
 
 # Backend settings for the two hospital endpoints. FHIR_BASE_URL is the
-# backward-compatible single source (hospital 1). FHIR_SOURCES is the v5 list
+# backward-compatible single source (hospital 1). FHIR_SOURCES is the dev list
 # the backend reads: JSON array of {id, name, url}. Task D consumes it.
 export FHIR_BASE_URL ?= $(FHIR_BASE)
 export FHIR_SOURCES ?= [{"id":"hospital-1","name":"Hospital 1","url":"$(FHIR_LOCAL)/fhir"},{"id":"hospital-2","name":"Hospital 2","url":"$(FHIR2_LOCAL)/fhir"}]
@@ -73,7 +73,7 @@ BUILD_DIR := app/build/web
         _seed-fhir-h1 _seed-fhir-h2 _seed-fhir-arrivals
 
 help:
-	@echo "Yamicc v5 demo platform (local only) — v4 checkpoint stays on web :8081"
+	@echo "Yamicc dev demo platform (local only) — v5 presenter stays on web :8082"
 	@echo ""
 	@echo "  make up        start Postgres 16 (:$(PG_PORT)) and HAPI FHIR R4 (:$(FHIR_PORT) + :$(FHIR2_PORT)); wait for healthy"
 	@echo "  make down      stop containers, keep the data volume"
@@ -101,7 +101,7 @@ up:
 
 down:
 	@$(COMPOSE) down --remove-orphans
-	@echo "== down: containers removed; data volume yamicc-v5-postgres-data kept (checkpoint volumes untouched)"
+	@echo "== down: containers removed; data volume yamicc-dev-postgres-data kept (checkpoint volumes untouched)"
 
 seed:
 	@mkdir -p $(LOG_DIR)
@@ -301,7 +301,7 @@ stop:
 	@pkill -f "uvicorn app.main:app.*--port $(BACKEND_PORT)" 2>/dev/null || true
 	@pkill -f "http.server $(WEB_PORT)" 2>/dev/null || true
 	@$(COMPOSE) down --remove-orphans
-	@echo "== stop: this stack's app processes and containers stopped; v5 data volume kept (checkpoints untouched)"
+	@echo "== stop: this stack's app processes and containers stopped; dev data volume kept (checkpoints untouched)"
 
 # ---------------------------------------------------------------- checks / misc
 health:

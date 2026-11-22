@@ -26,7 +26,7 @@ abstract class Api {
   Future<dynamic> post(String path, [Object? body]);
 }
 
-const defaultBaseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://127.0.0.1:8002');
+const defaultBaseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://127.0.0.1:8003');
 
 class HttpApi implements Api {
   final String baseUrl;

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Print the PIDs of running AI extraction workers that talk to THIS stack's
-# backend. Two things keep v5 and the frozen v3 stack apart:
+# backend. Two things keep dev and the frozen v3 stack apart:
 #   - the API URL filter: v3's worker has no --api flag (it defaults to :8000),
-#     v5's worker is started with `--api http://127.0.0.1:8002`;
-#   - `make` starts v5's worker through the service entry point
+#     dev's worker is started with `--api http://127.0.0.1:8003`;
+#   - `make` starts dev's worker through the service entry point
 #     (`python -c 'from app.ai.service import main'`), not `-m app.ai`, so v3's
 #     older ai-workers.sh (which matches `-m app.ai`) does not see it either.
 #
@@ -11,11 +11,11 @@
 # races on the same run and double-posts proposals. `make demo` uses this list to
 # detect a worker that a human already started by hand.
 #
-# Override the filter with AI_API_URL (default: YAMICC_API_URL, else v5 :8002).
+# Override the filter with AI_API_URL (default: YAMICC_API_URL, else dev :8003).
 # Prints nothing when no matching worker runs. Exit code is 0 either way.
 set -uo pipefail
 
-api="${AI_API_URL:-${YAMICC_API_URL:-http://127.0.0.1:8002}}"
+api="${AI_API_URL:-${YAMICC_API_URL:-http://127.0.0.1:8003}}"
 
 # -ww: do not truncate the command line to the terminal width (the URL is at the end).
 ps -ww -Ao pid=,command= | awk -v api="$api" '
