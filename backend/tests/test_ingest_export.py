@@ -7,6 +7,7 @@ import json
 import re
 import socket
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import pytest
 from lxml import etree
@@ -31,14 +32,16 @@ def _resources(set_name):
 
 
 def _live():
+    target = urlsplit(fhir.BASE)
+    port = target.port or (443 if target.scheme == "https" else 80)
     try:
-        socket.create_connection(("localhost", 8090), timeout=1).close()
+        socket.create_connection((target.hostname, port), timeout=1).close()
         return True
     except OSError:
         return False
 
 
-live = pytest.mark.skipif(not _live(), reason="HAPI FHIR not running on :8090 (make up)")
+live = pytest.mark.skipif(not _live(), reason=f"HAPI FHIR not reachable at {fhir.BASE}")
 
 
 @pytest.fixture
