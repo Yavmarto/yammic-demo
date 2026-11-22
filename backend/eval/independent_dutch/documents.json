@@ -1,0 +1,11 @@
+{
+  "synthetic": true,
+  "notice": "Fictional benchmark text. No patient data. Independently authored for CEL-1842.",
+  "documents": [
+    {"id":"NLX-01-PATH","type":"pathology_report","language":"nl","text":"FICTIEF UMC ZUIDHAVEN — Pathologieverslag\nPATIËNTCODE: GBM-NL-901\nDatum ontvangst: 2026-03-14\nConclusie: Glioblastoom, IDH-wildtype.\nIDH1 R132H immunohistochemie: negatief.\nMGMT-promotor: methylatie aangetoond.\n"},
+    {"id":"NLX-02-PATH","type":"pathology_report","language":"nl","text":"FICTIEF STREEKZIEKENHUIS WESTPARK — Revisie\nPATIËNTCODE: GBM-NL-902\nConclusie: Glioblastoom, IDH-mutant.\nIDH1 R132H immunohistochemie: negatief.\nAanvullende moleculaire uitslag: IDH1 R132H positief.\nMGMT-promotor: niet gemethyleerd.\n"},
+    {"id":"NLX-03-MRI","type":"radiology_report","language":"nl","text":"FICTIEF UMC NOORDHAVEN — MRI hersenen\nNa operatie is er vermoedelijk een subtotale resectie.\nRANO-beoordeling: stabiel beeld; geen datum van progressie vastgesteld.\n"},
+    {"id":"NLX-04-DIS","type":"discharge_letter","language":"nl","text":"FICTIEF UMC ZUIDHAVEN — Ontslagbrief neuro-oncologie\nPATIËNTCODE: GBM-NL-904\nGeslacht: vrouw. Leeftijd bij diagnose: 61 jaar.\nKarnofsky Performance Status bij opname: 80%.\nVoorgesteld schema: radiotherapie 60 Gy in 30 fracties met 6 geplande cycli temozolomide.\nBijwerking: misselijkheid, maximaal graad 2.\n"},
+    {"id":"NLX-05-MRI","type":"radiology_report","language":"nl","text":"FICTIEF STREEKZIEKENHUIS WESTPARK — Controle MRI\nPostoperatief beeld na bruto totale resectie.\nRANO: progressie vastgesteld op 2026-05-09.\n"}
+  ]
+}
