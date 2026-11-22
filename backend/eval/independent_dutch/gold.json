@@ -1,0 +1,40 @@
+{
+  "labeling": "Values, status and literal evidence spans were fixed before provider execution. Each span must occur verbatim in its source document. An empty evidenceSpan means the reference is an explicit abstention.",
+  "documents": {
+    "NLX-01-PATH": {
+      "SUBJID":{"status":"proposed","value":"GBM-NL-901","evidenceSpan":"GBM-NL-901"},
+      "SITEID":{"status":"proposed","value":"SITE-01","evidenceSpan":"FICTIEF UMC ZUIDHAVEN"},
+      "MHSTDAT":{"status":"proposed","value":"2026-03-14","evidenceSpan":"2026-03-14"},
+      "HISTOLOGY":{"status":"proposed","value":"glioblastoma_idh_wildtype","evidenceSpan":"Glioblastoom, IDH-wildtype"},
+      "IDHSTAT":{"status":"proposed","value":"wildtype","evidenceSpan":"IDH1 R132H immunohistochemie: negatief."},
+      "MGMTPROM":{"status":"proposed","value":"methylated","evidenceSpan":"MGMT-promotor: methylatie aangetoond"}
+    },
+    "NLX-02-PATH": {
+      "SUBJID":{"status":"proposed","value":"GBM-NL-902","evidenceSpan":"GBM-NL-902"},
+      "SITEID":{"status":"proposed","value":"SITE-03","evidenceSpan":"FICTIEF STREEKZIEKENHUIS WESTPARK"},
+      "HISTOLOGY":{"status":"proposed","value":"glioblastoma_idh_mutant","evidenceSpan":"Glioblastoom, IDH-mutant"},
+      "IDHSTAT":{"status":"abstained","value":null,"evidenceSpan":""},
+      "MGMTPROM":{"status":"proposed","value":"unmethylated","evidenceSpan":"MGMT-promotor: niet gemethyleerd"},
+      "MHSTDAT":{"status":"abstained","value":null,"evidenceSpan":""}
+    },
+    "NLX-03-MRI": {
+      "EXTRES":{"status":"abstained","value":null,"evidenceSpan":""},
+      "PROGDAT":{"status":"abstained","value":null,"evidenceSpan":""}
+    },
+    "NLX-04-DIS": {
+      "SUBJID":{"status":"proposed","value":"GBM-NL-904","evidenceSpan":"GBM-NL-904"},
+      "SITEID":{"status":"proposed","value":"SITE-01","evidenceSpan":"FICTIEF UMC ZUIDHAVEN"},
+      "SEX":{"status":"proposed","value":"F","evidenceSpan":"Geslacht: vrouw"},
+      "AGE":{"status":"proposed","value":61,"evidenceSpan":"Leeftijd bij diagnose: 61 jaar"},
+      "KPS":{"status":"proposed","value":80,"evidenceSpan":"Karnofsky Performance Status bij opname: 80%"},
+      "RTDOSE":{"status":"proposed","value":60,"evidenceSpan":"60 Gy"},
+      "RTFRAC":{"status":"proposed","value":30,"evidenceSpan":"30 fracties"},
+      "TMZPLNC":{"status":"proposed","value":6,"evidenceSpan":"6 geplande cycli"},
+      "AEGRADE":{"status":"proposed","value":2,"evidenceSpan":"maximaal graad 2"}
+    },
+    "NLX-05-MRI": {
+      "EXTRES":{"status":"proposed","value":"gross_total","evidenceSpan":"bruto totale resectie"},
+      "PROGDAT":{"status":"proposed","value":"2026-05-09","evidenceSpan":"progressie vastgesteld op 2026-05-09"}
+    }
+  }
+}
