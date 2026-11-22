@@ -102,7 +102,7 @@ tail -3 ops/logs/ai.log           # expect no ai.poll_error lines
 | 3 | Tab A: **PI** → **Use demo account** | Dashboard; "Connected · N ms"; no offline banner |
 | 4 | Dashboard | **8/24**; **AI queue 46**; **Open queries 7**; **eCRF verified 0 %**; 3 sites; site rows **3/10, 3/8, 2/6** |
 | 5 | Integrations | Hospital 1 connected; **Pseudonymised patients 0**; **Last sync never**; no runs |
-| 6 | Screening | **1 to screen** (GBM-NL-004); 8 referred |
+| 6 | Screening | **1 to screen** (GBM-NL-004, 2 met · 11 unknown, with evidence) |
 | 7 | AI review | **46 pending** (fixtures), no live 009 cards yet |
 | 8 | Tab B: same URL, sign in **Nurse**; Tab C: **Monitor** | Tab B normal; tab C read-only banner; keep both in the background |
 | 9 | Export (PI) | "Generate export" enabled |
@@ -112,11 +112,12 @@ tail -3 ops/logs/ai.log           # expect no ai.poll_error lines
 
 **Why the arrivals are staged before the demo but synced on stage:** the pull is live (about 3 seconds for both feeds), and the new patients are genuinely new to the platform at the moment you press **Sync now**. Staging them in the hospital servers is the realistic scenario: the hospitals have the data, the platform does not yet.
 
-**After the sync, expect (fresh reset, measured 2026-11-21):**
+**After the sync, expect (fresh reset; counts measured 2026-11-21, screening and enrolled counts from the CTO note on CEL-1822, build `5d83708`):**
 - **18 participants** (8 baseline + 3 from hospital 1 + 7 from hospital 2), **3 sites**: SITE-01 4, SITE-02 11, SITE-03 3.
 - **25 new documents** and **25 extraction runs**: hospital 1 adds 3 patients / 7 documents; hospital 2 adds 7 patients / 18 documents.
 - The result line shows the **last** source (hospital 2): **"Sync completed: 142 resources fetched, 18 new documents, 18 extraction runs queued."**
-- **3 to screen** (GBM-NL-004, GBM-NL-011, GBM-NL-207), **0 screen-fail**, **9 open queries**.
+- **Enrolled 8/24** (the seeded baseline only); sites **3/10, 3/8, 2/6**. Synced patients are not enrolled yet.
+- **11 to screen**: GBM-NL-004 (seeded) plus the ten synced patients GBM-NL-009, -010, -011 and -201 to -207. All 11 have AI results. **0 screen-fail**, **9 open queries** (measured before CEL-1822; not re-measured).
 - The AI queue **starts at 46 and grows** as the worker processes the new documents (up to 15 proposals per document). Do not quote a fixed number after the sync; the queue is the work.
 
 **If step 5 shows "Last sync" not "never":** someone synced after the reset. Run `make reset`, then `make stage-arrivals`, then `make demo`, and repeat from step 2. A sync on stage must create the arrivals; otherwise the live beat is dead.
@@ -203,7 +204,7 @@ tail -3 ops/logs/ai.log           # expect no ai.poll_error lines
 
 **Click:** **Sync now** (leave **Full re-sync** unchecked). Wait for the result line (≈3 s). Then point at the run rows.
 
-> "One click pulled both feeds. Hospital one added three patients and seven documents; hospital two added seven patients and eighteen documents, because its five baseline patients were not in the platform yet. Twenty-five new documents, twenty-five extraction runs queued, ten new participants. The run log keeps the two runs, with the source and the counts. The hospital data was pseudonymised at the boundary; the raw hospital numbers and names are not in the platform tables."
+> "One click pulled both feeds. Hospital one added three patients and seven documents; hospital two added seven patients and eighteen documents, because its five baseline patients were not in the platform yet. Twenty-five new documents, twenty-five extraction runs queued, ten new participants. Every synced patient lands in screening, not in the enrolled count; the dashboard still shows eight of twenty-four. The run log keeps the two runs, with the source and the counts. The hospital data was pseudonymised at the boundary; the raw hospital numbers and names are not in the platform tables."
 
 **Audience should notice:**
 - Panel "Hospital 1" · **Connected**; Endpoint `http://127.0.0.1:8091/fhir`; FHIR version **4.0.1**; Server **HAPI FHIR Server 8.12.0**.
@@ -223,7 +224,7 @@ tail -3 ops/logs/ai.log           # expect no ai.poll_error lines
 
 **Screen:** `/screening`.
 
-> "Screening. Three new referrals to screen, zero screen-fails, eighteen patients referred in total. The AI has already checked every referral against the trial's thirteen entry criteria. Each criterion shows met, not met or unknown, with the exact source sentence. A coordinator confirms every criterion before the platform allows a sign-off."
+> "Screening. Eleven patients to screen, zero screen-fails. Every patient that arrived through the sync starts here, and so does one patient who was already in screening. The AI has already checked each of them against the trial's thirteen entry criteria. Each criterion shows met, not met or unknown, with the exact source sentence. A coordinator confirms every criterion before the platform allows a sign-off."
 
 **Click:** select **GBM-NL-207** (SITE-02, **5 met · 8 unknown**). Then click the **INC-01** row.
 
@@ -235,13 +236,13 @@ tail -3 ops/logs/ai.log           # expect no ai.poll_error lines
 
 **Click:** **All** (second row of the filter chips). Scroll the queue to **GBM-NL-201** (SITE-02, **13 met · 0 unknown**). Select it.
 
-> "Switch to All and you see the complete case from hospital two: thirteen met, zero unknown, every criterion with a source sentence. This patient is already on treatment at the hospital, so the platform shows them as enrolled, not in the referral queue. When a patient like this is referred into the trial, the coordinator confirms all thirteen and signs off; the buttons appear as the state changes. We do not force a sign-off on an incomplete or already-treated record on stage."
+> "Switch to All and you see the complete case from hospital two: thirteen met, zero unknown, every criterion with a source sentence. This patient is still in screening, like every synced patient. Nothing is signed off yet. A coordinator can confirm all thirteen, sign off, record consent and enrol; only then does the patient count as enrolled. We do not run that sign-off on stage: the path is tested in the backend, not clicked in the interface."
 
 **Audience should notice:**
-- Header: **"3 to screen · 0 screen-fail · 18 referred. AI proposes, a person decides."**
-- Queue: **GBM-NL-004** (0 met · 13 unknown), **GBM-NL-011** (3 met · 10 unknown), **GBM-NL-207** (5 met · 8 unknown), all **Screening**.
+- Header: **"11 to screen · 0 screen-fail"** and "AI proposes, a person decides."
+- Queue: **GBM-NL-004** (2 met · 11 unknown, with evidence), **GBM-NL-011** (3 met · 10 unknown), **GBM-NL-207** (5 met · 8 unknown), all **Screening**.
 - 207's checklist: 5 **Met · AI** with **Evidence**, 8 **Unknown · AI** with no evidence; **Sign off** disabled; "5 of 13 confirmed by a person".
-- 201's checklist: 13 **Met · AI**, 0 unknown, **"13 met · 0 not met · 0 unknown"**; the patient pill **Enrolled** (on treatment at the hospital).
+- 201's checklist: 13 **Met · AI**, 0 unknown, **"13 met · 0 not met · 0 unknown"**; the patient pill **Screening**. 201 is not in the enrolled count.
 - Evidence boxes quote the Dutch source, the document id and `rules · confidence 0.95+`.
 
 **If you have 30 seconds:** open the **INC-03 MGMT** row on 201 and show the pathology sentence; it is the same value the review corrects on 002 later.
@@ -486,7 +487,7 @@ Stop talking. Leave the last slide up. Invite questions. Use the Q&A prep; if yo
 |---|---|
 | Any clinical accuracy or time-saving figure ("95 % accurate", "saves 70 %") | Only a synthetic gold set exists; no clinical evidence. |
 | "The AI decides eligibility" | The coordinator decides; the AI proposes criterion states with evidence. |
-| "Every patient in the queue is trial-enrolled" | The queue and the dashboard count hospital patients on treatment; trial enrolment is a separate status. |
+| "Every patient in the queue is trial-enrolled", "the synced patients are enrolled" | Synced patients start in screening. They count as enrolled only after sign-off, consent and enrolment. |
 | "Clinically validated", "production-ready", "hospital-ready", "MDR compliant", "GDPR compliant" | No validation, QMS, DPIA or legal sign-off. |
 | "Secure" without the qualifier | The four High findings are fixed, but the Medium findings and a penetration test are open. Say "local demo; the gaps are documented". |
 | "Yamicc cannot do this" / "Yamicc is only a mock-up" | Overclaim. Say what public evidence shows, nothing more. |
@@ -533,8 +534,8 @@ The FHIR facts, visits and source documents already stored for that participant.
 **Q9. How does protocol-to-form work?**
 The AI reads the protocol synopsis and proposes the eCRF fields and entry criteria, with the exact source sentence for each. The PI reviews and approves; approval creates a new audited form version. Existing values keep the `formVersion` they were captured under, so a protocol change never silently rewrites data. Screening uses the approved criteria.
 
-**Q10. Why are some patients not in the screening queue?**
-The screening queue is for new **referrals**. A patient whose hospital record already has a confirmed diagnosis and is on treatment appears as **Enrolled** (the underlying status is active); the same patient's full 13-criterion checklist is visible under **All**. The distinction is deliberate: the trial status is not the same as the hospital treatment status. In the next build we will separate the two labels more clearly.
+**Q10. Why are the synced patients in screening and not enrolled?**
+Every patient who arrives through Sync starts in **screening**, whatever the hospital record says about treatment. Only the platform enrols a patient, after sign-off, consent and enrolment by a person. The dashboard's Enrolled count is the seeded baseline (8 of 24) plus synced patients that have been enrolled, so the hospital's treatment status does not count as trial enrolment.
 
 **Q11. Is this a medical device?**
 We make no MDR claim. Research data capture and admin automation generally fall outside MDR; anything that recommends treatment or matches a patient to a drug may be a device under Rule 11. We deliberately did not build that. A classification decision precedes any such feature.
@@ -590,7 +591,7 @@ I will not invent a number. Phase 3 is a controlled single-hospital pilot; cost 
 
 ## 10. Rehearsal log (against the real v4 build)
 
-Rehearsed **2026-11-21 21:20–21:45 CET** on the **v4 stack** in `~/yammic-v4`: code at `1aeba7d` (rename), plus the docs-only security review `9a81b9a`; the v4 script is `00a88d5` (the freeze commit is recorded on Sunday). The frozen v3 stack ran untouched on 8080/8000. The rehearsal used the real v4 web build (:8081), the real backend (:8001), both HAPI servers, and the local Ollama worker. The click path was driven in a headless Chromium at **1440×900** with screenshots at every screen; the write path was verified with the same API calls the UI makes. No v3 data or process was touched.
+Rehearsed **2026-11-21 21:20–21:45 CET** on the **v4 stack** in `~/yammic-v4`: code at `1aeba7d` (rename), plus the docs-only security review `9a81b9a`; the v4 script is `00a88d5` (the freeze commit is recorded on Sunday). The frozen v3 stack ran untouched on 8080/8000. The rehearsal used the real v4 web build (:8081), the real backend (:8001), both HAPI servers, and the local Ollama worker. The click path was driven in a headless Chromium at **1440×900** with screenshots at every screen; the write path was verified with the same API calls the UI makes. No v3 data or process was touched. This rehearsal predates build `5d83708` (CEL-1822), which changed the post-sync state; see the limits below.
 
 **Stack and data**
 
@@ -621,8 +622,8 @@ Rehearsed **2026-11-21 21:20–21:45 CET** on the **v4 stack** in `~/yammic-v4`:
 **What was not verified by this agent (honest limits)**
 - The spoken text was **measured with `say -r 140` (10:59)** but not voiced by the presenter in the rehearsal; the segment budget is that measurement plus the measured click/route budget. A human dress rehearsal in the presenter's voice is still required before Monday.
 - The **second hospital is visible on the dashboard, in the site filter and on the screening patient**, but the Integrations card in this build shows **hospital 1 only** (the legacy single-source card). The run table shows two runs; the result line shows the last source (hospital 2). Do not claim the card lists both. (Follow-up: add a source column/card in the next build.)
-- The dashboard **"Enrolled"** KPI counts patients on treatment at the site, not only trial-enrolled; after the sync it shows **18/24** and SITE-02 **11/8**. The script speaks of "participants" and the site comparison only before the sync; if asked, use Q10.
-- The screening queue has **3 new referrals**, all with incomplete evidence; the complete 13/13 patient (201) is **active** (already on treatment), so the live sign-off is shown as "still in screening" and the complete checklist is shown under **All**. The eligible → consent → enrol transition is verified by the backend and widget tests, not clicked on stage.
+- The screening queue has **11 patients** after the sync. GBM-NL-201 and GBM-NL-202 have 13 of 13 criteria met with evidence; the sign-off, consent and enrolment path is covered by backend tests (`test_synced_patient_goes_through_signoff_consent_enrol`) and was not clicked on stage.
+- **Post-sync numbers** (§4, §6.4, §6.5, §9 Q10) come from the CTO note on CEL-1822, not from a live run: the stack on 127.0.0.1:8001 did not respond when this script was updated (2026-11-22). Re-check them against the live stack before Monday. The CTO note's per-site screening split (2/8/1) is not used in the script; the sync test maps hospital 1 to SITE-01, so that split needs checking.
 - The **v1/v2 form version pills** both read "Active" in this build; the current version is v2 (the API and the detail panel agree). The script says v2 is current and v1 keeps captured values.
 
 **Presenter card (print this)**
@@ -689,8 +690,7 @@ Rehearsed **2026-11-21 21:20–21:45 CET** on the **v4 stack** in `~/yammic-v4`:
 | R2 | Arrivals are staged by `make stage-arrivals` on **both** hospitals, not by `make reset`/`make seed` | DevOps / Junior Engineer | Pre-flight step 2; without it the sync creates 0 participants |
 | R3 | Ollama is a single local server; 25 documents serialise. The first 009 document is ready in ~1 min; the whole queue takes 15–25 min | Engineer | The v4 segments fill the time; review 009 and move on; `rules` is the fallback; never wait in silence |
 | R4 | The Integrations card shows hospital 1 only; the run table has no source column | Engineer | The second hospital is shown on the dashboard, the site filter and the screening patient; do not overclaim the card (follow-up) |
-| R5 | The dashboard "Enrolled" KPI counts patients on treatment, not only trial-enrolled; after sync it shows 18/24 and SITE-02 11/8 | PM / Engineer | Speak of "participants"; show the site comparison before the sync; Q10 |
-| R6 | The screening queue has only incomplete referrals; the complete 13/13 patient is active and cannot be signed off in the UI | PM / Engineer | The script shows "still in screening" for 207 and the complete checklist under All; the state machine is tested but not clicked on stage |
+| R6 | GBM-NL-201 and -202 reach 13 of 13 met, so the queue holds a complete case; the sign-off, consent and enrol path is tested in the backend but not clicked in the UI | PM / Engineer | The script shows 201 in the queue and does not sign off on stage; click the path before Monday only if the beat is wanted |
 | R7 | Both form version pills read "Active" | Engineer | Say v2 is current; v1 keeps captured values; cosmetic follow-up |
 | R8 | Security High findings SEC-01/02/03/04 fixed in CEL-1785 (`f5b0386`); SEC-02 re-verified (`c60b2be`); Medium findings and a pen test remain | CTO / Security | Say "local demo"; do not claim "secure", "compliant" or "certified" |
 | R9 | `Session.demoToday` is fixed at 2026-11-23; after Monday the UI date is stale | Engineer | Cosmetic; keep the clock for the demo |
