@@ -871,6 +871,27 @@ def create_run(pid: str, body: S.RunIn, user=Depends(require("nurse", "pi"))):
     return run
 
 
+@r.post("/runs/{rid}/retry", response_model=S.Run, tags=["runs"])
+def retry_run(rid: int, user=Depends(require("nurse", "pi"))):
+    """Create one retry per failed run, even when requests arrive concurrently."""
+    with engine.begin() as c:
+        original = must(one(c, RUNSEL + " WHERE id=:i FOR UPDATE", i=rid), "Run")
+        if original["status"] != "failed":
+            raise HTTPException(409, "Only failed runs can be retried")
+        retry = one(c, RUNSEL + " WHERE retry_of_run_id=:i", i=rid)
+        if retry is None:
+            retry = one(c, """INSERT INTO extraction_run
+                (participant_id, document_id, status, provider, created_by, retry_of_run_id)
+                VALUES (:p,:d,'queued',:provider,:u,:original) RETURNING *""",
+                p=original["participant_id"], d=original["document_id"],
+                provider=original["provider"], u=user["username"], original=rid)
+        A.record(c, user, "run.retry_requested", "extraction_run", retry["id"],
+                 participant_id=original["participant_id"],
+                 after={"originalRunId": rid, "retryRunId": retry["id"],
+                        "documentId": original["document_id"]})
+    return retry
+
+
 @r.get("/runs", response_model=list[S.Run], tags=["runs"])
 def runs(status: str | None = None, participant_id: str | None = None, user=ANY):
     with engine.connect() as c:

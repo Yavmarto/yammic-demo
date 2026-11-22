@@ -83,6 +83,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
   late Session session;
   Map? run; // live extraction run being polled
   bool _polling = false;
+  bool _retrying = false;
+  final Set<int> _dismissedRuns = {};
+  String? _runMessage;
   String? pid;
   int sel = 0;
   bool correcting = false;
@@ -108,6 +111,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     _init = true;
     session = SessionScope.read(context);
     store = ReviewStore(session)..load();
+    _loadFailedRun();
   }
 
   List<ReviewItem> get visible => [for (final i in store.items) if ((pid == null || i.participantId == pid) && (!mineOnly || i.assignedTo == session.username)) i];
@@ -303,7 +307,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
       );
 
   Widget _toolbar() {
-    final pids = store.participantIds;
+    final pids = {...store.participantIds, ?pid}.toList()..sort();
     final total = visible.length, left = visible.where((i) => i.state == RState.unverified || i.state == RState.deferred).length;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       PageHeader(
@@ -323,7 +327,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   const DropdownMenuItem(value: null, child: Text('All participants')),
                   for (final p in pids) DropdownMenuItem(value: p, child: Text(p)),
                 ],
-                onChanged: (v) => setState(() { pid = v; sel = 0; correcting = false; manual = false; }),
+                onChanged: (v) { setState(() { pid = v; sel = 0; correcting = false; manual = false; run = null; }); _loadFailedRun(); },
               ),
             ),
           ),
@@ -350,6 +354,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
         const Text("My assigned work"),
       ]),
       if (run != null) _runBar(),
+      if (_runMessage != null) Text(_runMessage!, style: K.small),
       const SizedBox(height: K.s16),
       Row(children: [
         SizedBox(width: 260, child: Bar(total == 0 ? 0 : (total - left) / total, color: K.okLine)),
@@ -363,12 +368,47 @@ class _ReviewScreenState extends State<ReviewScreen> {
     ]);
   }
 
+  Future<void> _loadFailedRun() async {
+    final selected = pid;
+    if (selected == null || session.offline) return;
+    try {
+      final runs = await session.api.get('/runs?participant_id=$selected') as List;
+      if (!mounted || pid != selected) return;
+      final failed = runs.where((r) => r['status'] == 'failed' && !_dismissedRuns.contains(r['id']) && !runs.any((child) => child['retryOfRunId'] == r['id'])).toList();
+      final activeRetries = runs.where((r) => r['retryOfRunId'] != null && (r['status'] == 'queued' || r['status'] == 'running')).toList();
+      if (activeRetries.isNotEmpty) {
+        setState(() => run = activeRetries.last as Map);
+        _poll();
+      } else if (failed.isNotEmpty) {
+        setState(() => run = failed.last as Map);
+      }
+    } catch (_) {
+      if (mounted && pid == selected) setState(() => _runMessage = 'Could not load extraction status.');
+    }
+  }
+
+  Future<void> _retryRun() async {
+    if (_retrying || run?['id'] == null) return;
+    setState(() { _retrying = true; _runMessage = null; });
+    try {
+      final selected = pid;
+      final next = await session.api.post('/runs/${run!['id']}/retry') as Map;
+      if (!mounted || pid != selected) return;
+      setState(() { run = next; _runMessage = next['status'] == 'queued' ? 'Retry queued.' : 'Existing retry found.'; });
+      _poll();
+    } catch (_) {
+      if (mounted) setState(() => _runMessage = 'Could not request retry. Please try again.');
+    } finally {
+      if (mounted) setState(() => _retrying = false);
+    }
+  }
+
   Future<void> _startRun() async {
     setState(() => run = {'status': 'queued', 'done': 0, 'total': 0});
     try {
       run = await session.api.post('/participants/$pid/extract?provider=auto') as Map;
-    } catch (e) {
-      setState(() => run = {'status': 'failed', 'error': '$e', 'done': 0, 'total': 0});
+    } catch (_) {
+      setState(() { run = null; _runMessage = 'Could not start extraction. Please try again.'; });
       return;
     }
     setState(() {});
@@ -380,13 +420,16 @@ class _ReviewScreenState extends State<ReviewScreen> {
     _polling = true;
     final started = DateTime.now();
     while (mounted && run != null && run!['status'] != 'completed' && run!['status'] != 'failed') {
+      final runId = run!['id'];
       await Future.delayed(const Duration(milliseconds: 700));
+      if (!mounted || run?['id'] != runId) break;
       try {
-        final r = await session.api.get('/runs/${run!['id']}') as Map;
-        if (mounted) setState(() => run = r);
+        final r = await session.api.get('/runs/$runId') as Map;
+        if (mounted && run?['id'] == runId) setState(() => run = r);
       } catch (_) {}
       if (DateTime.now().difference(started).inSeconds > 90 && mounted) {
-        setState(() => run = {...?run, 'status': 'failed', 'error': 'Timed out. Is the AI service running?'});
+        setState(() => _runMessage = 'Status update timed out. Refresh to check the run.');
+        break;
       }
     }
     _polling = false;
@@ -408,12 +451,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
         Icon(st == 'failed' ? Icons.error_outline : st == 'completed' ? Icons.check_circle_outline : Icons.auto_awesome, size: 18, color: st == 'failed' ? K.badInk : K.aiInk),
         const SizedBox(width: 10),
         Text(
-          st == 'failed' ? 'Extraction failed: ${run!['error']}' : st == 'completed' ? 'Extraction complete · $done proposals added for review' : 'Extraction ${st == 'queued' ? 'queued' : 'running'}${run!['provider'] != null ? ' · ${run!['provider']}' : ''}…',
+          st == 'failed' ? 'Extraction failed. The provider could not complete this run.' : st == 'completed' ? 'Extraction complete · $done proposals added for review' : 'Extraction ${st == 'queued' ? 'queued' : 'running'}${run!['provider'] != null ? ' · ${run!['provider']}' : ''}…',
           style: K.small.copyWith(color: st == 'failed' ? K.badInk : K.aiInk, fontWeight: FontWeight.w500),
         ),
         const SizedBox(width: 16),
         if (!fin) Expanded(child: Bar(total == 0 ? 0 : done / total, color: K.aiLine, height: 4)) else const Spacer(),
-        if (fin) TextButton(onPressed: () => setState(() => run = null), child: const Text('Dismiss')),
+        if (st == 'failed' && run!['id'] != null && !session.offline && (session.role == 'nurse' || session.role == 'pi')) TextButton(onPressed: _retrying ? null : _retryRun, child: Text(_retrying ? 'Requesting…' : 'Retry extraction')),
+        if (fin) TextButton(onPressed: () { final id = run?['id']; setState(() { if (id is int) _dismissedRuns.add(id); run = null; _runMessage = null; }); _loadFailedRun(); }, child: const Text('Dismiss')),
       ]),
     );
   }
