@@ -29,10 +29,16 @@ class LocalReceiver:
             raise ValueError("Receiver does not support destination field")
         serialized = json.dumps(payload, sort_keys=True, separators=(",", ":"))
         with sqlite3.connect(self.path) as db:
-            existing = db.execute("SELECT payload FROM deliveries WHERE delivery_id=?", (delivery_id,)).fetchone()
-            if existing and existing[0] != serialized:
+            db.execute(
+                "INSERT INTO deliveries (delivery_id, payload) VALUES (?, ?) "
+                "ON CONFLICT (delivery_id) DO NOTHING",
+                (delivery_id, serialized),
+            )
+            stored_payload, = db.execute(
+                "SELECT payload FROM deliveries WHERE delivery_id=?", (delivery_id,)
+            ).fetchone()
+            if stored_payload != serialized:
                 raise ValueError("Delivery identity conflict")
-            db.execute("INSERT OR IGNORE INTO deliveries VALUES (?, ?)", (delivery_id, serialized))
         if fail_after_commit:
             raise TemporaryReceiverError("Simulated lost acknowledgement after receiver commit")
 

@@ -36,6 +36,11 @@ def test_local_writeback_retry_and_odm(client, auth, tmp_path):
     assert payload["value"] == value and payload["source_id"] == kps["documentId"]
     assert payload["evidence_link"] == f"/documents/{kps['documentId']}#extraction-{kps['id']}"
     assert payload["review_state"] == "corrected" and payload["destination_field"] == "performance.karnofsky"
+    with pytest.raises(ValueError, match="Delivery identity conflict"):
+        receiver.receive(delivery, {**payload, "value": "90"})
+    with sqlite3.connect(receiver.path) as db:
+        stored = db.execute("SELECT payload FROM deliveries WHERE delivery_id=?", (delivery,)).fetchone()
+    assert json.loads(stored[0]) == payload
     with engine.connect() as c:
         actions = c.execute(text("SELECT action FROM audit_event WHERE entity_id=:i ORDER BY seq"), {"i": delivery}).scalars().all()
     assert actions == ["writeback.failed", "writeback.delivered", "writeback.delivered"]

@@ -148,15 +148,16 @@ def evaluate(provider_name="rules"):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--provider", choices=["rules", "ollama"], default="rules")
-    ap.add_argument("--out", type=Path, default=HERE.parent / "results/independent_dutch/latest-rules.json")
+    ap.add_argument("--out", type=Path)
     args = ap.parse_args()
     result = evaluate(args.provider)
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
+    output = args.out or HERE.parent / "results/independent_dutch" / f"latest-{args.provider}.json"
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
     print(json.dumps({"provider": args.provider, "documents": result["dataset"]["documents"],
                       "labelledPairs": result["dataset"]["labelledDocumentFieldPairs"],
                       "summary": result["summary"], "fields": result["fields"]}, ensure_ascii=False, indent=2))
-    print(f"Wrote {args.out}")
+    print(f"Wrote {output}")
 
 
 if __name__ == "__main__":
