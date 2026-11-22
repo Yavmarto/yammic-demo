@@ -6,7 +6,7 @@ Run from the repo root:
 
 These tests are offline: they read the committed bundles and the generator.
 The optional integration test runs only when FHIR_INTEGRATION=1 and a local
-HAPI server is reachable at FHIR_BASE_URL (default http://127.0.0.1:8090/fhir).
+HAPI server is reachable at FHIR_BASE_URL (default http://127.0.0.1:8093/fhir).
 """
 
 from __future__ import annotations
@@ -290,7 +290,7 @@ class IntegrationTests(unittest.TestCase):
     def test_load_baseline_and_arrivals_is_idempotent(self):
         import load
 
-        base = os.environ.get("FHIR_BASE_URL", "http://127.0.0.1:8090/fhir")
+        base = os.environ.get("FHIR_BASE_URL", "http://127.0.0.1:8093/fhir")
         self.assertEqual(load.main(["--set", "all", "--base-url", base, "--quiet", "--check-counts"]), 0)
         self.assertEqual(load.main(["--set", "all", "--base-url", base, "--quiet", "--check-counts"]), 0)
 

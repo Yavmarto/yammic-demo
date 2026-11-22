@@ -1,21 +1,21 @@
-# Local demo infrastructure for the Yamicc v4 stack.
+# Local demo infrastructure for the Yamicc v5 stack.
 # Owner: DevOps (CEL-1801). Only local, synthetic data. No hosting, no real patient data.
 #
 # This stack is parallel-safe with the frozen v3 stack: it has its own compose
-# project (`yamicc-v4`), its own volume and its own host ports. No fixed
+# project (`yamicc-v5`), its own volume and its own host ports. No fixed
 # container_name, so the two stacks cannot take each other's containers away.
 #
-#   postgres   PostgreSQL 16      host 127.0.0.1:5434   db yamicc (role yamicc_app)
+#   postgres   PostgreSQL 16      host 127.0.0.1:5435   db yamicc (role yamicc_app)
 #                                                      + hapi (role hapi) + hapi2 (role hapi2)
-#   hapi       HAPI FHIR R4       host 127.0.0.1:8091   hospital 1, db hapi
-#   hapi2      HAPI FHIR R4       host 127.0.0.1:8092   hospital 2, db hapi2
+#   hapi       HAPI FHIR R4       host 127.0.0.1:8093   hospital 1, db hapi
+#   hapi2      HAPI FHIR R4       host 127.0.0.1:8094   hospital 2, db hapi2
 #
-# Every host port comes from the environment and defaults to the v4 values.
+# Every host port comes from the environment and defaults to the v5 values.
 # The v3 stack (Postgres 5433, HAPI 8090) is untouched while this one runs.
 # The FastAPI backend and the Flutter web app run outside Docker (see Makefile).
 # Images are pinned by digest so a demo run never depends on a registry pull.
 
-name: yamicc-v4
+name: yamicc-v5
 
 services:
   postgres:
@@ -31,7 +31,7 @@ services:
       # Keep initdb output small and fast on a laptop.
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
     ports:
-      - "127.0.0.1:${PG_PORT:-5434}:5432"
+      - "127.0.0.1:${PG_PORT:-5435}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./ops/postgres-init.sh:/docker-entrypoint-initdb.d/10-roles.sh:ro
@@ -57,16 +57,16 @@ services:
       spring.datasource.driverClassName: org.postgresql.Driver
       spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
       hapi.fhir.fhir_version: R4
-      # Pin CORS to the v4 web origin, so a cross-site page gets 403 and cannot
+      # Pin CORS to the v5 web origin, so a cross-site page gets 403 and cannot
       # read patient data from the browser.
-      hapi.fhir.cors.allowed_origin: "http://127.0.0.1:${WEB_PORT:-8081}"
+      hapi.fhir.cors.allowed_origin: "http://127.0.0.1:${WEB_PORT:-8082}"
       hapi.fhir.cors.allow_Credentials: "false"
-      hapi.fhir.server_address: "http://127.0.0.1:${FHIR_PORT:-8091}"
+      hapi.fhir.server_address: "http://127.0.0.1:${FHIR_PORT:-8093}"
       management.endpoints.web.exposure.include: health,info
       management.endpoint.health.show-details: never
       JAVA_TOOL_OPTIONS: "-Xmx1536m"
     ports:
-      - "127.0.0.1:${FHIR_PORT:-8091}:8080"
+      - "127.0.0.1:${FHIR_PORT:-8093}:8080"
     healthcheck:
       # The image ships HealthCheck.class; it probes the Spring Boot actuator
       # health endpoint on 127.0.0.1:8080 and exits 0 only on HTTP 200.
@@ -91,14 +91,14 @@ services:
       spring.datasource.driverClassName: org.postgresql.Driver
       spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
       hapi.fhir.fhir_version: R4
-      hapi.fhir.cors.allowed_origin: "http://127.0.0.1:${WEB_PORT:-8081}"
+      hapi.fhir.cors.allowed_origin: "http://127.0.0.1:${WEB_PORT:-8082}"
       hapi.fhir.cors.allow_Credentials: "false"
-      hapi.fhir.server_address: "http://127.0.0.1:${FHIR2_PORT:-8092}"
+      hapi.fhir.server_address: "http://127.0.0.1:${FHIR2_PORT:-8094}"
       management.endpoints.web.exposure.include: health,info
       management.endpoint.health.show-details: never
       JAVA_TOOL_OPTIONS: "-Xmx1536m"
     ports:
-      - "127.0.0.1:${FHIR2_PORT:-8092}:8080"
+      - "127.0.0.1:${FHIR2_PORT:-8094}:8080"
     healthcheck:
       test: ["CMD", "java", "-cp", "/app", "HealthCheck"]
       interval: 10s
@@ -110,4 +110,4 @@ services:
 volumes:
   pgdata:
     # Own volume, separate from v3's yamicc-postgres-data.
-    name: yamicc-v4-postgres-data
+    name: yamicc-v5-postgres-data

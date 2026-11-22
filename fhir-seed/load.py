@@ -33,7 +33,7 @@ import urllib.request
 from typing import Any
 
 SEED_DIR = pathlib.Path(__file__).resolve().parent
-DEFAULT_BASE = os.environ.get("FHIR_BASE_URL", "http://127.0.0.1:8090/fhir")
+DEFAULT_BASE = os.environ.get("FHIR_BASE_URL", "http://127.0.0.1:8093/fhir")
 DEFAULT_BASE_H2 = os.environ.get("FHIR_BASE_URL_2", "http://127.0.0.1:8092/fhir")
 SETS = ("baseline", "arrivals")
 

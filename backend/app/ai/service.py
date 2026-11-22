@@ -204,7 +204,7 @@ def main(argv: list[str] | None = None) -> int:
     import argparse
 
     ap = argparse.ArgumentParser(description="Yamicc AI extraction service")
-    ap.add_argument("--api", default=None, help="API base URL (default YAMICC_API_URL or localhost:8000)")
+    ap.add_argument("--api", default=None, help="API base URL (default YAMICC_API_URL or 127.0.0.1:8002)")
     ap.add_argument("--provider", default="auto", choices=["auto", *PROVIDERS],
                     help="auto = Ollama when available, else rules")
     ap.add_argument("--prompt-version", default=None, help="prompt file version, e.g. extract_v1")
