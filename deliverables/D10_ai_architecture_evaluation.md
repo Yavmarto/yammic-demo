@@ -1,6 +1,6 @@
 # D10 — AI architecture & evaluation plan (demo scope)
 
-Issue: CEL-1741 (T14) · Owner: Applied Research Lead · Status: first draft for QA (T21 Fact-Checker)
+Issue: CEL-1741 (T14) · Owner: Applied Research Lead · Status: revised after QA fact-check (CEL-1817); re-QA pending
 Scope: the YAMICC synthetic-data demo only. All data is synthetic. Cost, pricing, procurement and production rollout are out of scope.
 Sources: 06 §3, 05 UI-005, `backend/app/ai/`, `backend/eval/`, `backend/eval/results/w4_report.md` (2026-11-21), `deliverables/demo_script.md`.
 
@@ -22,7 +22,7 @@ Sources: 06 §3, 05 UI-005, `backend/app/ai/`, `backend/eval/`, `backend/eval/re
 | Prompt registry | `extract_v1` to `extract_v4`, each with a SHA-256 tag. The tag is stored on every run | `backend/app/ai/registry.py`, `prompts/` |
 | Span check | Every evidence quote is re-located in the source text. The API rejects a span that does not match with HTTP 422 | `backend/app/ai/span.py`; `backend/app/routes.py:420` |
 | Review (UI-005) | Three columns: source with highlighted evidence, proposals, target eCRF field. Actions: Accept, Correct, Defer, Reject | `app/lib/features/review/` |
-| Audit | Each run, proposal and human decision is appended to a hash chain. `/audit/verify` checks it | `backend/app/routes.py:218` |
+| Audit | Each run, proposal and human decision is appended to a hash chain. `/audit/verify` checks it | `backend/app/routes.py:325` |
 | Export | Only verified values leave the platform (CDISC ODM, FHIR QuestionnaireResponse with Provenance) | `backend/app/export/` |
 
 ### Demo workflow
@@ -39,7 +39,7 @@ Sources: 06 §3, 05 UI-005, `backend/app/ai/`, `backend/eval/`, `backend/eval/re
 |---|---|---|
 | Role | Fallback and deterministic baseline | Live extractor in the demo |
 | Runs | Local, no network | Local, through Ollama on `localhost:11434` |
-| Time per document | < 10 ms | 35–66 s on the demo laptop (W4 average 38 s) |
+| Time per document | < 10 ms (17 ms for all 13 documents) | 12.2–45.1 s per document in the committed eval (13 runs; mean 38 s; 34–45 s excluding the short DOC-005-MRI) |
 | Data leaves the machine | No | No |
 | Measured quality (synthetic gold set) | F1 1.000 | F1 1.000 |
 
@@ -53,7 +53,7 @@ Not evaluated for the demo: hosted EU API models, other open-weight models, and 
 - **Correct** requires a corrected value. **Reject** requires a reason. The API enforces both (`routes.py:206–208`).
 - **Defer** keeps the field open as a task. It is not a silent gap.
 - Confidence caps are applied before a proposal reaches the reviewer:
-  - hedged wording (for example "probably", "waarschijnlijk") caps confidence at **0.45** (`backend/app/ai/providers/ollama.py:228–230`);
+  - hedged wording (for example "probably", "waarschijnlijk") caps confidence at **0.45** when the model's confidence is 0.6 or higher (`backend/app/ai/providers/ollama.py:228–230`). The `rules` provider gives the same 0.45 on the same hard case;
   - a value that the quote does not support caps confidence at **0.35** (`ollama.py:232–234`).
 - Each decision records the actor, the role, the time, the before and after values, and the model and prompt that proposed the value.
 - The Monitor role is read-only in the demo.
@@ -64,7 +64,7 @@ Not evaluated for the demo: hosted EU API models, other open-weight models, and 
 |---|---|---|
 | Ollama not reachable, or the model is not pulled, at run start | Run uses `rules` from the start | Run provider `rules`; warning recorded; `fallbackFrom = ollama` |
 | Ollama fails during a run (timeout is 240 s per call) | Documents not yet processed are re-run with `rules`. Proposals already posted are kept and not duplicated | Warning recorded; provider changes to `rules` for the remaining documents |
-| `rules` fails | Run is marked `failed` with the error. There is no further fallback | Run shows failed; no proposals are posted |
+| `rules` fails | Run is marked `failed` with the error. There is no further fallback | Run shows failed; no proposals are posted. Not yet tested (open item 2) |
 | Quote not found in the source | Proposal becomes an abstention with `evidence_not_found` | Accept disabled; "No evidence span" in the source pane |
 
 Demo line for a slow queue: the local model was slow, so the deterministic extractor took over; the review loop is the same.
@@ -79,7 +79,7 @@ Metrics, per field and per provider:
 - hard-case pass (seeded wrong value, low confidence, abstention, arrivals abstention);
 - run time per document.
 
-Gold set: 13 documents, 57 annotations, generated with the synthetic data. A held-out set of 3 arrival documents (GBM-NL-005) is evaluated separately.
+Gold set: 13 documents, 57 annotations, generated with the synthetic data. The three DOC-005 documents are part of this 13-document set. The live arrival check (AC-5) is a separate API run for participant GBM-NL-005, not a held-out set.
 
 Regression rule: rerun the eval on any change to a prompt, a model or a provider. Compare the new per-field table with the committed `latest-*.json`.
 
@@ -106,14 +106,15 @@ Pass criteria for the demo. Status shows whether the check is already measured o
 | AC-6 | Human gate | Accept on an abstained extraction returns 422; Correct without a value returns 422 | Code-verified; API run pending |
 | AC-7 | Fallback | With Ollama stopped, a run completes with provider `rules`, `fallbackFrom = ollama`, and a warning in the run record | Pending |
 | AC-8 | Audit | After one run and one decision, `/audit/verify` returns `ok: true` | Measured once (W4, count 145); repeat pending |
-| AC-9 | Timing | Each Ollama document completes within 66 s; the arrivals queue finishes within 6 min | Measured once (script run: 323 s); repeat pending |
+| AC-9 | Timing | Each Ollama document completes within 66 s (budget from the demo script; measured maximum 45.1 s in the W4 eval); the arrivals queue finishes within 6 min | Per-document measured (max 45.1 s, W4 eval). Queue time 323 s is script-reported, not in the committed eval. Repeat pending |
 | AC-10 | Export excludes AI | An export contains verified values only; no unverified proposal appears | Pending |
 
 ## 8. Open items for QA
 
-1. **Demo script figure mismatch.** `deliverables/demo_script.md` (AI quality talk track and the hard-case note) says hedged wording gives confidence **0.38**. The code cap and the committed eval output give **0.45**. The script should be corrected to 0.45, or the source should be explained. This plan does not change the code.
-2. **Pending checks.** AC-6 (API run), AC-7, AC-10 and the repeat runs for AC-8 and AC-9 have not been executed in this draft.
-3. **Script claim not re-measured.** The script says the live GBM-NL-009 pathology run produces "nine abstentions". This plan has not re-run that document.
+1. **Two confidence values for the same hedged case.** The live engine (code cap and committed eval, `latest-rules.md`, `latest-ollama.md`, `w4_report.md`) gives **0.45**. The seeded demo record EXT-0022 in `app/assets/data/extractions.json` gives **0.38**, and `backend/eval/gold.py` copies that 0.38 into the eval output as gold metadata. `deliverables/demo_script.md:289` quotes 0.38. Decision needed: either regenerate the seeded record (`app/tool/generate_demo_data.py`, Engineering-owned) to 0.45, or keep 0.38 and say in the script that it is the seeded value. This plan does not change either file.
+2. **Pending checks.** AC-6 (API run), AC-7, AC-10, the `rules` failure row in §5, and the repeat runs for AC-8 and AC-9 have not been executed.
+3. **Timing figures in the demo script are not measured.** `demo_script.md:226` says "35–66 s per document", and `demo_script.md:534` says "mean ≈45 s". The committed eval gives 12.2–45.1 s and a mean of 38 s. The 323 s queue time is script-reported only.
+4. **Script claim not re-measured.** The script says the live GBM-NL-009 pathology run produces "nine abstentions". The committed eval shows 9 abstentions on DOC-005-PATH, the same pattern. This plan has not re-run GBM-NL-009.
 
 ## 9. Out of scope
 
