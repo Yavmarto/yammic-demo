@@ -3741,6 +3741,19 @@
         "title": "SyncRunOut",
         "type": "object"
       },
+      "SyntheticDeliveryRequest": {
+        "properties": {
+          "deliveryId": {
+            "title": "Deliveryid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "deliveryId"
+        ],
+        "title": "SyntheticDeliveryRequest",
+        "type": "object"
+      },
       "Task": {
         "properties": {
           "assignee": {
@@ -5737,6 +5750,94 @@
           }
         },
         "summary": "Push Fhir",
+        "tags": [
+          "export"
+        ]
+      }
+    },
+    "/participants/{pid}/export/synthetic-writeback": {
+      "get": {
+        "operationId": "preview_synthetic_writeback_participants__pid__export_synthetic_writeback_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pid",
+            "required": true,
+            "schema": {
+              "title": "Pid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Synthetic Writeback",
+        "tags": [
+          "export"
+        ]
+      },
+      "post": {
+        "operationId": "send_synthetic_writeback_participants__pid__export_synthetic_writeback_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pid",
+            "required": true,
+            "schema": {
+              "title": "Pid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyntheticDeliveryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Send Synthetic Writeback",
         "tags": [
           "export"
         ]

@@ -15,3 +15,5 @@ Rules missed one of two abstentions for extent of resection; Ollama proposed a s
 **Ollama:** `qwen2.5:7b-instruct` (local model digest `845dbda0ea48`), temperature 0, seed 42, timeout 240 seconds per document; 10/10 completed with no timeout. Rules used `rules-regex-v1` and ran offline. No reviewer time was measured.
 
 Machine-readable results and per-field accuracy/F1, correct abstention counts and denominators are in [`results/rules/latest.json`](results/rules/latest.json) and [`results/ollama/latest.json`](results/ollama/latest.json). The challenge and runner are in this directory. The requested local `dev` base `22e65a7` was not present in this checkout; work started from available `dev` HEAD `bcc0f74`.
+
+**Integrated dev check:** At commit `0f38068`, the rules run reproduced all decision, abstention and span results with a different prompt hash. The table preserves the original comparison from `bcc0f74`. The Ollama results still need a run on the integrated version.
