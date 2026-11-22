@@ -2496,6 +2496,7 @@
           "answer": {
             "anyOf": [
               {
+                "maxLength": 2000,
                 "type": "string"
               },
               {
@@ -2507,6 +2508,7 @@
           "text": {
             "anyOf": [
               {
+                "maxLength": 2000,
                 "type": "string"
               },
               {
@@ -2524,6 +2526,7 @@
           "fieldId": {
             "anyOf": [
               {
+                "maxLength": 64,
                 "type": "string"
               },
               {
@@ -2533,12 +2536,15 @@
             "title": "Fieldid"
           },
           "participantId": {
+            "maxLength": 64,
+            "minLength": 1,
             "title": "Participantid",
             "type": "string"
           },
           "ruleId": {
             "anyOf": [
               {
+                "maxLength": 32,
                 "type": "string"
               },
               {
@@ -2558,6 +2564,8 @@
             "type": "string"
           },
           "text": {
+            "maxLength": 2000,
+            "minLength": 1,
             "title": "Text",
             "type": "string"
           }
@@ -5008,7 +5016,7 @@
     },
     "/integrations": {
       "get": {
-        "description": "Connection status for all configured FHIR sources (`FHIR_SOURCES`), plus legacy `id='fhir'` alias.",
+        "description": "Connection status for all configured FHIR sources (`FHIR_SOURCES`).",
         "operationId": "integrations_integrations_get",
         "responses": {
           "200": {
@@ -6140,7 +6148,7 @@
     },
     "/participants/{pid}/screening/enrol": {
       "post": {
-        "description": "Only the PI may enrol a participant (`eligible | consented -> enrolled`).",
+        "description": "Only the PI may enrol a participant (`consented -> enrolled`).",
         "operationId": "enrol_participant_participants__pid__screening_enrol_post",
         "parameters": [
           {

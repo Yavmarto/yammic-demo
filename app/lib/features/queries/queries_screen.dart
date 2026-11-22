@@ -162,7 +162,7 @@ class _ThreadState extends State<_Thread> {
     final st = '${q['status']}';
     final live = !s.offline;
     final canAnswer = live && st == 'open' && (s.role == 'nurse' || s.isPi);
-    final canClose = live && st != 'closed' && (s.isMonitor || s.isPi || (s.role == 'nurse' && st == 'answered'));
+    final canClose = live && st != 'closed' && (s.isMonitor || (s.isPi && q['openedBy'] == s.username && q['answeredBy'] != s.username));
     return Container(
       key: Key('thread-${q['id']}'),
       padding: const EdgeInsets.fromLTRB(K.s24, K.s12, K.s16, K.s12),

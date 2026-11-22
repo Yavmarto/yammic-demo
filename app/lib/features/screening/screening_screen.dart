@@ -320,7 +320,10 @@ class _SignOffDialogState extends State<_SignOffDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final blocked = decision == 'eligible' && (widget.scr['notMetCount'] as int) > 0;
+    final notMet = (widget.scr['notMetCount'] as int) > 0;
+    final unknown = (widget.scr['unknownCount'] as int) > 0;
+    final unconfirmed = (widget.scr['confirmedCount'] as int) < (widget.scr['totalCount'] as int);
+    final blocked = decision == 'eligible' && (notMet || unknown || unconfirmed);
     return AlertDialog(
       title: const Text('Sign off screening'),
       content: SizedBox(
@@ -337,7 +340,14 @@ class _SignOffDialogState extends State<_SignOffDialog> {
             const SizedBox(height: K.s12),
             DropdownButtonFormField<String>(initialValue: reason, decoration: const InputDecoration(labelText: 'Screen-fail reason'), items: [for (final r in reasons) DropdownMenuItem(value: r, child: Text(r))], onChanged: (v) => setState(() => reason = v!)),
           ],
-          if (blocked) Padding(padding: const EdgeInsets.only(top: 8), child: Text('A criterion is not met, so this person cannot be eligible.', style: K.small.copyWith(color: K.badInk))),
+          if (blocked)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                notMet ? 'A criterion is not met, so this person cannot be eligible.' : 'Every criterion must be confirmed as met before marking eligible.',
+                style: K.small.copyWith(color: K.badInk),
+              ),
+            ),
           CheckboxListTile(key: const Key('checked-all'), contentPadding: EdgeInsets.zero, controlAffinity: ListTileControlAffinity.leading, value: checked, onChanged: (v) => setState(() => checked = v ?? false), title: const Text('I checked every criterion against its source.')),
         ]),
       ),

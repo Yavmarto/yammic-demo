@@ -66,16 +66,10 @@ def _probe(entry: dict, c) -> dict:
 
 @r.get("/integrations")
 def integrations(user=Depends(current_user)):
-    """Connection status for all configured FHIR sources (`FHIR_SOURCES`), plus legacy `id='fhir'` alias."""
+    """Connection status for all configured FHIR sources (`FHIR_SOURCES`)."""
     sources = get_sources()
     with engine.connect() as c:
-        probed = [_probe(s, c) for s in sources]
-    # Keep first item aliased as id='fhir' if only 1 source or prepend legacy alias alongside named sources
-    if len(probed) == 1 and probed[0]["id"] == "hospital-1":
-        first = {**probed[0], "id": "fhir", "name": "Hospital EHR (FHIR R4)"}
-        return [first, probed[0]]
-    first_alias = {**probed[0], "id": "fhir"}
-    return [first_alias, *probed]
+        return [_probe(s, c) for s in sources]
 
 
 def _after_sync_hook():

@@ -306,16 +306,16 @@ class DataQuery(M):
 
 
 class QueryIn(M):
-    participant_id: str
-    field_id: str | None = None
+    participant_id: str = Field(min_length=1, max_length=64)
+    field_id: str | None = Field(default=None, max_length=64)
     severity: Literal["low", "medium", "high"] = "low"
-    text: str
-    rule_id: str | None = None
+    text: str = Field(min_length=1, max_length=2000)
+    rule_id: str | None = Field(default=None, max_length=32)
 
 
 class QueryAnswerIn(M):
-    answer: str | None = None
-    text: str | None = None
+    answer: str | None = Field(default=None, max_length=2000)
+    text: str | None = Field(default=None, max_length=2000)
 
 
 class SdvIn(M):

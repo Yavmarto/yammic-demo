@@ -217,24 +217,17 @@ def participant_timeline(pid: str, user=ANY):
 @r.get("/screening", response_model=list[S.Screening], tags=["screening"])
 def list_screenings(site_id: str | None = None, status: str | None = None, user=ANY):
     """Screening queue across participants (optionally filtered by site_id or status)."""
-    with engine.begin() as c:
+    with engine.connect() as c:
         ps = rows(c, "SELECT id FROM participant WHERE (:s IS NULL OR site_id=:s) AND (:st IS NULL OR status=:st) ORDER BY id",
                   s=site_id, st=status)
-        out: list[S.Screening] = []
-        for p in ps:
-            if not one(c, "SELECT 1 FROM screening_check WHERE participant_id=:p LIMIT 1", p=p["id"]):
-                W.run_ai_screening(c, p["id"], user)
-            out.append(W.build_screening(c, p["id"]))
-        return out
+        return [W.build_screening(c, p["id"]) for p in ps]
 
 
 @r.get("/screening/{pid}", response_model=S.Screening, tags=["screening"], include_in_schema=False)
 @r.get("/participants/{pid}/screening", response_model=S.Screening, tags=["screening"])
 def get_screening(pid: str, user=ANY):
-    with engine.begin() as c:
+    with engine.connect() as c:
         must(one(c, "SELECT 1 FROM participant WHERE id=:i", i=pid), "Participant")
-        if not one(c, "SELECT 1 FROM screening_check WHERE participant_id=:p LIMIT 1", p=pid):
-            W.run_ai_screening(c, pid, user)
         return W.build_screening(c, pid)
 
 
@@ -250,7 +243,7 @@ def run_screening_check(pid: str, provider: str = Query("rules"), user=Depends(r
 
 
 @r.post("/participants/{pid}/screening/checks", response_model=S.Screening, tags=["screening"])
-def post_screening_checks(pid: str, body: list[S.ScreeningChecksIn], user=Depends(require("service", "nurse", "pi"))):
+def post_screening_checks(pid: str, body: list[S.ScreeningChecksIn], user=Depends(require("service"))):
     """Ingest per-criterion AI screening results (from task C worker or test harness)."""
     with engine.begin() as c:
         p = must(one(c, "SELECT * FROM participant WHERE id=:i", i=pid), "Participant")
@@ -316,8 +309,6 @@ def sign_off_screening(pid: str, body: S.ScreeningSignOffIn | None = Body(defaul
     body = body or S.ScreeningSignOffIn()
     with engine.begin() as c:
         p = must(one(c, "SELECT * FROM participant WHERE id=:i FOR UPDATE", i=pid), "Participant")
-        if not one(c, "SELECT 1 FROM screening_check WHERE participant_id=:p LIMIT 1", p=pid):
-            W.run_ai_screening(c, pid, user)
         scr = W.build_screening(c, pid)
         outcome = body.outcome or body.decision
         if outcome is None:
@@ -333,6 +324,10 @@ def sign_off_screening(pid: str, body: S.ScreeningSignOffIn | None = Body(defaul
         else:
             if scr.not_met_count > 0:
                 raise HTTPException(422, "Cannot mark eligible while any criterion is not_met")
+            if scr.unknown_count > 0:
+                raise HTTPException(422, f"Cannot mark eligible while {scr.unknown_count} criteria are unknown")
+            if scr.confirmed_count < scr.total_count:
+                raise HTTPException(422, f"Cannot mark eligible before all criteria are confirmed ({scr.confirmed_count}/{scr.total_count} confirmed)")
             c.execute(text("""UPDATE participant SET status='eligible', status_detail='eligible',
                 screen_fail_reason=NULL, coordinator_signed_by=:u, coordinator_signed_at=now() WHERE id=:i"""),
                       dict(u=user["username"], i=pid))
@@ -362,17 +357,16 @@ def record_consent(pid: str, body: S.ScreeningConsentIn | None = Body(default=No
 @r.post("/participants/{pid}/screening/enrol", response_model=S.Screening, tags=["screening"])
 def enrol_participant(pid: str, body: S.ScreeningEnrolIn | None = Body(default=None),
                       user=Depends(require("pi"))):
-    """Only the PI may enrol a participant (`eligible | consented -> enrolled`)."""
+    """Only the PI may enrol a participant (`consented -> enrolled`)."""
     body = body or S.ScreeningEnrolIn()
     with engine.begin() as c:
         p = must(one(c, "SELECT * FROM participant WHERE id=:i FOR UPDATE", i=pid), "Participant")
-        if p["status"] not in ("eligible", "consented", "enrolled"):
-            raise HTTPException(409, f"Participant must be signed off ('eligible' or 'consented') before PI enrolment (current: {p['status']})")
+        if p["status"] not in ("consented", "enrolled") or p.get("consented_date") is None:
+            raise HTTPException(409, f"Participant must have recorded consent ('consented') before PI enrolment (current: {p['status']})")
         edate = body.enrolled_date or date.today()
-        cdate = p.get("consented_date") or edate
         c.execute(text("""UPDATE participant SET status='enrolled', status_detail='enrolled',
-            consented_date=:cd, enrolled_date=:ed, enrolled_by=:u, enrolled_at=now() WHERE id=:i"""),
-                  dict(cd=cdate, ed=edate, u=user["username"], i=pid))
+            enrolled_date=:ed, enrolled_by=:u, enrolled_at=now() WHERE id=:i"""),
+                  dict(ed=edate, u=user["username"], i=pid))
         A.record(c, user, "screening.enrolled", "participant", pid, participant_id=pid,
                  before={"status": p["status"]},
                  after={"status": "enrolled", "enrolledDate": str(edate), "enrolledBy": user["username"], "note": body.note})
@@ -563,7 +557,14 @@ def queries(participant_id: str | None = None, site_id: str | None = None, field
 @r.post("/queries", response_model=S.DataQuery, status_code=201, tags=["queries"])
 def open_query(body: S.QueryIn, user=Depends(require("monitor", "pi"))):
     with engine.begin() as c:
-        p = must(one(c, "SELECT site_id FROM participant WHERE id=:i", i=body.participant_id), "Participant")
+        p = must(one(c, "SELECT site_id, study_id FROM participant WHERE id=:i", i=body.participant_id), "Participant")
+        if body.field_id:
+            if not one(c, "SELECT 1 FROM ecrf_field WHERE id=:f AND study_id=:s", f=body.field_id, s=p["study_id"]):
+                raise HTTPException(422, f"Field {body.field_id!r} does not belong to participant {body.participant_id}'s study")
+        if body.rule_id:
+            valid_rules = {r.id for r in Q.RULES}
+            if body.rule_id not in valid_rules:
+                raise HTTPException(422, f"Unknown ruleId {body.rule_id!r}")
         q = one(c, """INSERT INTO data_query (participant_id, site_id, field_id, severity, text, opened_by, rule_id)
           VALUES (:p,:s,:f,:sev,:t,:u,:r) RETURNING *""", p=body.participant_id, s=p["site_id"], f=body.field_id,
                 sev=body.severity, t=body.text, u=user["username"], r=body.rule_id)
@@ -597,6 +598,10 @@ def close_query(qid: int, user=Depends(require("nurse", "pi", "monitor"))):
         q = must(one(c, "SELECT * FROM data_query WHERE id=:i FOR UPDATE", i=qid), "Query")
         if q["status"] == "closed":
             raise HTTPException(409, "Query is already closed")
+        if user["role"] != "monitor" and user["username"] != q["opened_by"]:
+            raise HTTPException(403, "Only the monitor or the person who raised the query may close it")
+        if q.get("answered_by") == user["username"]:
+            raise HTTPException(403, "The person who answered a query cannot close it")
         prev_status = q["status"]
         q = one(c, "UPDATE data_query SET status='closed', closed_by=:u, closed_at=now() WHERE id=:i RETURNING *", i=qid, u=user["username"])
         A.record(c, user, "query.closed", "data_query", qid, participant_id=q["participant_id"],

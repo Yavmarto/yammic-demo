@@ -101,6 +101,8 @@ def load(eng=None):
                 A.record(c, SYSTEM, "extraction.proposed", "extraction", e["id"], participant_id=e["participantId"],
                          after={"field": e["field"], "status": e["status"], "value": e["value"], "confidence": e["confidence"]},
                          source="ai", model=e["model"], prompt_version=e["promptVersion"], actor=f"fixture/{e['model']}")
+        for p in parts_j["participants"]:
+            W.run_ai_screening(c, p["id"], SYSTEM, provider="rules")
         c.execute(text("SELECT setval(pg_get_serial_sequence('extraction_run','id'), (SELECT max(id) FROM extraction_run))"))
         c.execute(text("SELECT setval(pg_get_serial_sequence('ecrf_form_version','id'), (SELECT max(id) FROM ecrf_form_version))"))
 

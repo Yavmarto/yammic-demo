@@ -106,10 +106,6 @@ def run_ai_screening(c, pid: str, user: dict, *, provider: str = "rules") -> lis
     results: list[dict] = []
     for crit in criteria:
         cid = crit["id"]
-        if external_results and cid in external_results:
-            r = external_results[cid]
-            results.append(r)
-            continue
         status, conf, rationale = "unknown", 0.0, "Insufficient evidence in source documents."
         doc_id, ss, se, ev = None, None, None, []
 

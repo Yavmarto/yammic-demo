@@ -214,4 +214,6 @@ def evaluate_participant(c, pid: str, user: dict | None = None, *, trigger: str 
 
 
 def after_sync_participant(c, pid: str, user: dict) -> None:
+    from . import workflows as W
+    W.run_ai_screening(c, pid, user, provider="rules")
     evaluate_participant(c, pid, user, trigger="sync")

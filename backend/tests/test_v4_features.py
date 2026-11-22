@@ -30,8 +30,8 @@ def test_multi_site_sync_and_site_comparison(client, auth, monkeypatch):
     ])
 
     integ = client.get("/integrations", headers=nurse).json()
-    ids = {i["id"] for i in integ}
-    assert {"fhir", "hospital-1", "hospital-2"} <= ids
+    assert {i["id"] for i in integ} == {"hospital-1", "hospital-2"}
+    assert client.post("/integrations/fhir/fhir/sync", headers=nurse).status_code == 404
 
     # Sync hospital-2 specifically
     r2 = client.post("/integrations/fhir/hospital-2/sync", headers=nurse)
@@ -88,6 +88,14 @@ def test_screening_workflow_and_role_checks(client, auth):
     assert c_res.status_code == 200
     inc01 = next(c for c in c_res.json()["criteria"] if c["criterionId"] == "INC-01")
     assert inc01["coordinatorStatus"] == "met" and inc01["confirmedBy"] == "nurse"
+
+    blocked = client.post("/participants/GBM-NL-001/screening/sign-off", json={"outcome": "eligible"}, headers=nurse)
+    assert blocked.status_code == 422 and "unknown" in blocked.json()["detail"]
+    for crit in c_res.json()["criteria"]:
+        if crit["coordinatorStatus"] is None:
+            resolved = client.post(f"/participants/GBM-NL-001/screening/criteria/{crit['criterionId']}/confirm",
+                                   json={"status": "met", "note": "Checked against source"}, headers=nurse)
+            assert resolved.status_code == 200
 
     so_res = client.post("/participants/GBM-NL-001/screening/sign-off",
                          json={"outcome": "eligible"}, headers=nurse)
@@ -223,3 +231,72 @@ def test_form_versions_propose_approve_and_value_version_preservation(client, au
     assert by_id["SUBJID"]["value"]["formVersion"] == 1
     assert by_id["KPS"]["value"]["formVersion"] == 2
     assert client.get("/audit/verify", headers=pi).json()["ok"] is True
+
+
+def _sign_off_eligible(client, nurse, pid):
+    for crit in client.get(f"/participants/{pid}/screening", headers=nurse).json()["criteria"]:
+        if crit["coordinatorStatus"] is None:
+            r = client.post(f"/participants/{pid}/screening/criteria/{crit['criterionId']}/confirm",
+                            json={"status": "met", "note": "Checked against source"}, headers=nurse)
+            assert r.status_code == 200
+    assert client.post(f"/participants/{pid}/screening/sign-off", json={"outcome": "eligible"}, headers=nurse).status_code == 200
+
+
+def _consent_and_enrol_dates(pid):
+    with engine.connect() as c:
+        row = c.execute(text("SELECT consented_date, enrolled_date FROM participant WHERE id=:i"), {"i": pid}).one()
+    return row[0], row[1]
+
+
+def test_enrolment_requires_recorded_consent_and_keeps_consent_date(client, auth):
+    nurse, pi = auth("nurse"), auth("pi")
+    _sign_off_eligible(client, nurse, "GBM-NL-001")
+
+    early = client.post("/participants/GBM-NL-001/screening/enrol", json={"enrolledDate": "2026-11-21"}, headers=pi)
+    assert early.status_code == 409 and "consent" in early.json()["detail"]
+    assert client.get("/participants/GBM-NL-001/screening", headers=nurse).json()["status"] == "eligible"
+    assert _consent_and_enrol_dates("GBM-NL-001")[0] is None
+
+    client.post("/participants/GBM-NL-001/screening/consent", json={"consentedDate": "2026-11-20"}, headers=nurse)
+    assert client.post("/participants/GBM-NL-001/screening/enrol", json={"enrolledDate": "2026-11-21"}, headers=pi).status_code == 200
+    consented, enrolled = _consent_and_enrol_dates("GBM-NL-001")
+    assert str(consented) == "2026-11-20" and str(enrolled) == "2026-11-21"
+
+
+def test_get_screening_performs_no_writes(client, auth):
+    nurse = auth("nurse")
+    with engine.begin() as c:
+        c.execute(text("DELETE FROM screening_check WHERE participant_id='GBM-NL-004'"))
+
+    def _write_counts():
+        with engine.connect() as c:
+            return (c.execute(text("SELECT count(*) FROM audit_event")).scalar(),
+                    c.execute(text("SELECT count(*) FROM screening_check WHERE participant_id='GBM-NL-004'")).scalar())
+
+    before = _write_counts()
+    assert client.get("/screening", headers=nurse).status_code == 200
+    assert client.get("/participants/GBM-NL-004/screening", headers=nurse).status_code == 200
+    assert _write_counts() == before
+
+
+def test_screening_falls_back_to_rules_when_ai_checker_is_down(client, auth, monkeypatch):
+    from app.ai import screening as ai_screening
+
+    def _ollama_down(*args, **kwargs):
+        raise RuntimeError("ollama is down (test)")
+
+    monkeypatch.setattr(ai_screening, "check_participant", _ollama_down)
+    r = client.post("/participants/GBM-NL-001/screening/check?provider=ollama", headers=auth("nurse"))
+    assert r.status_code == 200 and r.json()["totalCount"] == 13
+
+
+def test_humans_cannot_write_ai_screening_results(client, auth):
+    body = [{"criterionId": "INC-01", "status": "met", "confidence": 0.99}]
+    for who in ("nurse", "pi", "monitor"):
+        assert client.post("/participants/GBM-NL-001/screening/checks", json=body, headers=auth(who)).status_code == 403
+
+
+def test_query_field_must_exist_in_participant_study(client, auth):
+    r = client.post("/queries", json={"participantId": "GBM-NL-001", "text": "Check", "fieldId": "NOT_A_FIELD"},
+                    headers=auth("monitor"))
+    assert r.status_code == 422
