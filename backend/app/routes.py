@@ -420,7 +420,7 @@ EXSEL = """
 SELECT e.id, e.run_id, e.document_id, d.doc_type document_type, e.participant_id, e.field_id AS field,
   f.label field_label, e.status, e.value, e.normalized_value, e.unit, e.confidence, e.proposed_code,
   e.abstention_reason, e.span_start, e.span_end, e.evidence, e.provider, e.model, e.prompt_version,
-  e.review_state, e.seeded_issue,
+  e.review_state, e.seeded_issue, e.assigned_to, e.due_date,
   (SELECT to_jsonb(x) FROM (SELECT decision, corrected_value, reason, username, role, created_at
      FROM review_decision rd WHERE rd.extraction_id=e.id ORDER BY rd.id DESC LIMIT 1) x) last_decision
 FROM extraction e JOIN source_document d ON d.id=e.document_id JOIN ecrf_field f ON f.id=e.field_id"""
@@ -441,10 +441,36 @@ def extractions(pid: str, document_id: str | None = None, review_state: S.Review
     return [_ex(x) for x in xs]
 
 
+@r.get("/reviewers", response_model=list[S.User], tags=["extractions"])
+def reviewers(user=Depends(require("pi"))):
+    with engine.connect() as c:
+        return rows(c, "SELECT username, display_name AS name, role FROM app_user WHERE role='nurse' ORDER BY display_name")
+
+
+@r.post("/extractions/{eid}/assignment", response_model=S.Extraction, tags=["extractions"])
+def assign_review(eid: str, body: S.AssignmentIn, user=Depends(require("pi"))):
+    with engine.begin() as c:
+        e = must(one(c, "SELECT * FROM extraction WHERE id=:i FOR UPDATE", i=eid), "Extraction")
+        if e["review_state"] not in ("pending", "deferred"):
+            raise HTTPException(409, "Only pending or deferred items can be assigned")
+        if not one(c, "SELECT 1 FROM app_user WHERE username=:u AND role='nurse'", u=body.assigned_to):
+            raise HTTPException(422, "Assignee must be a demo reviewer")
+        before = {"assignedTo": e["assigned_to"], "dueDate": str(e["due_date"]) if e["due_date"] else None}
+        after = {"assignedTo": body.assigned_to, "dueDate": body.due_date.isoformat()}
+        if before != after:
+            c.execute(text("UPDATE extraction SET assigned_to=:u, due_date=:d WHERE id=:i"),
+                      {"u": body.assigned_to, "d": body.due_date, "i": eid})
+            A.record(c, user, "extraction.assignment", "extraction", eid, participant_id=e["participant_id"],
+                     before=before, after=after, source="human")
+        return _ex(one(c, EXSEL + " WHERE e.id=:i", i=eid))
+
+
 @r.post("/extractions/{eid}/decision", response_model=S.DecisionResult, tags=["extractions"])
 def decide(eid: str, body: S.DecisionIn, user=Depends(require("nurse", "pi"))):
     with engine.begin() as c:
         e = must(one(c, "SELECT * FROM extraction WHERE id=:i FOR UPDATE", i=eid), "Extraction")
+        if user["role"] == "nurse" and e["assigned_to"] not in (None, user["username"]):
+            raise HTTPException(403, "This item is assigned to another reviewer")
         corrected = (body.corrected_value or "").strip()
         reason = (body.reason or "").strip() or None
         if body.decision == "correct" and not corrected:

@@ -93,6 +93,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   final edit = TextEditingController();
   String? editError;
   bool _init = false;
+  bool mineOnly = false;
 
   @override
   void initState() {
@@ -109,7 +110,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     store = ReviewStore(session)..load();
   }
 
-  List<ReviewItem> get visible => [for (final i in store.items) if (pid == null || i.participantId == pid) i];
+  List<ReviewItem> get visible => [for (final i in store.items) if ((pid == null || i.participantId == pid) && (!mineOnly || i.assignedTo == session.username)) i];
   ReviewItem? get cur => visible.isEmpty ? null : visible[sel.clamp(0, visible.length - 1)];
 
   Future<void> _openManual() async {
@@ -193,7 +194,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
   void _next() => _move(1);
 
-  bool get _canAct => session.canWrite;
+  bool get _canAct => session.canWrite && (session.isPi || cur?.assignedTo == null || cur?.assignedTo == session.username);
 
   Future<bool> _write(ReviewItem i, String action, {String? value, String? why}) async {
     final err = await store.act(i, action, value: value, why: why);
@@ -207,19 +208,19 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
   Future<void> _accept() async {
     final i = cur;
-    if (_typing || !_canAct || i == null || !i.canAccept || i.state != RState.unverified) return;
+    if (_typing || !_canAct || i == null || !i.canAccept || (i.state != RState.unverified && i.state != RState.deferred)) return;
     if (await _write(i, 'accept') && mounted) _done('${i.label} accepted — verified by ${session.username}');
   }
 
   Future<void> _defer() async {
     final i = cur;
-    if (_typing || !_canAct || i == null || i.state != RState.unverified) return;
+    if (_typing || !_canAct || i == null || (i.state != RState.unverified && i.state != RState.deferred)) return;
     if (await _write(i, 'defer') && mounted) _done('${i.label} deferred');
   }
 
   void _startCorrect() {
     final i = cur;
-    if (_typing || !_canAct || i == null || i.state != RState.unverified) return;
+    if (_typing || !_canAct || i == null || (i.state != RState.unverified && i.state != RState.deferred)) return;
     setState(() { correcting = true; editError = null; edit.text = i.abstained ? '' : i.value; });
   }
 
@@ -232,7 +233,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
   Future<void> _reject() async {
     final i = cur;
-    if (_typing || !_canAct || i == null || i.state != RState.unverified) return;
+    if (_typing || !_canAct || i == null || (i.state != RState.unverified && i.state != RState.deferred)) return;
     final why = await showDialog<String>(context: context, builder: (_) => const _RejectDialog());
     if (why == null || !mounted) return;
     if (await _write(i, 'reject', why: why) && mounted) _done('${i.label} rejected');
@@ -303,7 +304,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
   Widget _toolbar() {
     final pids = store.participantIds;
-    final total = visible.length, left = store.pending(pid);
+    final total = visible.length, left = visible.where((i) => i.state == RState.unverified || i.state == RState.deferred).length;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       PageHeader(
         title: 'AI extraction review',
@@ -344,6 +345,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
           ),
         ]),
       ),
+      Row(children: [
+        Checkbox(value: mineOnly, onChanged: (v) => setState(() { mineOnly = v ?? false; sel = 0; })),
+        const Text("My assigned work"),
+      ]),
       if (run != null) _runBar(),
       const SizedBox(height: K.s16),
       Row(children: [
@@ -480,6 +485,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     final low = i.confidence < 0.70 && !i.abstained;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('${i.participantId} · ${i.label}', style: K.small),
+      Text(i.assignedTo == null ? 'Unassigned' : 'Assigned to ${i.assignedTo} · Due ${i.dueDate}', style: K.small),
       const SizedBox(height: 4),
       Text('$shown ${i.unit}'.trim(), style: K.heading.copyWith(fontSize: 16)),
       const SizedBox(height: 10),
@@ -512,10 +518,39 @@ class _ReviewScreenState extends State<ReviewScreen> {
     );
   }
 
+  Future<void> _assign(ReviewItem item) async {
+    try {
+      final reviewers = await session.api.get('/reviewers') as List;
+      if (!mounted) return;
+      String? reviewer = item.assignedTo ?? (reviewers.isEmpty ? null : reviewers.first['username'] as String);
+      DateTime? due = DateTime.tryParse(item.dueDate ?? '');
+      final choice = await showDialog<bool>(context: context, builder: (context) => StatefulBuilder(builder: (context, update) => AlertDialog(
+        title: const Text('Assign review'),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          DropdownButton<String>(value: reviewer, hint: const Text('Select reviewer'), isExpanded: true,
+            items: [for (final r in reviewers) DropdownMenuItem<String>(value: r['username'] as String, child: Text(r['name'] as String))],
+            onChanged: (v) => update(() => reviewer = v)),
+          TextButton(onPressed: () async {
+            final selected = await showDatePicker(context: context, initialDate: due ?? Session.demoToday,
+              firstDate: DateTime(2020), lastDate: DateTime(2100));
+            if (selected != null) update(() => due = selected);
+          }, child: Text(due == null ? 'Select due date' : 'Due ${due!.toIso8601String().substring(0, 10)}')),
+        ]),
+        actions: [TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          FilledButton(onPressed: reviewer == null || due == null ? null : () => Navigator.pop(context, true), child: const Text('Save'))],
+      )));
+      if (choice != true) return;
+      final result = await session.api.post('/extractions/${item.id}/assignment', {'assignedTo': reviewer, 'dueDate': due!.toIso8601String().substring(0, 10)}) as Map;
+      setState(() => item.j = Map<String, dynamic>.from(result));
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Assignment failed: $e')));
+    }
+  }
+
   Widget _target(ReviewItem i) {
     final s = i.state;
     final l = _lookOf(i, s);
-    final pending = s == RState.unverified;
+    final pending = s == RState.unverified || s == RState.deferred;
     final written = s == RState.accepted ? i.value : s == RState.corrected ? i.correctedValue : null;
     final code = i.code;
     final low = i.confidence < 0.70 && !i.abstained;
@@ -546,6 +581,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
               ]),
               false,
             ),
+            if (i.assignedTo != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text('Assigned to ${i.assignedTo} · Due ${i.dueDate}', style: K.small)),
+            if (session.isPi && !session.offline && pending) TextButton.icon(onPressed: () => _assign(i), icon: const Icon(Icons.person_add_alt), label: const Text('Assign or change due date')),
             const SizedBox(height: K.s16),
             Row(children: [
               const SizedBox(width: 92, child: Text('Confidence', style: K.small)),
@@ -589,7 +626,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 ]),
               ]),
             if (pending && !_canAct)
-              Padding(padding: const EdgeInsets.only(top: 10), child: Text(session.writeBlockedReason ?? '', style: K.small)),
+              Padding(padding: const EdgeInsets.only(top: 10), child: Text(session.writeBlockedReason ?? 'Assigned to another reviewer.', style: K.small)),
             if (pending && _canAct && !i.canAccept)
               const Padding(padding: EdgeInsets.only(top: 10), child: Text('Accept is disabled: no evidence in source. Correct, reject or defer.', style: K.small)),
             const SizedBox(height: K.s16),

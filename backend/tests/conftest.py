@@ -60,7 +60,25 @@ def fresh_db():
                 c.execute(text("DROP SCHEMA public CASCADE"))
                 c.execute(text("CREATE SCHEMA public"))
             migrate()
-            seed.load()
+            site = os.environ.get("TEST_SITE_ID")
+            original_j = seed.J
+            if site:
+                parts = original_j("participants.json")
+                parts["participants"] = [p for p in parts["participants"] if p["siteId"] == site]
+                ids = {p["id"] for p in parts["participants"]}
+                docs = original_j("documents.json")
+                docs["documents"] = [d for d in docs["documents"] if d["participantId"] in ids]
+                doc_ids = {d["id"] for d in docs["documents"]}
+                ex = original_j("extractions.json")
+                ex["extractions"] = [e for e in ex["extractions"] if e["documentId"] in doc_ids]
+                study = original_j("study.json")
+                study["sites"] = [s for s in study["sites"] if s["id"] == site]
+                selected = {"participants.json": parts, "documents.json": docs, "extractions.json": ex, "study.json": study}
+                seed.J = lambda name: selected[name] if name in selected else original_j(name)
+            try:
+                seed.load()
+            finally:
+                seed.J = original_j
             yield
         finally:
             lock_conn.execute(text("SELECT pg_advisory_unlock(7740)"))

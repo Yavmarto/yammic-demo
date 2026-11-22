@@ -10,6 +10,8 @@ class ReviewItem {
   String text = '';
   ReviewItem(this.j);
   String get id => j['id'];
+  String? get assignedTo => j['assignedTo'];
+  String? get dueDate => j['dueDate'];
   String get participantId => j['participantId'];
   String get field => j['field'];
   String get label => j['fieldLabel'] ?? field;
