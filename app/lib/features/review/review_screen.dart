@@ -23,7 +23,7 @@ _Look _lookOf(ReviewItem i, RState s) => switch (s) {
           ? const _Look(Tone.muted, Icons.help_outline, 'AI abstained', dashed: true)
           : const _Look(Tone.ai, Icons.auto_awesome, 'AI · Unverified', dashed: true),
       RState.accepted => const _Look(Tone.ok, Icons.check_circle_outline, 'Verified · Accepted'),
-      RState.corrected => const _Look(Tone.ok, Icons.edit_note, 'Verified · Corrected'),
+      RState.corrected => i.provider == 'human' ? const _Look(Tone.ok, Icons.person, 'Entered by a person') : const _Look(Tone.ok, Icons.edit_note, 'Verified · Corrected'),
       RState.rejected => const _Look(Tone.bad, Icons.block, 'Rejected'),
       RState.deferred => const _Look(Tone.muted, Icons.schedule, 'Deferred'),
     };
@@ -86,6 +86,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
   String? pid;
   int sel = 0;
   bool correcting = false;
+  bool manual = false, savingManual = false;
+  List<dynamic> manualFields = [], manualDocs = [];
+  String? manualField, manualDoc, manualText, manualError;
+  final manualValue = TextEditingController(), manualEvidence = TextEditingController();
   final edit = TextEditingController();
   String? editError;
   bool _init = false;
@@ -107,6 +111,78 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
   List<ReviewItem> get visible => [for (final i in store.items) if (pid == null || i.participantId == pid) i];
   ReviewItem? get cur => visible.isEmpty ? null : visible[sel.clamp(0, visible.length - 1)];
+
+  Future<void> _openManual() async {
+    if (pid == null) return;
+    try {
+      final form = await session.api.get('/participants/$pid/ecrf') as Map;
+      final docs = await session.api.get('/participants/$pid/documents') as List;
+      if (!mounted) return;
+      setState(() {
+        manualFields = (form['fields'] as List).where((f) => f['value'] == null && !store.items.any((i) => i.participantId == pid && i.field == f['id'] && i.state == RState.unverified && !i.abstained)).toList();
+        manualDocs = docs; manualField = null; manualDoc = null; manualText = null; manualError = null;
+        manualValue.clear(); manualEvidence.clear(); manual = true;
+      });
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not load entry form: $e')));
+    }
+  }
+
+  Future<void> _selectManualDoc(String? id) async {
+    setState(() { manualDoc = id; manualText = null; });
+    if (id == null) return;
+    try {
+      final doc = await session.api.get('/documents/$id') as Map;
+      if (mounted && manualDoc == id) setState(() => manualText = doc['text'] as String);
+    } catch (e) {
+      if (mounted) setState(() => manualError = 'Could not load document: $e');
+    }
+  }
+
+  Future<void> _saveManual() async {
+    if (savingManual) return;
+    if (manualField == null || manualDoc == null || manualValue.text.trim().isEmpty || manualEvidence.text.trim().isEmpty) {
+      setState(() => manualError = 'Choose a field and document, and enter a value and source quote.'); return;
+    }
+    if (manualText == null || !manualText!.contains(manualEvidence.text.trim())) {
+      setState(() => manualError = 'The quote must match the selected document exactly.'); return;
+    }
+    setState(() { savingManual = true; manualError = null; });
+    try {
+      final result = await session.api.post('/participants/$pid/ecrf/$manualField/manual', {
+        'value': manualValue.text.trim(), 'documentId': manualDoc, 'evidence': manualEvidence.text.trim(),
+      }) as Map;
+      await store.load();
+      if (!mounted) return;
+      final selected = visible.indexWhere((i) => i.id == result['extraction']['id']);
+      setState(() { manual = false; sel = selected < 0 ? 0 : selected; });
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Value saved as entered by a person.')));
+    } catch (e) {
+      if (mounted) setState(() => manualError = 'Could not save: $e');
+    } finally {
+      if (mounted) setState(() => savingManual = false);
+    }
+  }
+
+  Widget _manualPanel() => Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+    Expanded(child: _pane('Source document', Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      DropdownButtonFormField<String>(initialValue: manualDoc, decoration: const InputDecoration(labelText: 'Document'),
+        items: [for (final d in manualDocs) DropdownMenuItem(value: d['id'] as String, child: Text('${d['title']} (${d['id']})', overflow: TextOverflow.ellipsis))], onChanged: _selectManualDoc),
+      const SizedBox(height: 16), SelectableText(manualText ?? 'Choose a document to see its text.'),
+    ]))),
+    const SizedBox(width: K.s16),
+    Expanded(child: _pane('Enter from source', Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      const Text('Enter an empty field from the document. Copy the exact source quote as evidence.'),
+      const SizedBox(height: 16),
+      DropdownButtonFormField<String>(initialValue: manualField, decoration: const InputDecoration(labelText: 'Empty field'),
+        items: [for (final f in manualFields) DropdownMenuItem(value: f['id'] as String, child: Text('${f['label']} (${f['id']})'))], onChanged: (v) => setState(() => manualField = v)),
+      const SizedBox(height: 16), TextField(controller: manualValue, decoration: const InputDecoration(labelText: 'Value')),
+      const SizedBox(height: 16), TextField(controller: manualEvidence, maxLines: 3, decoration: const InputDecoration(labelText: 'Exact source quote')),
+      if (manualError != null) Padding(padding: const EdgeInsets.only(top: 12), child: Text(manualError!, style: const TextStyle(color: K.badInk))),
+      const SizedBox(height: 16), FilledButton(onPressed: savingManual ? null : _saveManual, child: Text(savingManual ? 'Saving…' : 'Save as person-entered')),
+      TextButton(onPressed: savingManual ? null : () => setState(() => manual = false), child: const Text('Cancel')),
+    ]))),
+  ]);
 
   bool get _typing => FocusManager.instance.primaryFocus?.context?.widget is EditableText;
 
@@ -189,7 +265,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
           if (!store.loaded) return const PageSkeleton();
           final i = cur;
           return CallbackShortcuts(
-            bindings: {
+            bindings: manual ? {} : {
               const SingleActivator(LogicalKeyboardKey.keyA): _accept,
               const SingleActivator(LogicalKeyboardKey.keyX): _reject,
               const SingleActivator(LogicalKeyboardKey.keyD): _defer,
@@ -208,7 +284,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   _toolbar(),
                   const SizedBox(height: K.s16),
                   Expanded(
-                    child: i == null
+                    child: manual ? _manualPanel() : i == null
                         ? const Panel(child: SizedBox(height: 240, child: EmptyState(icon: Icons.fact_check_outlined, title: 'Queue is empty', hint: 'No AI extractions for this selection. Pick another participant.')))
                         : Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                             Expanded(flex: 448, child: _source(i)),
@@ -246,7 +322,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   const DropdownMenuItem(value: null, child: Text('All participants')),
                   for (final p in pids) DropdownMenuItem(value: p, child: Text(p)),
                 ],
-                onChanged: (v) => setState(() { pid = v; sel = 0; correcting = false; }),
+                onChanged: (v) => setState(() { pid = v; sel = 0; correcting = false; manual = false; }),
               ),
             ),
           ),
@@ -259,6 +335,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
               label: const Text('Run extraction'),
             ),
           ),
+          const SizedBox(width: K.s12),
+          OutlinedButton.icon(onPressed: _canAct && pid != null ? _openManual : null, icon: const Icon(Icons.edit_note), label: const Text('Enter from source')),
           const SizedBox(width: K.s12),
           const Tooltip(
             message: 'A accept · C correct · X reject · D defer · J/↓ next · K/↑ previous · Esc cancel',

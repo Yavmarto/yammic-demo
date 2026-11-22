@@ -30,6 +30,8 @@ class FakeBackend {
       if (p == '/auth/login') {
         final u = jsonDecode(r.body)['username'];
         body = {'accessToken': 't', 'tokenType': 'bearer', 'user': {'username': u, 'role': u, 'name': 'Demo $u'}};
+      } else if (p.endsWith('/manual')) {
+        return http.Response(jsonEncode({'detail': 'Value does not match the field type or bounds'}), 422, headers: {'content-type': 'application/json'});
       } else if (p.endsWith('/decision')) {
         state = jsonDecode(r.body)['decision'] == 'accept' ? 'accepted' : 'deferred';
         body = {'extraction': {..._ext('EXT-1', state), 'lastDecision': {'decision': 'accept', 'username': 'nurse'}}, 'ecrfValue': null};
@@ -48,6 +50,10 @@ class FakeBackend {
       };
     } else if (p == '/participants') {
       body = [{'id': 'GBM-NL-001', 'studyId': 'S', 'siteId': 'SITE-01', 'status': 'active', 'statusDetail': 'on_treatment', 'age': 57, 'sex': 'F', 'enrolledDate': '2026-06-05', 'documentCount': 1, 'extractionsPending': 2, 'ecrfVerified': 0, 'ecrfTotal': 15, 'ecrfCompletePct': 0, 'openQueries': 1}];
+    } else if (p.endsWith('/ecrf')) {
+      body = {'fields': [{'id': 'AGE', 'label': 'Age', 'value': null}]};
+    } else if (p.endsWith('/documents')) {
+      body = [{'id': 'DOC-001-PATH', 'title': 'Path'}];
     } else if (p.endsWith('/extractions')) {
       body = [_ext('EXT-1', state, conf: .5), _ext('EXT-2', 'pending')];
     } else if (p.startsWith('/documents/')) {
@@ -109,6 +115,35 @@ void main() {
     await t.sendKeyEvent(LogicalKeyboardKey.keyA);
     await t.pump(const Duration(milliseconds: 300));
     expect(be.posts.any((p) => p.endsWith('/decision')), isTrue);
+  });
+
+  testWidgets('manual entry preserves input after server validation fails', (t) async {
+    final (be, _) = await boot(t);
+    await signIn(t, 'nurse');
+    await t.tap(find.text('AI review').first);
+    await settle(t);
+    await t.tap(find.text('All participants'));
+    await t.pumpAndSettle();
+    await t.tap(find.text('GBM-NL-001').last);
+    await t.pumpAndSettle();
+    await t.tap(find.text('Enter from source'));
+    await t.pumpAndSettle();
+    await t.tap(find.text('Empty field'));
+    await t.pumpAndSettle();
+    await t.tap(find.text('Age (AGE)').last);
+    await t.pumpAndSettle();
+    await t.tap(find.text('Document'));
+    await t.pumpAndSettle();
+    await t.tap(find.text('Path (DOC-001-PATH)').last);
+    await t.pumpAndSettle();
+    await t.enterText(find.widgetWithText(TextField, 'Value'), 'bad');
+    await t.enterText(find.widgetWithText(TextField, 'Exact source quote'), 'KPS 90');
+    await t.tap(find.text('Save as person-entered'));
+    await t.pumpAndSettle();
+    expect(be.posts, contains('/participants/GBM-NL-001/ecrf/AGE/manual'));
+    expect(find.textContaining('Value does not match'), findsOneWidget);
+    expect(find.text('bad'), findsOneWidget);
+    expect(find.text('KPS 90'), findsOneWidget);
   });
 
   testWidgets('monitor role is read-only on review', (t) async {
