@@ -149,6 +149,18 @@
         "EXT-0045",
         "EXT-0046"
       ]
+    },
+    {
+      "documentId": "DOC-004-MRI",
+      "proposedFields": 0,
+      "abstainedFields": 0,
+      "extractionIds": []
+    },
+    {
+      "documentId": "DOC-004-CLIN",
+      "proposedFields": 0,
+      "abstainedFields": 0,
+      "extractionIds": []
     }
   ],
   "extractions": [

@@ -756,6 +756,60 @@ geen graad 3 of hoger.
 """,
 )
 
+DOC_004_MRI = Doc(
+    "DOC-004-MRI",
+    "GBM-NL-004",
+    "radiology_report",
+    "MRI-verslag hersenen, eerste presentatie (fictief)",
+    "nl",
+    "2026-11-17",
+    """SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK
+Fictief Universitair Medisch Centrum Zuidhaven - Afdeling Radiologie
+
+PATIENTCODE: GBM-NL-004
+ONDERZOEK: MRI hersenen met contrast
+DATUM: 2026-11-17
+AANVRAAG: first presentation, suspected high-grade glioma
+
+VERSLAG
+Er is een ruimte-innemende laesie rechts frontaal met perifocaal oedeem en
+onregelmatige ringvormige contrast-aankleuring. Geen middenlijnverschuiving
+groter dan 5 mm.
+
+IMPRESSIE
+Verdachte hooggradige gliale tumor rechts frontaal. Histologische bevestiging
+is nog niet beschikbaar.
+""",
+)
+
+DOC_004_CLIN = Doc(
+    "DOC-004-CLIN",
+    "GBM-NL-004",
+    "clinic_letter",
+    "Poliklinische brief neurochirurgie (fictief)",
+    "nl",
+    "2026-11-18",
+    """SYNTHETISCH DOCUMENT - FICTIEF - NIET VOOR KLINISCH GEBRUIK
+Fictief Universitair Medisch Centrum Zuidhaven - Afdeling Neurochirurgie
+
+PATIENTCODE: GBM-NL-004
+GESLACHT: vrouw
+LEEFTIJD BIJ DIAGNOSE: 52 jaar
+DATUM POLIKLINIEK: 2026-11-18
+
+POLIKLINISCHE BRIEF
+Patient werd verwezen na een MRI met een verdachte laesie rechts frontaal.
+Screeningsbezoek voor de studie staat gepland op 2026-11-24.
+
+FUNCTIONELE STATUS
+Karnofsky Performance Status: 90%.
+
+BELEID
+Histologie en MGMT-uitslag zijn nog niet beschikbaar. Nog geen oncologische
+behandeling gestart.
+""",
+)
+
 DOCUMENTS = [
     DOC_001_PATH,
     DOC_001_MRI,
@@ -767,6 +821,8 @@ DOCUMENTS = [
     DOC_003_PATH,
     DOC_003_MRI,
     DOC_003_DIS,
+    DOC_004_MRI,
+    DOC_004_CLIN,
 ]
 
 # --------------------------------------------------------------------------
@@ -1142,7 +1198,7 @@ PARTICIPANTS = [
         "summary": "Fictional participant: screening in progress after MRI showed a right frontal lesion. Histology and biomarker results are pending.",
         "diagnosisDate": None,
         "enrolledDate": None,
-        "documentIds": [],
+        "documentIds": ["DOC-004-MRI", "DOC-004-CLIN"],
         "visits": [
             visit("Screening (V0)", "2026-11-24", "scheduled", "Screening visit planned"),
         ],

@@ -70,11 +70,16 @@ def me(user=ANY):
 
 
 # ---------- dashboard ----------
+# Enrolled = the seeded baseline cohort plus synced patients only once the platform enrols them.
+# Synced patients in screening/eligible/consented/screen_fail are not enrolled.
+ENROLLED = "(NOT p.synced_from_fhir OR p.status IN ('enrolled','active'))"
+
+
 def _kpis_for(c, study_id: str, site_id: str | None = None, target: int = 0) -> S.Kpis:
     k = one(c, """
       SELECT
-       (SELECT count(*) FROM participant p WHERE p.study_id=:s AND (:si IS NULL OR p.site_id=:si)) enrolled,
-       (SELECT count(DISTINCT p.id) FROM participant p JOIN source_document d ON d.participant_id=p.id
+       (SELECT count(*) FROM participant p WHERE p.study_id=:s AND (:si IS NULL OR p.site_id=:si) AND """ + ENROLLED + """) enrolled,
+       (SELECT count(DISTINCT p.id) FROM participant p JOIN extraction_run r ON r.participant_id=p.id
           WHERE p.study_id=:s AND (:si IS NULL OR p.site_id=:si)) scope,
        (SELECT count(*) FROM ecrf_field WHERE study_id=:s) fields,
        (SELECT count(*) FROM ecrf_value v JOIN participant p ON p.id=v.participant_id
@@ -119,7 +124,7 @@ def _kpis_for(c, study_id: str, site_id: str | None = None, target: int = 0) -> 
 def _sites_for(c, study_id: str) -> list[S.Site]:
     raw = rows(c, """
       SELECT s.*,
-        (SELECT count(*) FROM participant p WHERE p.site_id=s.id) enrolled,
+        (SELECT count(*) FROM participant p WHERE p.site_id=s.id AND """ + ENROLLED + """) enrolled,
         (SELECT count(*) FROM participant p WHERE p.site_id=s.id AND p.status='screening') screening,
         (SELECT count(*) FROM participant p WHERE p.site_id=s.id AND p.status='eligible') eligible,
         (SELECT count(*) FROM participant p WHERE p.site_id=s.id AND p.status='consented') consented,

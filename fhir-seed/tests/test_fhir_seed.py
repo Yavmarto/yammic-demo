@@ -89,7 +89,7 @@ class ManifestTests(unittest.TestCase):
         h2_baseline = load_manifest("hospital2/baseline")
         h2_arrivals = load_manifest("hospital2/arrivals")
         self.assertEqual(baseline["patientCount"], 8)
-        self.assertEqual(baseline["documentCount"], 10)
+        self.assertEqual(baseline["documentCount"], 12)
         self.assertEqual(arrivals["patientCount"], 3)
         self.assertEqual(arrivals["documentCount"], 7)
         self.assertEqual(h2_baseline["patientCount"], 5)

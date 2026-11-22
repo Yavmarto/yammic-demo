@@ -144,6 +144,7 @@ def run_sync(user: dict, source=None, *, full: bool = False, source_id: str = "h
         scrub: dict[str, Scrubber] = {}   # participant id -> scrubber
         pids: dict[str, str] = {}         # FHIR Patient.id -> participant id
         new: set[str] = set()             # participants created by this run
+        touched: set[str] = set()         # participants whose facts/documents arrived in this run
 
         def err(rtype, rid, msg):
             errors.append({"resourceType": rtype, "id": rid, "error": msg[:300]})
@@ -165,6 +166,7 @@ def run_sync(user: dict, source=None, *, full: bool = False, source_id: str = "h
                         pid = pids.get(ref) or (ref if ref and _one(c, "SELECT 1 FROM participant WHERE id=:i", i=ref) else None)
                         if not pid:
                             raise ValueError(f"no participant for subject {ref!r}")
+                        touched.add(pid)
                         if pid not in scrub:
                             scrub[pid] = Scrubber(set(), "[pseudonymised]")
                         _fact(c, r, pid, run_id, user, counts, scrub[pid], source_id=source_id)
@@ -173,7 +175,7 @@ def run_sync(user: dict, source=None, *, full: bool = False, source_id: str = "h
         for pid in new:
             _describe(c, pid)
         if after_participant:
-            for pid in set(pids.values()):
+            for pid in set(pids.values()) | touched:
                 after_participant(c, pid, user)
         ms = int((time.perf_counter() - t0) * 1000)
         status = "partial" if errors else "completed"
@@ -216,8 +218,8 @@ def _patient(c, p, run_id, user, counts, scrub, new, *, source_id="hospital-1", 
     else:
         if not study or not site:
             raise ValueError(f"unknown study/site for patient (site {site_ref!r})")
-        c.execute(text("""INSERT INTO participant (id, study_id, site_id, status, status_detail, age, sex, summary)
-            VALUES (:i,:st,:si,'screening','synced_from_fhir',:age,:sex,:sum)"""),
+        c.execute(text("""INSERT INTO participant (id, study_id, site_id, status, status_detail, synced_from_fhir, age, sex, summary)
+            VALUES (:i,:st,:si,'screening','synced_from_fhir',true,:age,:sex,:sum)"""),
                   dict(i=pid, st=study["id"], si=site["id"], age=_age(p.get("birthDate")),
                        sex={"male": "M", "female": "F"}.get(p.get("gender"), "U"),
                        sum="Synced from the hospital EHR. Clinical summary builds up as documents are reviewed."))
@@ -278,14 +280,15 @@ def _document(c, r, pid, run_id, user, counts, sc: Scrubber, *, source_id="hospi
 
 
 def _describe(c, pid):
-    """Give a new participant a status and summary from its synced Condition."""
+    """Give a new participant a summary from its synced Condition. Every synced patient starts in
+    screening, whatever the hospital's ResearchSubject/Condition status says; only the platform enrols."""
     cond = _one(c, "SELECT * FROM fhir_fact WHERE participant_id=:p AND resource_type='Condition' ORDER BY effective LIMIT 1", p=pid)
     if not cond:
         return
     provisional = (cond["status"] or "") == "provisional"
     onset = (cond["effective"] or "")[:10] or None
-    c.execute(text("UPDATE participant SET status=:s, diagnosis_date=:d, summary=:m WHERE id=:i"),
-              dict(s="screening" if provisional else "active", d=onset, i=pid,
+    c.execute(text("UPDATE participant SET diagnosis_date=:d, summary=:m WHERE id=:i"),
+              dict(d=onset, i=pid,
                    m=f"Synced from the hospital EHR: {cond['display']}"
                      f"{', ' + cond['value'] if cond['value'] else ''}"
                      f"{' (provisional, histology pending)' if provisional else ''}."))

@@ -88,6 +88,8 @@ def load(eng=None):
             by_doc.setdefault(e["documentId"], []).append(e)
         for d in docs_j["documents"]:
             es = by_doc.get(d["id"], [])
+            if not es:
+                continue  # screening-only documents are not sent for eCRF extraction
             run = c.execute(text("""INSERT INTO extraction_run (participant_id, document_id, status, total, done, provider,
               model, prompt_version, created_by, finished_at) VALUES (:p,:d,'completed',:n,:n,'fixture',:m,:pv,'system',now())
               RETURNING id"""), dict(p=d["participantId"], d=d["id"], n=len(es), m=gen["modelId"], pv=gen["promptVersion"])).scalar()

@@ -31,7 +31,7 @@ def test_rules_match_gold_on_every_document():
     provider = RulesProvider()
     for doc in gold_mod.load_documents():
         pred = provider.extract(doc["text"], doc["type"], fields).by_field()
-        for field, expected in gold[doc["id"]].items():
+        for field, expected in gold.get(doc["id"], {}).items():  # screening-only docs have no gold fields
             p = pred[field]
             if expected["status"] == "abstained":
                 assert p.status == "abstained", (doc["id"], field, p)

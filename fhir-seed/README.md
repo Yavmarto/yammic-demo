@@ -63,7 +63,7 @@ fhir-seed/
   tests/test_fhir_seed.py  19 offline tests (+1 optional integration test)
 ```
 
-`baseline` is generated from `app/assets/data/` (8 participants, 10 documents).
+`baseline` is generated from `app/assets/data/` (8 participants, 12 documents).
 `arrivals` is generated from `fhir-seed/source/` (3 new patients, 7 new
 documents). Nothing under `app/` is changed.
 
@@ -172,7 +172,7 @@ passes with 0 errors and the resources are readable in any FHIR viewer.
 
 ## Known gaps / deliberate omissions
 
-- Participants `GBM-NL-004`–`008` have no documents in the source dataset, so
+- `GBM-NL-004` has an MRI report and a clinic letter (so its screening check has evidence); participants `GBM-NL-005`–`008` have no documents in the source dataset, so
   they get no `DocumentReference`/`DiagnosticReport` and only the clinical
   facts present in `participants.json` (no KPS/MGMT/IDH/resection observation).
   This is visible as real-world incompleteness, not missing code.

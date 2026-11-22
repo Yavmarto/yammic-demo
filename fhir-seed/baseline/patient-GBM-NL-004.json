@@ -772,6 +772,300 @@
         "method": "PUT",
         "url": "Observation/OBS-GBM-NL-004-LAB-CREA-BL"
       }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/DocumentReference/DOC-004-MRI",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "id": "DOC-004-MRI",
+        "masterIdentifier": {
+          "system": "https://yamicc.example/fhir/NamingSystem/hospital-document-id",
+          "value": "DOC-004-MRI"
+        },
+        "identifier": [
+          {
+            "system": "https://yamicc.example/fhir/NamingSystem/hospital-document-id",
+            "value": "DOC-004-MRI"
+          }
+        ],
+        "status": "current",
+        "docStatus": "final",
+        "type": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "18748-4",
+              "display": "Diagnostic imaging study"
+            }
+          ],
+          "text": "Diagnostic imaging study"
+        },
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/us/core/CodeSystem/us-core-documentreference-category",
+                "code": "clinical-note",
+                "display": "Clinical Note"
+              }
+            ],
+            "text": "Radiology"
+          }
+        ],
+        "subject": {
+          "reference": "Patient/GBM-NL-004"
+        },
+        "date": "2026-11-17T09:00:00+01:00",
+        "author": [
+          {
+            "reference": "Organization/SITE-01"
+          }
+        ],
+        "description": "MRI-verslag hersenen, eerste presentatie (fictief)",
+        "content": [
+          {
+            "attachment": {
+              "contentType": "text/plain",
+              "language": "nl",
+              "data": "U1lOVEhFVElTQ0ggRE9DVU1FTlQgLSBGSUNUSUVGIC0gTklFVCBWT09SIEtMSU5JU0NIIEdFQlJVSUsKRmljdGllZiBVbml2ZXJzaXRhaXIgTWVkaXNjaCBDZW50cnVtIFp1aWRoYXZlbiAtIEFmZGVsaW5nIFJhZGlvbG9naWUKClBBVElFTlRDT0RFOiBHQk0tTkwtMDA0Ck9OREVSWk9FSzogTVJJIGhlcnNlbmVuIG1ldCBjb250cmFzdApEQVRVTTogMjAyNi0xMS0xNwpBQU5WUkFBRzogZmlyc3QgcHJlc2VudGF0aW9uLCBzdXNwZWN0ZWQgaGlnaC1ncmFkZSBnbGlvbWEKClZFUlNMQUcKRXIgaXMgZWVuIHJ1aW10ZS1pbm5lbWVuZGUgbGFlc2llIHJlY2h0cyBmcm9udGFhbCBtZXQgcGVyaWZvY2FhbCBvZWRlZW0gZW4Kb25yZWdlbG1hdGlnZSByaW5ndm9ybWlnZSBjb250cmFzdC1hYW5rbGV1cmluZy4gR2VlbiBtaWRkZW5saWpudmVyc2NodWl2aW5nCmdyb3RlciBkYW4gNSBtbS4KCklNUFJFU1NJRQpWZXJkYWNodGUgaG9vZ2dyYWRpZ2UgZ2xpYWxlIHR1bW9yIHJlY2h0cyBmcm9udGFhbC4gSGlzdG9sb2dpc2NoZSBiZXZlc3RpZ2luZwppcyBub2cgbmlldCBiZXNjaGlrYmFhci4K",
+              "size": 558,
+              "hash": "a2QC0ucistQ3Ysz9NJv/ivnzZJI=",
+              "title": "MRI-verslag hersenen, eerste presentatie (fictief)",
+              "creation": "2026-11-17T09:00:00+01:00"
+            }
+          }
+        ],
+        "context": {
+          "encounter": [
+            {
+              "reference": "Encounter/ENC-GBM-NL-004-EPISODE"
+            }
+          ],
+          "period": {
+            "start": "2026-11-17T08:00:00+01:00",
+            "end": "2026-11-17T17:00:00+01:00"
+          },
+          "sourcePatientInfo": {
+            "reference": "Patient/GBM-NL-004"
+          },
+          "related": [
+            {
+              "reference": "DiagnosticReport/DR-DOC-004-MRI"
+            }
+          ]
+        },
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>MRI-verslag hersenen, eerste presentatie (fictief) — DOC-004-MRI for GBM-NL-004 (nl, 2026-11-17)</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "DocumentReference/DOC-004-MRI"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/DiagnosticReport/DR-DOC-004-MRI",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "DR-DOC-004-MRI",
+        "identifier": [
+          {
+            "system": "https://yamicc.example/fhir/NamingSystem/hospital-document-id",
+            "value": "DR-DOC-004-MRI"
+          }
+        ],
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v2-0074",
+                "code": "RAD",
+                "display": "Radiology"
+              }
+            ],
+            "text": "Radiology"
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "18748-4",
+              "display": "Diagnostic imaging study"
+            }
+          ],
+          "text": "Diagnostic imaging study"
+        },
+        "subject": {
+          "reference": "Patient/GBM-NL-004"
+        },
+        "encounter": {
+          "reference": "Encounter/ENC-GBM-NL-004-EPISODE"
+        },
+        "effectiveDateTime": "2026-11-17T09:00:00+01:00",
+        "issued": "2026-11-17T12:00:00+01:00",
+        "performer": [
+          {
+            "reference": "Organization/SITE-01"
+          }
+        ],
+        "presentedForm": [
+          {
+            "contentType": "text/plain",
+            "language": "nl",
+            "data": "U1lOVEhFVElTQ0ggRE9DVU1FTlQgLSBGSUNUSUVGIC0gTklFVCBWT09SIEtMSU5JU0NIIEdFQlJVSUsKRmljdGllZiBVbml2ZXJzaXRhaXIgTWVkaXNjaCBDZW50cnVtIFp1aWRoYXZlbiAtIEFmZGVsaW5nIFJhZGlvbG9naWUKClBBVElFTlRDT0RFOiBHQk0tTkwtMDA0Ck9OREVSWk9FSzogTVJJIGhlcnNlbmVuIG1ldCBjb250cmFzdApEQVRVTTogMjAyNi0xMS0xNwpBQU5WUkFBRzogZmlyc3QgcHJlc2VudGF0aW9uLCBzdXNwZWN0ZWQgaGlnaC1ncmFkZSBnbGlvbWEKClZFUlNMQUcKRXIgaXMgZWVuIHJ1aW10ZS1pbm5lbWVuZGUgbGFlc2llIHJlY2h0cyBmcm9udGFhbCBtZXQgcGVyaWZvY2FhbCBvZWRlZW0gZW4Kb25yZWdlbG1hdGlnZSByaW5ndm9ybWlnZSBjb250cmFzdC1hYW5rbGV1cmluZy4gR2VlbiBtaWRkZW5saWpudmVyc2NodWl2aW5nCmdyb3RlciBkYW4gNSBtbS4KCklNUFJFU1NJRQpWZXJkYWNodGUgaG9vZ2dyYWRpZ2UgZ2xpYWxlIHR1bW9yIHJlY2h0cyBmcm9udGFhbC4gSGlzdG9sb2dpc2NoZSBiZXZlc3RpZ2luZwppcyBub2cgbmlldCBiZXNjaGlrYmFhci4K",
+            "size": 558,
+            "hash": "a2QC0ucistQ3Ysz9NJv/ivnzZJI=",
+            "title": "MRI-verslag hersenen, eerste presentatie (fictief)",
+            "creation": "2026-11-17T09:00:00+01:00"
+          }
+        ],
+        "conclusion": "Verdachte hooggradige gliale tumor rechts frontaal. Histologische bevestiging is nog niet beschikbaar.",
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Diagnostic imaging study — DOC-004-MRI for GBM-NL-004 (2026-11-17)</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "DiagnosticReport/DR-DOC-004-MRI"
+      }
+    },
+    {
+      "fullUrl": "http://127.0.0.1:8090/fhir/DocumentReference/DOC-004-CLIN",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "id": "DOC-004-CLIN",
+        "masterIdentifier": {
+          "system": "https://yamicc.example/fhir/NamingSystem/hospital-document-id",
+          "value": "DOC-004-CLIN"
+        },
+        "identifier": [
+          {
+            "system": "https://yamicc.example/fhir/NamingSystem/hospital-document-id",
+            "value": "DOC-004-CLIN"
+          }
+        ],
+        "status": "current",
+        "docStatus": "final",
+        "type": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "34133-9",
+              "display": "Summary of episode note"
+            }
+          ],
+          "text": "Summary of episode note"
+        },
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/us/core/CodeSystem/us-core-documentreference-category",
+                "code": "clinical-note",
+                "display": "Clinical Note"
+              }
+            ],
+            "text": "General"
+          }
+        ],
+        "subject": {
+          "reference": "Patient/GBM-NL-004"
+        },
+        "date": "2026-11-18T09:00:00+01:00",
+        "author": [
+          {
+            "reference": "Organization/SITE-01"
+          }
+        ],
+        "description": "Poliklinische brief neurochirurgie (fictief)",
+        "content": [
+          {
+            "attachment": {
+              "contentType": "text/plain",
+              "language": "nl",
+              "data": "U1lOVEhFVElTQ0ggRE9DVU1FTlQgLSBGSUNUSUVGIC0gTklFVCBWT09SIEtMSU5JU0NIIEdFQlJVSUsKRmljdGllZiBVbml2ZXJzaXRhaXIgTWVkaXNjaCBDZW50cnVtIFp1aWRoYXZlbiAtIEFmZGVsaW5nIE5ldXJvY2hpcnVyZ2llCgpQQVRJRU5UQ09ERTogR0JNLU5MLTAwNApHRVNMQUNIVDogdnJvdXcKTEVFRlRJSkQgQklKIERJQUdOT1NFOiA1MiBqYWFyCkRBVFVNIFBPTElLTElOSUVLOiAyMDI2LTExLTE4CgpQT0xJS0xJTklTQ0hFIEJSSUVGClBhdGllbnQgd2VyZCB2ZXJ3ZXplbiBuYSBlZW4gTVJJIG1ldCBlZW4gdmVyZGFjaHRlIGxhZXNpZSByZWNodHMgZnJvbnRhYWwuClNjcmVlbmluZ3NiZXpvZWsgdm9vciBkZSBzdHVkaWUgc3RhYXQgZ2VwbGFuZCBvcCAyMDI2LTExLTI0LgoKRlVOQ1RJT05FTEUgU1RBVFVTCkthcm5vZnNreSBQZXJmb3JtYW5jZSBTdGF0dXM6IDkwJS4KCkJFTEVJRApIaXN0b2xvZ2llIGVuIE1HTVQtdWl0c2xhZyB6aWpuIG5vZyBuaWV0IGJlc2NoaWtiYWFyLiBOb2cgZ2VlbiBvbmNvbG9naXNjaGUKYmVoYW5kZWxpbmcgZ2VzdGFydC4K",
+              "size": 552,
+              "hash": "zDVdgXHYSurDeuHMP9qu+zOQuEM=",
+              "title": "Poliklinische brief neurochirurgie (fictief)",
+              "creation": "2026-11-18T09:00:00+01:00"
+            }
+          }
+        ],
+        "context": {
+          "encounter": [
+            {
+              "reference": "Encounter/ENC-GBM-NL-004-EPISODE"
+            }
+          ],
+          "period": {
+            "start": "2026-11-18T08:00:00+01:00",
+            "end": "2026-11-18T17:00:00+01:00"
+          },
+          "sourcePatientInfo": {
+            "reference": "Patient/GBM-NL-004"
+          }
+        },
+        "meta": {
+          "tag": [
+            {
+              "system": "https://yamicc.example/fhir/CodeSystem/data-provenance",
+              "code": "SYNTHETIC",
+              "display": "Synthetic demo data"
+            }
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Poliklinische brief neurochirurgie (fictief) — DOC-004-CLIN for GBM-NL-004 (nl, 2026-11-18)</p></div>"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "DocumentReference/DOC-004-CLIN"
+      }
     }
   ]
 }

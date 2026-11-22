@@ -52,7 +52,7 @@ def test_multi_site_sync_and_site_comparison(client, auth, monkeypatch):
     dash_all = client.get(f"/studies/{STUDY}/dashboard", headers=pi).json()
     assert len(dash_all["siteComparison"]) == 3
     site2 = next(s for s in dash_all["sites"] if s["id"] == "SITE-02")
-    assert site2["enrolled"] >= 8  # 3 baseline + 5 synced from hospital-2
+    assert site2["enrolled"] == 3  # the 3 seeded baseline patients; the 5 synced ones are still screening
     assert site2["kpis"]["enrolled"] == site2["enrolled"]
 
     dash_s2 = client.get(f"/studies/{STUDY}/dashboard?siteId=SITE-02", headers=pi).json()
@@ -300,3 +300,83 @@ def test_query_field_must_exist_in_participant_study(client, auth):
     r = client.post("/queries", json={"participantId": "GBM-NL-001", "text": "Check", "fieldId": "NOT_A_FIELD"},
                     headers=auth("monitor"))
     assert r.status_code == 422
+
+
+def _sync_everything(monkeypatch):
+    sources = [
+        ("hospital-1", "SITE-01", ["baseline", "arrivals"]),
+        ("hospital-2", "SITE-02", ["hospital2/baseline", "hospital2/arrivals"]),
+    ]
+    monkeypatch.setattr(ingest_routes, "get_sources", lambda: [
+        {"id": sid, "name": sid, "url": f"http://localhost/{sid}", "siteId": site,
+         "client": fhir.BundleSource([r for sp in sets for r in _bundle_resources(sp)], stamp="2026-11-22T10:00:00.000+00:00")}
+        for sid, site, sets in sources])
+
+
+def _queue(client, headers, status="screening"):
+    return client.get("/screening", params={"status": status}, headers=headers).json()
+
+
+def test_seeded_screening_patient_has_ai_evidence(client, auth):
+    nurse = auth("nurse")
+    queue = _queue(client, nurse)
+    assert [q["participantId"] for q in queue] == ["GBM-NL-004"]
+    q = queue[0]
+    assert q["metCount"] + q["notMetCount"] > 0 and q["unknownCount"] < q["totalCount"]
+    assert any(c["evidence"] for c in q["criteria"])
+
+
+def test_synced_patients_start_in_screening_with_ai_results(client, auth, monkeypatch):
+    nurse = auth("nurse")
+    _sync_everything(monkeypatch)
+    assert client.post("/integrations/fhir/sync", headers=nurse).status_code == 200
+
+    with engine.connect() as c:
+        status = dict(c.execute(text("SELECT id, status FROM participant WHERE synced_from_fhir")).all())
+        baseline = dict(c.execute(text("SELECT id, status FROM participant WHERE NOT synced_from_fhir")).all())
+    assert set(status) == {"GBM-NL-009", "GBM-NL-010", "GBM-NL-011"} | {f"GBM-NL-20{i}" for i in range(1, 8)}
+    assert set(status.values()) == {"screening"}
+    assert baseline["GBM-NL-001"] == "active" and baseline["GBM-NL-004"] == "screening" and baseline["GBM-NL-007"] == "withdrawn"
+
+    queue = _queue(client, nurse)
+    assert {q["participantId"] for q in queue} == set(status) | {"GBM-NL-004"}
+    for q in queue:  # no empty queue entry: the AI check ran and found evidence in the documents
+        assert q["metCount"] + q["notMetCount"] > 0, q["participantId"]
+        assert any(c["evidence"] for c in q["criteria"]), q["participantId"]
+    assert next(q for q in queue if q["participantId"] == "GBM-NL-207")["unknownCount"] > 0
+    for pid in ("GBM-NL-201", "GBM-NL-202"):
+        q = next(q for q in queue if q["participantId"] == pid)
+        assert (q["metCount"], q["notMetCount"], q["unknownCount"]) == (13, 0, 0)
+
+
+def test_dashboard_counts_match_queue_and_ignore_unenrolled_synced(client, auth, monkeypatch):
+    nurse, pi = auth("nurse"), auth("pi")
+    _sync_everything(monkeypatch)
+    client.post("/integrations/fhir/sync", headers=nurse)
+    dash = client.get(f"/studies/{STUDY}/dashboard", headers=pi).json()
+    assert dash["kpis"]["enrolled"] == 8  # seeded baseline only
+    for s in dash["sites"]:
+        assert s["enrolled"] <= s["targetEnrolment"], s["id"]
+        assert s["kpis"]["enrolled"] == s["enrolled"]
+        assert s["screening"] == sum(1 for q in _queue(client, nurse) if q["siteId"] == s["id"])
+        assert s["eligible"] == sum(1 for q in _queue(client, nurse, "eligible") if q["siteId"] == s["id"])
+    assert sum(s["screening"] for s in dash["sites"]) == len(_queue(client, nurse))
+
+
+def test_synced_patient_goes_through_signoff_consent_enrol(client, auth, monkeypatch):
+    nurse, pi = auth("nurse"), auth("pi")
+    _sync_everything(monkeypatch)
+    client.post("/integrations/fhir/sync", headers=nurse)
+    for pid in ("GBM-NL-201", "GBM-NL-202"):
+        scr = client.get(f"/participants/{pid}/screening", headers=nurse).json()
+        for crit in scr["criteria"]:
+            assert client.post(f"/participants/{pid}/screening/criteria/{crit['criterionId']}/confirm",
+                               json={"status": "met", "note": "Checked against source"}, headers=nurse).status_code == 200
+        assert client.post(f"/participants/{pid}/screening/sign-off", json={"outcome": "eligible"}, headers=nurse).json()["status"] == "eligible"
+        assert client.post(f"/participants/{pid}/screening/consent", json={"consentedDate": "2026-11-22"}, headers=nurse).json()["status"] == "consented"
+        assert client.post(f"/participants/{pid}/screening/enrol", json={"enrolledDate": "2026-11-22"}, headers=pi).json()["status"] == "enrolled"
+    dash = client.get(f"/studies/{STUDY}/dashboard", headers=pi).json()
+    assert dash["kpis"]["enrolled"] == 10
+    site2 = next(s for s in dash["sites"] if s["id"] == "SITE-02")
+    assert site2["enrolled"] == 5 and site2["enrolled"] <= site2["targetEnrolment"]
+    assert "GBM-NL-201" not in {q["participantId"] for q in _queue(client, nurse)}
