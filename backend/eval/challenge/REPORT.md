@@ -16,4 +16,8 @@ Rules missed one of two abstentions for extent of resection; Ollama proposed a s
 
 Machine-readable results and per-field accuracy/F1, correct abstention counts and denominators are in [`results/rules/latest.json`](results/rules/latest.json) and [`results/ollama/latest.json`](results/ollama/latest.json). The challenge and runner are in this directory. The requested local `dev` base `22e65a7` was not present in this checkout; work started from available `dev` HEAD `bcc0f74`.
 
-**Integrated dev check:** At commit `0f38068`, the rules run reproduced all decision, abstention and span results with a different prompt hash. The table preserves the original comparison from `bcc0f74`. The Ollama results still need a run on the integrated version.
+**Integrated dev check:** At commit `0f38068`, the rules run reproduced all decision, abstention and span results with a different prompt hash. The table preserves the original comparison from `bcc0f74`. This issue adds a separate Ollama rerun on integrated commit `8e4132f`; see the section below.
+
+## Integrated rerun on `8e4132f`
+
+The frozen challenge was rerun with both providers on commit `8e4132f7249ac71c52530070d6a0ac32f2427b28`. Both completed 10/10 documents without timeouts. Rules scored 19/21 decisions, 6/7 abstentions, 12/14 exact spans and 0 invalid spans; Ollama scored 17/21, 6/7, 1/14 and 0. Full hashes, timing, per-field results and run metadata are recorded in [`results/integrated-8e4132f/REPORT.md`](results/integrated-8e4132f/REPORT.md) and the provider JSON files. The earlier result files above remain unchanged.
