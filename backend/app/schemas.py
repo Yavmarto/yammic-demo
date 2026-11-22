@@ -364,6 +364,7 @@ class Run(M):
     created_by: str | None
     created_at: datetime
     finished_at: datetime | None
+    retry_of_run_id: int | None = None
 
 
 class RunIn(M):
