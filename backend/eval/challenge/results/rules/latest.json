@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-23T09:16:38.032198+00:00",
+  "generatedAt": "2026-11-23T10:00:11.430155+00:00",
   "provider": {
     "name": "rules",
     "model": "rules-regex-v1",
@@ -21,13 +21,27 @@
     "documentCount": 10
   },
   "summary": {
+    "macroF1AllFields": 0.9091,
+    "macroF1PositiveGoldFields": 1.0,
+    "positiveGoldFields": [
+      "SUBJID",
+      "MGMTPROM",
+      "PROGDAT",
+      "AGE",
+      "IDHSTAT",
+      "HISTOLOGY",
+      "RTDOSE",
+      "RTFRAC",
+      "TMZPLNC",
+      "AEGRADE"
+    ],
     "documents": 10,
     "completedDocuments": 10,
     "timeouts": 0,
     "decisionAccuracy": 1.0,
     "exactSpanAgreement": "14/14",
     "invalidSourceSpans": 0,
-    "durationMs": 4
+    "durationMs": 3
   },
   "fields": {
     "SUBJID": {
@@ -189,7 +203,7 @@
     {
       "documentId": "NLCH-001",
       "status": "ok",
-      "durationMs": 2,
+      "durationMs": 1,
       "fields": {
         "SUBJID": {
           "goldStatus": "proposed",

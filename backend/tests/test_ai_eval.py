@@ -214,3 +214,17 @@ def test_screening_and_protocol_api_endpoints(client, auth, monkeypatch):
     eval_res = client.get("/ai/screening/eval?provider=rules", headers=nurse)
     assert eval_res.status_code == 200
     assert eval_res.json()["summary"]["criterionAccuracy"] == 1.0
+
+
+def test_challenge_macro_f1_frozen_vs_positive_gold_fields():
+    from eval.challenge.run import macro_f1
+
+    # EXTRES-like field: all-abstain gold, F1 0.0 by convention. Frozen mean counts it; B4 mean drops it.
+    per = {
+        'A': {'support': 2, 'goldAbstain': 0, 'f1': 1.0},
+        'B': {'support': 2, 'goldAbstain': 1, 'f1': 0.5},
+        'EXT': {'support': 2, 'goldAbstain': 2, 'f1': 0.0},
+    }
+    assert macro_f1(per) == 0.5
+    assert macro_f1(per, positive_only=True) == 0.75
+    assert macro_f1({}, positive_only=True) is None

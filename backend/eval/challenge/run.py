@@ -19,6 +19,12 @@ from eval.harness import _eq
 HERE = Path(__file__).resolve().parent
 
 
+def macro_f1(per: dict, *, positive_only: bool = False) -> float | None:
+    """Mean per-field F1. The frozen metric averages all fields; B4 uses fields with >=1 positive gold value."""
+    rows = [v for v in per.values() if not positive_only or v['support'] - v['goldAbstain'] > 0]
+    return round(sum(v['f1'] for v in rows) / len(rows), 4) if rows else None
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument('--provider', required=True, choices=['rules', 'ollama'])
@@ -74,10 +80,10 @@ def main() -> int:
     for fid,c in counts.items():
         den=c['tp']+c['fp']; recden=c['tp']+c['fn']; precision=c['tp']/den if den else None; recall=c['tp']/recden if recden else None
         per[fid]={**c,'decisionAccuracy':round(c['correct']/c['support'],4),'precision':round(precision,4) if precision is not None else None,'recall':round(recall,4) if recall is not None else None,'f1':round(2*precision*recall/(precision+recall),4) if precision is not None and recall is not None and precision+recall else 0.0,'correctAbstentionDenominator':c['goldAbstain']}
-    out={'schemaVersion':1,'generatedAt':datetime.now(UTC).isoformat(),'provider':{'name':provider.name,'model':provider.model,'paid':False},'prompt':prompt_meta,'limits':{'timeoutSecondsPerDocument':args.timeout if args.provider=='ollama' else None,'temperature':0 if args.provider=='ollama' else None,'seed':42 if args.provider=='ollama' else None},'dataset':{'name':data['name'],'path':'backend/eval/challenge/dataset.json','documentCount':len(data['documents'])},'summary':{'documents':len(data['documents']),'completedDocuments':sum(x['status']=='ok' for x in docs),'timeouts':sum(x['kind']=='timeout' for x in failures),'decisionAccuracy':round(sum(c['correct'] for c in counts.values())/sum(c['support'] for c in counts.values()),4) if counts else None,'exactSpanAgreement':f'{exact}/{expected_proposals}','invalidSourceSpans':invalid,'durationMs':round((time.perf_counter()-started)*1000)},'fields':per,'documents':docs,'failures':failures}
+    out={'schemaVersion':1,'generatedAt':datetime.now(UTC).isoformat(),'provider':{'name':provider.name,'model':provider.model,'paid':False},'prompt':prompt_meta,'limits':{'timeoutSecondsPerDocument':args.timeout if args.provider=='ollama' else None,'temperature':0 if args.provider=='ollama' else None,'seed':42 if args.provider=='ollama' else None},'dataset':{'name':data['name'],'path':'backend/eval/challenge/dataset.json','documentCount':len(data['documents'])},'summary':{'macroF1AllFields':macro_f1(per),'macroF1PositiveGoldFields':macro_f1(per,positive_only=True),'positiveGoldFields':[k for k,v in per.items() if v['support']-v['goldAbstain']>0],'documents':len(data['documents']),'completedDocuments':sum(x['status']=='ok' for x in docs),'timeouts':sum(x['kind']=='timeout' for x in failures),'decisionAccuracy':round(sum(c['correct'] for c in counts.values())/sum(c['support'] for c in counts.values()),4) if counts else None,'exactSpanAgreement':f'{exact}/{expected_proposals}','invalidSourceSpans':invalid,'durationMs':round((time.perf_counter()-started)*1000)},'fields':per,'documents':docs,'failures':failures}
     outdir=HERE/'results'/args.provider; outdir.mkdir(parents=True,exist_ok=True)
     outpath=outdir/'latest.json'; outpath.write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n')
-    lines=[f"# Dutch challenge — {provider.name} ({provider.model})",'',f"Dataset: `{data['name']}` · {len(data['documents'])} documents",f"Completed: {out['summary']['completedDocuments']}/{len(docs)} · timeouts: {out['summary']['timeouts']} · limits: timeout {args.timeout:g}s/document; temperature 0; seed 42",f"Decision accuracy: {out['summary']['decisionAccuracy']} · exact-span agreement: {exact}/{expected_proposals} · invalid-source spans: {invalid}",'','| Field | Accuracy | F1 | Correct abstentions |','|---|---:|---:|---:|']
+    lines=[f"# Dutch challenge — {provider.name} ({provider.model})",'',f"Dataset: `{data['name']}` · {len(data['documents'])} documents",f"Completed: {out['summary']['completedDocuments']}/{len(docs)} · timeouts: {out['summary']['timeouts']} · limits: timeout {args.timeout:g}s/document; temperature 0; seed 42",f"Decision accuracy: {out['summary']['decisionAccuracy']} · exact-span agreement: {exact}/{expected_proposals} · invalid-source spans: {invalid}",f"Macro-F1, all 11 fields (frozen): {out['summary']['macroF1AllFields']} · Macro-F1, fields with >=1 positive gold ({len(out['summary']['positiveGoldFields'])}; B4 basis): {out['summary']['macroF1PositiveGoldFields']}",'','B4 is judged on the positive-gold macro-F1 (CEL-1857 CEO decision). The all-field value is unchanged. EXTRES has no positive gold, so its F1 of 0.0 is not a provider error.','','| Field | Accuracy | F1 | Correct abstentions |','|---|---:|---:|---:|']
     for fid,v in per.items():
         f1 = '—' if v['f1'] is None else f"{v['f1']:.3f}"
         lines.append(f"| {fid} | {v['decisionAccuracy']:.3f} | {f1} | {v['correctAbstain']}/{v['correctAbstentionDenominator']} |")
