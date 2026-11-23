@@ -2,12 +2,12 @@
 
 Dataset: `dutch-abstention-evidence-challenge-v1` · 10 documents
 Completed: 10/10 · timeouts: 0 · limits: timeout 240s/document; temperature 0; seed 42
-Decision accuracy: 0.9048 · exact-span agreement: 12/14 · invalid-source spans: 0
+Decision accuracy: 0.9524 · exact-span agreement: 13/14 · invalid-source spans: 0
 
 | Field | Accuracy | F1 | Correct abstentions |
 |---|---:|---:|---:|
 | SUBJID | 1.000 | 1.000 | 0/0 |
-| MGMTPROM | 0.667 | 0.500 | 1/1 |
+| MGMTPROM | 1.000 | 1.000 | 1/1 |
 | PROGDAT | 1.000 | 1.000 | 4/4 |
 | AGE | 1.000 | 1.000 | 0/0 |
 | IDHSTAT | 1.000 | 1.000 | 0/0 |

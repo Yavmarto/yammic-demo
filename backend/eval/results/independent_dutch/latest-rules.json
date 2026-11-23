@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-22T13:39:50.749846+00:00",
+  "generatedAt": "2026-11-23T09:11:32.855100+00:00",
   "dataset": {
     "name": "independent-dutch-synthetic-challenge",
     "documents": 5,
@@ -12,10 +12,10 @@
     "model": "rules-regex-v1",
     "paid": false,
     "promptVersions": [
-      "rules_v1@83a90473b9fb"
+      "rules_v1@d8c3cab973f2"
     ],
     "promptHashes": [
-      "83a90473b9fb02176a900f98df96dcab56b5d64aaabe6ac996e526c1843d2f96"
+      "d8c3cab973f2b2b5993de8ef102857aa04e573b59429ce6d8dbb8e23b926331b"
     ]
   },
   "summary": {

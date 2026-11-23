@@ -129,23 +129,42 @@ def rule_idhstat(text: str):
     return None
 
 
+_MGMT_NEGATIVE = re.compile(r"(?:niet[\s-]+gemethyleerd|unmethylated|not methylated|non-methylated|"
+                            r"geen methylatie)", re.I)
+_MGMT_POSITIVE = re.compile(r"(?:methylatie aangetoond|gemethyleerd|methylated|hypermethylated)", re.I)
+_SUPERSEDING = re.compile(r"addendum|vervalt|herbeoordeling|supersed", re.I)
+
+
+def _clause(text: str, a: int, b: int) -> tuple[int, int]:
+    """Bounds of the sentence or clause around [a, b), with surrounding whitespace trimmed."""
+    start = max(text.rfind(c, 0, a) for c in ".;\n") + 1
+    ends = [i for i in (text.find(c, b) for c in ".;\n") if i >= 0]
+    end = min(ends) if ends else len(text)
+    segment = text[start:end]
+    return start + len(segment) - len(segment.lstrip()), end - (len(segment) - len(segment.rstrip()))
+
+
 def rule_mgmtprom(text: str):
-    negative = re.search(r"(?:niet[\s-]+gemethyleerd|unmethylated|not methylated|non-methylated|"
-                         r"geen methylatie)", text, re.I)
-    positive = re.search(r"(?:methylatie aangetoond|gemethyleerd|methylated|hypermethylated)", text, re.I)
-    if not negative and not positive:
+    matches = sorted(
+        [(m, "unmethylated") for m in _MGMT_NEGATIVE.finditer(text)]
+        + [(m, "methylated") for m in _MGMT_POSITIVE.finditer(text)],
+        key=lambda item: item[0].start(),
+    )
+    if not matches:
         return None
-    if negative and (not positive or negative.start() <= positive.start()):
-        normalized, m = "unmethylated", negative
-    else:
-        normalized, m = "methylated", positive
-    # Highlight "MGMT promoter ... <word>" when it is on the same line.
+    # A later addendum that supersedes the first-stated result takes precedence.
+    m, normalized = matches[-1] if _SUPERSEDING.search(text) else matches[0]
     a, b = m.start(), m.end()
-    line_start = text.rfind("\n", 0, a) + 1
-    ctx = text[line_start:a]
-    idx = ctx.casefold().rfind("mgmt")
-    if idx >= 0 and a - (line_start + idx) <= 60:
-        a = line_start + idx
+    clause_a, clause_b = _clause(text, a, b)
+    if text[clause_a:clause_b].casefold().startswith("addendum"):
+        a, b = clause_a, clause_b
+    else:
+        # Highlight "MGMT promoter ... <word>" when it is on the same line.
+        line_start = text.rfind("\n", 0, a) + 1
+        ctx = text[line_start:a]
+        idx = ctx.casefold().rfind("mgmt")
+        if idx >= 0 and a - (line_start + idx) <= 60:
+            a = line_start + idx
     return normalized, a, b, 0.93, text[a:b]
 
 
@@ -218,7 +237,9 @@ def rule_progdat(text: str):
     m = re.search(r"(?:progressie|progression|recidief|recurrence)[^.\n]{0,80}?"
                   r"(\d{4}-\d{2}-\d{2})", text, re.I)
     if m:
-        return m.group(1), m.start(0), m.end(0), 0.85, m.group(0)
+        a = m.start(0)
+        _, b = _clause(text, a, m.end(0))
+        return m.group(1), a, b, 0.85, text[a:b]
     return None
 
 

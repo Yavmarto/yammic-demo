@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-22T13:48:03.796935+00:00",
+  "generatedAt": "2026-11-23T09:11:32.753610+00:00",
   "provider": {
     "name": "rules",
     "model": "rules-regex-v1",
     "paid": false
   },
   "prompt": {
-    "version": "rules_v1@31d138e3eea9",
-    "sha256": "31d138e3eea9e0f1e6aeaf20b31e9ef89cbe29d07a21646dff86cde03948d323"
+    "version": "rules_v1@d8c3cab973f2",
+    "sha256": "d8c3cab973f2b2b5993de8ef102857aa04e573b59429ce6d8dbb8e23b926331b"
   },
   "limits": {
     "timeoutSecondsPerDocument": null,
@@ -24,10 +24,10 @@
     "documents": 10,
     "completedDocuments": 10,
     "timeouts": 0,
-    "decisionAccuracy": 0.9048,
-    "exactSpanAgreement": "12/14",
+    "decisionAccuracy": 0.9524,
+    "exactSpanAgreement": "13/14",
     "invalidSourceSpans": 0,
-    "durationMs": 5
+    "durationMs": 3
   },
   "fields": {
     "SUBJID": {
@@ -46,16 +46,16 @@
     },
     "MGMTPROM": {
       "support": 3,
-      "correct": 2,
-      "tp": 1,
-      "fp": 1,
-      "fn": 1,
+      "correct": 3,
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
       "goldAbstain": 1,
       "correctAbstain": 1,
-      "decisionAccuracy": 0.6667,
-      "precision": 0.5,
-      "recall": 0.5,
-      "f1": 0.5,
+      "decisionAccuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
       "correctAbstentionDenominator": 1
     },
     "PROGDAT": {
@@ -189,7 +189,7 @@
     {
       "documentId": "NLCH-001",
       "status": "ok",
-      "durationMs": 2,
+      "durationMs": 1,
       "fields": {
         "SUBJID": {
           "goldStatus": "proposed",
@@ -287,10 +287,10 @@
         "MGMTPROM": {
           "goldStatus": "proposed",
           "predictedStatus": "proposed",
-          "correctDecision": false,
+          "correctDecision": true,
           "goldValue": "unmethylated",
-          "predictedValue": "methylated",
-          "exactSpan": false,
+          "predictedValue": "unmethylated",
+          "exactSpan": true,
           "invalidSourceSpan": false
         }
       }
@@ -314,7 +314,7 @@
     {
       "documentId": "NLCH-006",
       "status": "ok",
-      "durationMs": 2,
+      "durationMs": 1,
       "fields": {
         "PROGDAT": {
           "goldStatus": "proposed",
@@ -322,7 +322,7 @@
           "correctDecision": true,
           "goldValue": "2026-02-14",
           "predictedValue": "2026-02-14",
-          "exactSpan": true,
+          "exactSpan": false,
           "invalidSourceSpan": false
         },
         "AGE": {
@@ -440,7 +440,7 @@
           "correctDecision": true,
           "goldValue": "2026-03-01",
           "predictedValue": "2026-03-01",
-          "exactSpan": false,
+          "exactSpan": true,
           "invalidSourceSpan": false
         }
       }

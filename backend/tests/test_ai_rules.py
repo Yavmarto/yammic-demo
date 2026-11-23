@@ -74,3 +74,25 @@ def test_unmatched_field_abstains():
     result = RulesProvider().extract("Only a cover page. No clinical content.", "note", fields)
     assert all(p.status == "abstained" for p in result.proposals)
     assert all(p.abstention_reason == "not_stated" for p in result.proposals)
+
+
+def test_mgmt_addendum_supersedes_earlier_result_with_exact_span():
+    text = "MGMT-promotor: gemethyleerd. Addendum: herbeoordeling toont geen methylatie; eerste uitslag vervalt."
+    p = RulesProvider().extract(text, "pathology_report", _fields()).by_field()["MGMTPROM"]
+    assert p.status == "proposed"
+    assert p.normalized_value == "unmethylated"
+    assert [ev.text for ev in p.evidence] == ["Addendum: herbeoordeling toont geen methylatie"]
+
+
+def test_mgmt_first_stated_result_still_used_without_addendum():
+    text = "MGMT-promotor: niet gemethyleerd."
+    p = RulesProvider().extract(text, "pathology_report", _fields()).by_field()["MGMTPROM"]
+    assert p.normalized_value == "unmethylated"
+    assert [ev.text for ev in p.evidence] == ["MGMT-promotor: niet gemethyleerd"]
+
+
+def test_progression_evidence_covers_clause_after_date():
+    text = "Progressie werd op 2026-03-01 bevestigd; eerdere verdenking was onzeker."
+    p = RulesProvider().extract(text, "oncology_note", _fields()).by_field()["PROGDAT"]
+    assert p.normalized_value == "2026-03-01"
+    assert [ev.text for ev in p.evidence] == ["Progressie werd op 2026-03-01 bevestigd"]
