@@ -24,6 +24,7 @@ const _platform = [
   _Tab('/ai-quality', 'AI quality', Icons.insights_outlined),
   _Tab('/protocol', 'Protocol → form', Icons.account_tree_outlined),
   _Tab('/export', 'Export', Icons.ios_share_outlined),
+  _Tab('/assistant', 'Assistant', Icons.chat_bubble_outline),
 ];
 
 String roleLabel(String r) => switch (r) { 'nurse' => 'Research nurse', 'monitor' => 'Monitor', 'pi' => 'Principal investigator', _ => r };
@@ -274,9 +275,8 @@ class _NavItemState extends State<_NavItem> {
             onEnter: (_) => setState(() => hover = true),
             onExit: (_) => setState(() => hover = false),
             cursor: SystemMouseCursors.click,
-            child: GestureDetector(
+            child: InkWell(
               onTap: widget.onTap,
-              behavior: HitTestBehavior.opaque,
               child: AnimatedContainer(
                 duration: K.fast,
                 curve: K.ease,
