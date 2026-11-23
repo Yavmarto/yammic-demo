@@ -3,6 +3,7 @@ import 'package:zeta_flutter/zeta_flutter.dart';
 import 'api/api.dart';
 import 'data/session.dart';
 import 'features/ai_quality/ai_quality_screen.dart';
+import 'features/assistant/assistant_screen.dart';
 import 'features/audit/audit_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
 import 'features/export/export_screen.dart';
@@ -80,6 +81,7 @@ class _DemoAppState extends State<DemoApp> {
     } else {
       nav = name == '/login' ? '/' : name;
       page = switch (name) {
+        '/assistant' => const AssistantScreen(),
         '/participants' => const ParticipantListScreen(),
         '/screening' => const ScreeningScreen(),
         '/protocol' => const ProtocolScreen(),
