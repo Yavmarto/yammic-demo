@@ -1,6 +1,67 @@
 {
   "components": {
     "schemas": {
+      "Action": {
+        "additionalProperties": false,
+        "properties": {
+          "context": {
+            "additionalProperties": {
+              "const": "workflow_help",
+              "type": "string"
+            },
+            "maxProperties": 1,
+            "title": "Context",
+            "type": "object"
+          },
+          "name": {
+            "maxLength": 32,
+            "title": "Name",
+            "type": "string"
+          },
+          "sourceComponentId": {
+            "maxLength": 48,
+            "title": "Sourcecomponentid",
+            "type": "string"
+          },
+          "surfaceId": {
+            "pattern": "^workflow-help-[a-f0-9]{32}$",
+            "title": "Surfaceid",
+            "type": "string"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "surfaceId",
+          "sourceComponentId",
+          "timestamp"
+        ],
+        "title": "Action",
+        "type": "object"
+      },
+      "ActionMessage": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/Action"
+          },
+          "version": {
+            "const": "v0.9.1",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "action"
+        ],
+        "title": "ActionMessage",
+        "type": "object"
+      },
       "Alert": {
         "properties": {
           "message": {
@@ -2533,6 +2594,21 @@
         "title": "ParticipantSummary",
         "type": "object"
       },
+      "Prompt": {
+        "properties": {
+          "text": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "Prompt",
+        "type": "object"
+      },
       "ProtocolProposalsIn": {
         "properties": {
           "formId": {
@@ -4697,6 +4773,84 @@
         "summary": "Ai Screening Eval",
         "tags": [
           "ai"
+        ]
+      }
+    },
+    "/assistant/action": {
+      "post": {
+        "operationId": "action_assistant_action_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionMessage"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Action",
+        "tags": [
+          "assistant"
+        ]
+      }
+    },
+    "/assistant/turn": {
+      "post": {
+        "operationId": "turn_assistant_turn_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Prompt"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Turn",
+        "tags": [
+          "assistant"
         ]
       }
     },

@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .ai.routes import r as ai_r
+from .assistant import router as assistant_router
 from .export.routes import r as export_r
 from .ingest.routes import r as ingest_r
 from .routes import r
@@ -17,3 +18,4 @@ app.include_router(r)
 app.include_router(ai_r)
 app.include_router(ingest_r)
 app.include_router(export_r)
+app.include_router(assistant_router)
