@@ -96,3 +96,16 @@ def test_progression_evidence_covers_clause_after_date():
     p = RulesProvider().extract(text, "oncology_note", _fields()).by_field()["PROGDAT"]
     assert p.normalized_value == "2026-03-01"
     assert [ev.text for ev in p.evidence] == ["Progressie werd op 2026-03-01 bevestigd"]
+
+
+def test_hedged_resection_abstains_when_operative_note_is_missing():
+    text = "Resectie: waarschijnlijk subtotale resectie. Definitieve operatienotitie ontbreekt."
+    p = RulesProvider().extract(text, "radiology_report", _fields()).by_field()["EXTRES"]
+    assert p.status == "abstained"
+
+
+def test_progression_date_span_stops_before_attribution():
+    text = "Progressie vastgesteld op 2026-02-14 volgens RANO."
+    p = RulesProvider().extract(text, "oncology_note", _fields()).by_field()["PROGDAT"]
+    assert p.normalized_value == "2026-02-14"
+    assert [ev.text for ev in p.evidence] == ["Progressie vastgesteld op 2026-02-14"]

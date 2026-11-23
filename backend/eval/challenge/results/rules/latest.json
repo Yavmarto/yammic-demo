@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-23T09:11:32.753610+00:00",
+  "generatedAt": "2026-11-23T09:16:38.032198+00:00",
   "provider": {
     "name": "rules",
     "model": "rules-regex-v1",
     "paid": false
   },
   "prompt": {
-    "version": "rules_v1@d8c3cab973f2",
-    "sha256": "d8c3cab973f2b2b5993de8ef102857aa04e573b59429ce6d8dbb8e23b926331b"
+    "version": "rules_v1@a1ff523e38d2",
+    "sha256": "a1ff523e38d2a8a8303a44ec83878f1a5aa3c42f1724077dcad37b2a44497000"
   },
   "limits": {
     "timeoutSecondsPerDocument": null,
@@ -24,10 +24,10 @@
     "documents": 10,
     "completedDocuments": 10,
     "timeouts": 0,
-    "decisionAccuracy": 0.9524,
-    "exactSpanAgreement": "13/14",
+    "decisionAccuracy": 1.0,
+    "exactSpanAgreement": "14/14",
     "invalidSourceSpans": 0,
-    "durationMs": 3
+    "durationMs": 4
   },
   "fields": {
     "SUBJID": {
@@ -102,14 +102,14 @@
     },
     "EXTRES": {
       "support": 2,
-      "correct": 1,
+      "correct": 2,
       "tp": 0,
-      "fp": 1,
+      "fp": 0,
       "fn": 0,
       "goldAbstain": 2,
-      "correctAbstain": 1,
-      "decisionAccuracy": 0.5,
-      "precision": 0.0,
+      "correctAbstain": 2,
+      "decisionAccuracy": 1.0,
+      "precision": null,
       "recall": null,
       "f1": 0.0,
       "correctAbstentionDenominator": 2
@@ -189,7 +189,7 @@
     {
       "documentId": "NLCH-001",
       "status": "ok",
-      "durationMs": 1,
+      "durationMs": 2,
       "fields": {
         "SUBJID": {
           "goldStatus": "proposed",
@@ -302,10 +302,10 @@
       "fields": {
         "EXTRES": {
           "goldStatus": "abstained",
-          "predictedStatus": "proposed",
-          "correctDecision": false,
+          "predictedStatus": "abstained",
+          "correctDecision": true,
           "goldValue": null,
-          "predictedValue": "subtotal",
+          "predictedValue": null,
           "exactSpan": false,
           "invalidSourceSpan": false
         }
@@ -322,7 +322,7 @@
           "correctDecision": true,
           "goldValue": "2026-02-14",
           "predictedValue": "2026-02-14",
-          "exactSpan": false,
+          "exactSpan": true,
           "invalidSourceSpan": false
         },
         "AGE": {

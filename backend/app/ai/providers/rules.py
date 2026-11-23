@@ -175,14 +175,20 @@ def rule_kps(text: str):
     return int(m.group(1)), m.start(0), m.end(0), 0.9, m.group(0)
 
 
+_MISSING_OP_NOTE = re.compile(r"operat\w*notitie\s+ontbreekt|operative\s+note\s+(?:is\s+)?missing", re.I)
+
+
 def rule_extres(text: str):
-    gross = re.search(r"(?:gross[\s-]+total\s+(?:resectie|resection)|complete\s+resection|"
+    gross =re.search(r"(?:gross[\s-]+total\s+(?:resectie|resection)|complete\s+resection|"
                       r"bruto\s+totale\s+resectie|totale\s+resectie)", text, re.I)
     sub = re.search(r"(?:sub[\s-]?total(?:e)?\s+(?:resectie|resection)|partial\s+resection)", text, re.I)
     hedge = re.search(r"(?:probably|probable|waarschijnlijk|may\s+be|possibly)\s+(?:a\s+)?sub", text, re.I)
     if gross and not (sub and sub.start() < gross.start()):
         return "gross_total", gross.start(), gross.end(), 0.91, gross.group(0)
     if hedge:
+        # A hedge with the definitive operative note stated as missing is not a value: abstain.
+        if _MISSING_OP_NOTE.search(text):
+            return None
         return "subtotal", hedge.start(), hedge.end(), 0.45, hedge.group(0)
     if sub:
         return "subtotal", sub.start(), sub.end(), 0.89, sub.group(0)
@@ -238,7 +244,10 @@ def rule_progdat(text: str):
                   r"(\d{4}-\d{2}-\d{2})", text, re.I)
     if m:
         a = m.start(0)
-        _, b = _clause(text, a, m.end(0))
+        # Include a confirming participle right after the date, nothing further ("volgens RANO" is not part of the quote).
+        tail = re.match(r"\s+(?:bevestigd|vastgesteld|aangetoond|confirmed|established|detected)\b",
+                        text[m.end(0):], re.I)
+        b = m.end(0) + (tail.end() if tail else 0)
         return m.group(1), a, b, 0.85, text[a:b]
     return None
 
