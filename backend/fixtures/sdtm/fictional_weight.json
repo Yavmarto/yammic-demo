@@ -1,0 +1,9 @@
+{
+  "fictional": true,
+  "study_id": "SYNTH01",
+  "rows": [
+    {"subject_id":"P01", "field":"WEIGHT", "value":"70.50", "unit":"kg", "date":"2026-01-02", "checked":true, "verified_by":"reviewer1", "source_id":"document1"},
+    {"subject_id":"P02", "field":"WEIGHT", "value":"82", "unit":"kg", "date":"2026-01-03", "checked":false},
+    {"subject_id":"P03", "field":"WEIGHT", "value":null, "checked":true}
+  ]
+}
