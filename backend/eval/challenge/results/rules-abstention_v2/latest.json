@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-23T10:04:43.123364+00:00",
+  "provider": {
+    "name": "rules",
+    "model": "rules-regex-v1",
+    "paid": false
+  },
+  "prompt": {
+    "version": "rules_v1@dbda93cfc6a7",
+    "sha256": "dbda93cfc6a79705762857ad32dea725ee90f158196563aa2cb0491bb977399a"
+  },
+  "limits": {
+    "timeoutSecondsPerDocument": null,
+    "temperature": null,
+    "seed": null
+  },
+  "dataset": {
+    "name": "dutch-abstention-v2-tuning-set",
+    "path": "backend/eval/abstention_v2/dataset.json",
+    "documentCount": 9
+  },
+  "summary": {
+    "macroF1AllFields": 0.6667,
+    "macroF1PositiveGoldFields": 1.0,
+    "positiveGoldFields": [
+      "EXTRES",
+      "IDHSTAT"
+    ],
+    "documents": 9,
+    "completedDocuments": 9,
+    "timeouts": 0,
+    "decisionAccuracy": 1.0,
+    "exactSpanAgreement": "2/2",
+    "invalidSourceSpans": 0,
+    "durationMs": 3
+  },
+  "fields": {
+    "EXTRES": {
+      "support": 5,
+      "correct": 5,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstain": 4,
+      "correctAbstain": 4,
+      "decisionAccuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "correctAbstentionDenominator": 4
+    },
+    "IDHSTAT": {
+      "support": 4,
+      "correct": 4,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstain": 3,
+      "correctAbstain": 3,
+      "decisionAccuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "correctAbstentionDenominator": 3
+    },
+    "PROGDAT": {
+      "support": 1,
+      "correct": 1,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstain": 1,
+      "correctAbstain": 1,
+      "decisionAccuracy": 1.0,
+      "precision": null,
+      "recall": null,
+      "f1": 0.0,
+      "correctAbstentionDenominator": 1
+    }
+  },
+  "documents": [
+    {
+      "documentId": "ABS2-001",
+      "status": "ok",
+      "durationMs": 1,
+      "fields": {
+        "EXTRES": {
+          "goldStatus": "abstained",
+          "predictedStatus": "abstained",
+          "correctDecision": true,
+          "goldValue": null,
+          "predictedValue": null,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        }
+      }
+    },
+    {
+      "documentId": "ABS2-002",
+      "status": "ok",
+      "durationMs": 0,
+      "fields": {
+        "IDHSTAT": {
+          "goldStatus": "abstained",
+          "predictedStatus": "abstained",
+          "correctDecision": true,
+          "goldValue": null,
+          "predictedValue": null,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        },
+        "EXTRES": {
+          "goldStatus": "abstained",
+          "predictedStatus": "abstained",
+          "correctDecision": true,
+          "goldValue": null,
+          "predictedValue": null,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        }
+      }
+    },
+    {
+      "documentId": "ABS2-003",
+      "status": "ok",
+      "durationMs": 0,
+      "fields": {
+        "IDHSTAT": {
+          "goldStatus": "abstained",
+          "predictedStatus": "abstained",
+          "correctDecision": true,
+          "goldValue": null,
+          "predictedValue": null,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        }
+      }
+    },
+    {
+      "documentId": "ABS2-004",
+      "status": "ok",
+      "durationMs": 0,
+      "fields": {
+        "EXTRES": {
+          "goldStatus": "abstained",
+          "predictedStatus": "abstained",
+          "correctDecision": true,
+          "goldValue": null,
+          "predictedValue": null,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        }
+      }
+    },
+    {
+      "documentId": "ABS2-005",
+      "status": "ok",
+      "durationMs": 0,
+      "fields": {
+        "EXTRES": {
+          "goldStatus": "proposed",
+          "predictedStatus": "proposed",
+          "correctDecision": true,
+          "goldValue": "gross_total",
+          "predictedValue": "gross_total",
+          "exactSpan": true,
+          "invalidSourceSpan": false
+        }
+      }
+    },
+    {
+      "documentId": "ABS2-006",
+      "status": "ok",
+      "durationMs": 0,
+      "fields": {
+        "IDHSTAT": {
+          "goldStatus": "proposed",
+          "predictedStatus": "proposed",
+          "correctDecision": true,
+          "goldValue": "mutant",
+          "predictedValue": "mutant",
+          "exactSpan": true,
+          "invalidSourceSpan": false
+        }
+      }
+    },
+    {
+      "documentId": "ABS2-007",
+      "status": "ok",
+      "durationMs": 0,
+      "fields": {
+        "IDHSTAT": {
+          "goldStatus": "abstained",
+          "predictedStatus": "abstained",
+          "correctDecision": true,
+          "goldValue": null,
+          "predictedValue": null,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        }
+      }
+    },
+    {
+      "documentId": "ABS2-008",
+      "status": "ok",
+      "durationMs": 0,
+      "fields": {
+        "PROGDAT": {
+          "goldStatus": "abstained",
+          "predictedStatus": "abstained",
+          "correctDecision": true,
+          "goldValue": null,
+          "predictedValue": null,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        }
+      }
+    },
+    {
+      "documentId": "ABS2-009",
+      "status": "ok",
+      "durationMs": 0,
+      "fields": {
+        "EXTRES": {
+          "goldStatus": "abstained",
+          "predictedStatus": "abstained",
+          "correctDecision": true,
+          "goldValue": null,
+          "predictedValue": null,
+          "exactSpan": false,
+          "invalidSourceSpan": false
+        }
+      }
+    }
+  ],
+  "failures": []
+}

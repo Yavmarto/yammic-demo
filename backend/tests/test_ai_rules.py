@@ -109,3 +109,28 @@ def test_progression_date_span_stops_before_attribution():
     p = RulesProvider().extract(text, "oncology_note", _fields()).by_field()["PROGDAT"]
     assert p.normalized_value == "2026-02-14"
     assert [ev.text for ev in p.evidence] == ["Progressie vastgesteld op 2026-02-14"]
+
+
+def test_planned_subtotal_resection_abstains():
+    text = "Planning: subtotale resectie gepland op 2026-04-02. Operatie nog niet uitgevoerd."
+    p = RulesProvider().extract(text, "radiology_report", _fields()).by_field()["EXTRES"]
+    assert p.status == "abstained"
+
+
+def test_extent_not_assessable_hedge_abstains():
+    text = "Possibly subtotal resection; extent cannot be assessed on this MRI."
+    p = RulesProvider().extract(text, "radiology_report", _fields()).by_field()["EXTRES"]
+    assert p.status == "abstained"
+
+
+def test_idh_negative_word_after_semicolon_does_not_attach_to_idh():
+    text = "IDH1 R132H: niet getest; ATRX-expressie positief."
+    p = RulesProvider().extract(text, "pathology_report", _fields()).by_field()["IDHSTAT"]
+    assert p.status == "abstained"
+
+
+def test_idh_positive_control_still_proposed_with_exact_span():
+    text = "IDH1 R132H immunohistochemie: positief."
+    p = RulesProvider().extract(text, "pathology_report", _fields()).by_field()["IDHSTAT"]
+    assert p.normalized_value == "mutant"
+    assert [ev.text for ev in p.evidence] == ["IDH1 R132H immunohistochemie: positief"]

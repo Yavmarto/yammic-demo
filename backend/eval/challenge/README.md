@@ -14,3 +14,5 @@ Results are isolated under `eval/challenge/results/{provider}/`. `latest.json` c
 The challenge uses the installed local Ollama model only; no network model service is called. Ollama generation uses temperature 0, seed 42, and at most 240 seconds per document. A timeout is retained as a timeout in the result.
 
 The task requested local `dev` base `22e65a7`, but that revision is absent from this checkout. This branch was created from the available local `dev` HEAD `bcc0f74`.
+
+A second labelled set can be run with `--dataset`, for example `uv run python -m eval.challenge.run --provider rules --dataset eval/abstention_v2/dataset.json`. Non-default sets write to `results/<provider>-<folder>/`, so the frozen challenge results are not overwritten. The CEL-1857 abstention set (`eval/abstention_v2/`) was used for tuning and is a regression fixture, not a held-out measure.

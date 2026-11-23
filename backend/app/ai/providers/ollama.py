@@ -201,6 +201,10 @@ class OllamaProvider:
                 continue
             raw_value = str(item.get("value") or "").strip()
             quote = str(item.get("evidenceQuote") or "").strip()
+            # ponytail: a trailing full stop is a model habit, not part of the source phrase; the
+            # phrase must match the document, so drop it before locating. Ceiling: clause-tail trimming
+            # (e.g. "volgens RANO") is left to the prompt.
+            quote = quote.rstrip(" .;,")
             found = locate_quote(document_text, quote)
             if not found:
                 warnings.append(f"{field.id}: evidence quote not found in document; abstained")

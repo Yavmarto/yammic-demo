@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-22T13:49:50.797452+00:00",
+  "generatedAt": "2026-11-23T10:07:56.331768+00:00",
   "provider": {
     "name": "ollama",
     "model": "qwen2.5:7b-instruct",
     "paid": false
   },
   "prompt": {
-    "version": "extract_v4@1ef2060c673d",
-    "sha256": "1ef2060c673d52423df5237ec46a5c4edc03f78e5e0c5e035d946b2ed9b2b0b8"
+    "version": "extract_v5@fa9bf11849cf",
+    "sha256": "fa9bf11849cf01466ccb06256f14e03bed8b5d4a66dccd7d7b751fb6229805bb"
   },
   "limits": {
     "timeoutSecondsPerDocument": 240.0,
@@ -21,13 +21,27 @@
     "documentCount": 10
   },
   "summary": {
+    "macroF1AllFields": 0.697,
+    "macroF1PositiveGoldFields": 0.7667,
+    "positiveGoldFields": [
+      "SUBJID",
+      "MGMTPROM",
+      "PROGDAT",
+      "AGE",
+      "IDHSTAT",
+      "HISTOLOGY",
+      "RTDOSE",
+      "RTFRAC",
+      "TMZPLNC",
+      "AEGRADE"
+    ],
     "documents": 10,
     "completedDocuments": 10,
     "timeouts": 0,
     "decisionAccuracy": 0.8095,
-    "exactSpanAgreement": "1/14",
+    "exactSpanAgreement": "5/14",
     "invalidSourceSpans": 0,
-    "durationMs": 104137
+    "durationMs": 136520
   },
   "fields": {
     "SUBJID": {
@@ -46,16 +60,16 @@
     },
     "MGMTPROM": {
       "support": 3,
-      "correct": 2,
-      "tp": 1,
-      "fp": 1,
-      "fn": 1,
+      "correct": 3,
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
       "goldAbstain": 1,
       "correctAbstain": 1,
-      "decisionAccuracy": 0.6667,
-      "precision": 0.5,
-      "recall": 0.5,
-      "f1": 0.5,
+      "decisionAccuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
       "correctAbstentionDenominator": 1
     },
     "PROGDAT": {
@@ -158,16 +172,16 @@
     },
     "TMZPLNC": {
       "support": 1,
-      "correct": 1,
-      "tp": 1,
+      "correct": 0,
+      "tp": 0,
       "fp": 0,
-      "fn": 0,
+      "fn": 1,
       "goldAbstain": 0,
       "correctAbstain": 0,
-      "decisionAccuracy": 1.0,
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1": 1.0,
+      "decisionAccuracy": 0.0,
+      "precision": null,
+      "recall": 0.0,
+      "f1": 0.0,
       "correctAbstentionDenominator": 0
     },
     "AEGRADE": {
@@ -189,7 +203,7 @@
     {
       "documentId": "NLCH-001",
       "status": "ok",
-      "durationMs": 6397,
+      "durationMs": 6988,
       "fields": {
         "SUBJID": {
           "goldStatus": "proposed",
@@ -206,7 +220,7 @@
           "correctDecision": true,
           "goldValue": "unmethylated",
           "predictedValue": "unmethylated",
-          "exactSpan": false,
+          "exactSpan": true,
           "invalidSourceSpan": false
         },
         "PROGDAT": {
@@ -223,7 +237,7 @@
     {
       "documentId": "NLCH-002",
       "status": "ok",
-      "durationMs": 35662,
+      "durationMs": 37251,
       "fields": {
         "AGE": {
           "goldStatus": "proposed",
@@ -231,7 +245,7 @@
           "correctDecision": true,
           "goldValue": 58,
           "predictedValue": 58,
-          "exactSpan": false,
+          "exactSpan": true,
           "invalidSourceSpan": false
         },
         "IDHSTAT": {
@@ -240,7 +254,7 @@
           "correctDecision": true,
           "goldValue": "wildtype",
           "predictedValue": "wildtype",
-          "exactSpan": false,
+          "exactSpan": true,
           "invalidSourceSpan": false
         },
         "PROGDAT": {
@@ -257,7 +271,7 @@
     {
       "documentId": "NLCH-003",
       "status": "ok",
-      "durationMs": 2610,
+      "durationMs": 9548,
       "fields": {
         "PROGDAT": {
           "goldStatus": "abstained",
@@ -282,14 +296,14 @@
     {
       "documentId": "NLCH-004",
       "status": "ok",
-      "durationMs": 3400,
+      "durationMs": 22854,
       "fields": {
         "MGMTPROM": {
           "goldStatus": "proposed",
           "predictedStatus": "proposed",
-          "correctDecision": false,
+          "correctDecision": true,
           "goldValue": "unmethylated",
-          "predictedValue": "methylated",
+          "predictedValue": "unmethylated",
           "exactSpan": false,
           "invalidSourceSpan": false
         }
@@ -298,7 +312,7 @@
     {
       "documentId": "NLCH-005",
       "status": "ok",
-      "durationMs": 3630,
+      "durationMs": 3727,
       "fields": {
         "EXTRES": {
           "goldStatus": "abstained",
@@ -314,7 +328,7 @@
     {
       "documentId": "NLCH-006",
       "status": "ok",
-      "durationMs": 3943,
+      "durationMs": 4320,
       "fields": {
         "PROGDAT": {
           "goldStatus": "proposed",
@@ -339,7 +353,7 @@
     {
       "documentId": "NLCH-007",
       "status": "ok",
-      "durationMs": 32462,
+      "durationMs": 35403,
       "fields": {
         "IDHSTAT": {
           "goldStatus": "proposed",
@@ -347,7 +361,7 @@
           "correctDecision": true,
           "goldValue": "mutant",
           "predictedValue": "mutant",
-          "exactSpan": false,
+          "exactSpan": true,
           "invalidSourceSpan": false
         },
         "HISTOLOGY": {
@@ -373,7 +387,7 @@
     {
       "documentId": "NLCH-008",
       "status": "ok",
-      "durationMs": 2975,
+      "durationMs": 2836,
       "fields": {
         "PROGDAT": {
           "goldStatus": "abstained",
@@ -389,7 +403,7 @@
     {
       "documentId": "NLCH-009",
       "status": "ok",
-      "durationMs": 9310,
+      "durationMs": 9545,
       "fields": {
         "RTDOSE": {
           "goldStatus": "proposed",
@@ -411,10 +425,10 @@
         },
         "TMZPLNC": {
           "goldStatus": "proposed",
-          "predictedStatus": "proposed",
-          "correctDecision": true,
+          "predictedStatus": "abstained",
+          "correctDecision": false,
           "goldValue": 6,
-          "predictedValue": 6,
+          "predictedValue": null,
           "exactSpan": false,
           "invalidSourceSpan": false
         }
@@ -423,7 +437,7 @@
     {
       "documentId": "NLCH-010",
       "status": "ok",
-      "durationMs": 3748,
+      "durationMs": 4047,
       "fields": {
         "AEGRADE": {
           "goldStatus": "proposed",

@@ -119,7 +119,8 @@ def rule_histology(text: str):
 
 
 def rule_idhstat(text: str):
-    m = re.search(r"IDH1\s+R132H[^\n.]{0,40}?\b(negatief|negative|positief|positive)\b", text, re.I)
+    # ';' ends the clause: a negative/positive word after it belongs to another marker.
+    m = re.search(r"IDH1\s+R132H[^\n.;]{0,40}?\b(negatief|negative|positief|positive)\b", text, re.I)
     if m:
         raw = m.group(1).casefold()
         normalized = "mutant" if raw in ("positief", "positive") else "wildtype"
@@ -178,6 +179,19 @@ def rule_kps(text: str):
 _MISSING_OP_NOTE = re.compile(r"operat\w*notitie\s+ontbreekt|operative\s+note\s+(?:is\s+)?missing", re.I)
 
 
+_PLANNED = re.compile(r"gepland|geplande|planned|planning|\bplan\b|nog niet|not yet", re.I)
+_NOT_DONE = re.compile(r"niet uitgevoerd|not (?:yet )?performed|cannot be assessed|niet te beoordelen|"
+                       r"kan niet worden beoordeeld|not assessable", re.I)
+
+
+def _subtotal_is_not_a_result(text: str, a: int, b: int) -> bool:
+    """A subtotal match is not a resulted value when its clause is planned, or the document says
+    the operation was not performed or the extent cannot be assessed. Ceiling: the document-level
+    check also fires when an unrelated sentence says a different procedure was not performed."""
+    ca, cb = _clause(text, a, b)
+    return bool(_PLANNED.search(text[ca:cb])) or bool(_NOT_DONE.search(text))
+
+
 def rule_extres(text: str):
     gross =re.search(r"(?:gross[\s-]+total\s+(?:resectie|resection)|complete\s+resection|"
                       r"bruto\s+totale\s+resectie|totale\s+resectie)", text, re.I)
@@ -187,10 +201,12 @@ def rule_extres(text: str):
         return "gross_total", gross.start(), gross.end(), 0.91, gross.group(0)
     if hedge:
         # A hedge with the definitive operative note stated as missing is not a value: abstain.
-        if _MISSING_OP_NOTE.search(text):
+        if _MISSING_OP_NOTE.search(text) or _subtotal_is_not_a_result(text, hedge.start(), hedge.end()):
             return None
         return "subtotal", hedge.start(), hedge.end(), 0.45, hedge.group(0)
     if sub:
+        if _subtotal_is_not_a_result(text, sub.start(), sub.end()):
+            return None
         return "subtotal", sub.start(), sub.end(), 0.89, sub.group(0)
     return None
 

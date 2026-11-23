@@ -5,7 +5,7 @@ Completed: 10/10 · timeouts: 0 · limits: timeout 240s/document; temperature 0;
 Decision accuracy: 1.0 · exact-span agreement: 14/14 · invalid-source spans: 0
 Macro-F1, all 11 fields (frozen): 0.9091 · Macro-F1, fields with >=1 positive gold (10; B4 basis): 1.0
 
-B4 is judged on the positive-gold macro-F1 (CEL-1857 CEO decision). The all-field value is unchanged. EXTRES has no positive gold, so its F1 of 0.0 is not a provider error.
+B4 is judged on the positive-gold macro-F1 (CEL-1857 CEO decision). The all-field value is unchanged. A field with no positive gold scores F1 0.0 by convention and is excluded from the B4 value.
 
 | Field | Accuracy | F1 | Correct abstentions |
 |---|---:|---:|---:|

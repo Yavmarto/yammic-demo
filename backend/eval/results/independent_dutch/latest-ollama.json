@@ -1,0 +1,664 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-23T10:10:00.683985+00:00",
+  "dataset": {
+    "name": "independent-dutch-synthetic-challenge",
+    "documents": 5,
+    "labelledDocumentFieldPairs": 25,
+    "source": "eval/independent_dutch"
+  },
+  "provider": {
+    "name": "ollama",
+    "model": "qwen2.5:7b-instruct",
+    "paid": false,
+    "promptVersions": [
+      "extract_v5@fa9bf11849cf"
+    ],
+    "promptHashes": [
+      "fa9bf11849cf01466ccb06256f14e03bed8b5d4a66dccd7d7b751fb6229805bb"
+    ]
+  },
+  "summary": {
+    "accuracy": 0.88,
+    "precision": 0.875,
+    "recall": 1.0,
+    "microF1": 0.9333,
+    "macroF1": 0.9333,
+    "abstentionRate": 0.04,
+    "goldAbstentions": 4,
+    "correctAbstentions": 1,
+    "abstentionRecall": 0.25,
+    "exactEvidenceSpanRate": 0.2917,
+    "exactEvidenceSpanRecall": 0.3333,
+    "spanIntegrityErrors": 0,
+    "spanProposals": 24,
+    "exactEvidenceSpans": 7
+  },
+  "fields": {
+    "AEGRADE": {
+      "support": 1,
+      "correct": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstentions": 0,
+      "correctAbstentions": 0,
+      "spanSupport": 1,
+      "exactSpan": 0,
+      "spanErrors": 0,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "abstentionRecall": null,
+      "exactSpanRate": 0.0
+    },
+    "AGE": {
+      "support": 1,
+      "correct": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstentions": 0,
+      "correctAbstentions": 0,
+      "spanSupport": 1,
+      "exactSpan": 1,
+      "spanErrors": 0,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "abstentionRecall": null,
+      "exactSpanRate": 1.0
+    },
+    "EXTRES": {
+      "support": 2,
+      "correct": 1,
+      "tp": 1,
+      "fp": 1,
+      "fn": 0,
+      "goldAbstentions": 1,
+      "correctAbstentions": 0,
+      "spanSupport": 2,
+      "exactSpan": 0,
+      "spanErrors": 0,
+      "accuracy": 0.5,
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1": 0.6667,
+      "abstentionRecall": 0.0,
+      "exactSpanRate": 0.0
+    },
+    "HISTOLOGY": {
+      "support": 2,
+      "correct": 2,
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstentions": 0,
+      "correctAbstentions": 0,
+      "spanSupport": 2,
+      "exactSpan": 0,
+      "spanErrors": 0,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "abstentionRecall": null,
+      "exactSpanRate": 0.0
+    },
+    "IDHSTAT": {
+      "support": 2,
+      "correct": 1,
+      "tp": 1,
+      "fp": 1,
+      "fn": 0,
+      "goldAbstentions": 1,
+      "correctAbstentions": 0,
+      "spanSupport": 2,
+      "exactSpan": 0,
+      "spanErrors": 0,
+      "accuracy": 0.5,
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1": 0.6667,
+      "abstentionRecall": 0.0,
+      "exactSpanRate": 0.0
+    },
+    "KPS": {
+      "support": 1,
+      "correct": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstentions": 0,
+      "correctAbstentions": 0,
+      "spanSupport": 1,
+      "exactSpan": 1,
+      "spanErrors": 0,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "abstentionRecall": null,
+      "exactSpanRate": 1.0
+    },
+    "MGMTPROM": {
+      "support": 2,
+      "correct": 2,
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstentions": 0,
+      "correctAbstentions": 0,
+      "spanSupport": 2,
+      "exactSpan": 2,
+      "spanErrors": 0,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "abstentionRecall": null,
+      "exactSpanRate": 1.0
+    },
+    "MHSTDAT": {
+      "support": 2,
+      "correct": 1,
+      "tp": 1,
+      "fp": 1,
+      "fn": 0,
+      "goldAbstentions": 1,
+      "correctAbstentions": 0,
+      "spanSupport": 2,
+      "exactSpan": 0,
+      "spanErrors": 0,
+      "accuracy": 0.5,
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1": 0.6667,
+      "abstentionRecall": 0.0,
+      "exactSpanRate": 0.0
+    },
+    "PROGDAT": {
+      "support": 2,
+      "correct": 2,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstentions": 1,
+      "correctAbstentions": 1,
+      "spanSupport": 1,
+      "exactSpan": 0,
+      "spanErrors": 0,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "abstentionRecall": 1.0,
+      "exactSpanRate": 0.0
+    },
+    "RTDOSE": {
+      "support": 1,
+      "correct": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstentions": 0,
+      "correctAbstentions": 0,
+      "spanSupport": 1,
+      "exactSpan": 0,
+      "spanErrors": 0,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "abstentionRecall": null,
+      "exactSpanRate": 0.0
+    },
+    "RTFRAC": {
+      "support": 1,
+      "correct": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstentions": 0,
+      "correctAbstentions": 0,
+      "spanSupport": 1,
+      "exactSpan": 1,
+      "spanErrors": 0,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "abstentionRecall": null,
+      "exactSpanRate": 1.0
+    },
+    "SEX": {
+      "support": 1,
+      "correct": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstentions": 0,
+      "correctAbstentions": 0,
+      "spanSupport": 1,
+      "exactSpan": 1,
+      "spanErrors": 0,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "abstentionRecall": null,
+      "exactSpanRate": 1.0
+    },
+    "SITEID": {
+      "support": 3,
+      "correct": 3,
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstentions": 0,
+      "correctAbstentions": 0,
+      "spanSupport": 3,
+      "exactSpan": 1,
+      "spanErrors": 0,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "abstentionRecall": null,
+      "exactSpanRate": 0.3333
+    },
+    "SUBJID": {
+      "support": 3,
+      "correct": 3,
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstentions": 0,
+      "correctAbstentions": 0,
+      "spanSupport": 3,
+      "exactSpan": 0,
+      "spanErrors": 0,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "abstentionRecall": null,
+      "exactSpanRate": 0.0
+    },
+    "TMZPLNC": {
+      "support": 1,
+      "correct": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "goldAbstentions": 0,
+      "correctAbstentions": 0,
+      "spanSupport": 1,
+      "exactSpan": 0,
+      "spanErrors": 0,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "abstentionRecall": null,
+      "exactSpanRate": 0.0
+    }
+  },
+  "cases": [
+    {
+      "documentId": "NLX-01-PATH",
+      "field": "SUBJID",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": "GBM-NL-901",
+      "predictedValue": "GBM-NL-901",
+      "valueCorrect": true,
+      "goldSpan": "GBM-NL-901",
+      "predictedSpans": [
+        "PATIËNTCODE: GBM-NL-901"
+      ],
+      "exactSpan": false
+    },
+    {
+      "documentId": "NLX-01-PATH",
+      "field": "SITEID",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": "SITE-01",
+      "predictedValue": "SITE-01",
+      "valueCorrect": true,
+      "goldSpan": "FICTIEF UMC ZUIDHAVEN",
+      "predictedSpans": [
+        "FICTIEF UMC ZUIDHAVEN"
+      ],
+      "exactSpan": true
+    },
+    {
+      "documentId": "NLX-01-PATH",
+      "field": "MHSTDAT",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": "2026-03-14",
+      "predictedValue": "2026-03-14",
+      "valueCorrect": true,
+      "goldSpan": "2026-03-14",
+      "predictedSpans": [
+        "Datum ontvangst: 2026-03-14"
+      ],
+      "exactSpan": false
+    },
+    {
+      "documentId": "NLX-01-PATH",
+      "field": "HISTOLOGY",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": "glioblastoma_idh_wildtype",
+      "predictedValue": "glioblastoma_idh_wildtype",
+      "valueCorrect": true,
+      "goldSpan": "Glioblastoom, IDH-wildtype",
+      "predictedSpans": [
+        "Conclusie: Glioblastoom, IDH-wildtype"
+      ],
+      "exactSpan": false
+    },
+    {
+      "documentId": "NLX-01-PATH",
+      "field": "IDHSTAT",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": "wildtype",
+      "predictedValue": "wildtype",
+      "valueCorrect": true,
+      "goldSpan": "IDH1 R132H immunohistochemie: negatief.",
+      "predictedSpans": [
+        "IDH1 R132H immunohistochemie: negatief"
+      ],
+      "exactSpan": false
+    },
+    {
+      "documentId": "NLX-01-PATH",
+      "field": "MGMTPROM",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": "methylated",
+      "predictedValue": "methylated",
+      "valueCorrect": true,
+      "goldSpan": "MGMT-promotor: methylatie aangetoond",
+      "predictedSpans": [
+        "MGMT-promotor: methylatie aangetoond"
+      ],
+      "exactSpan": true
+    },
+    {
+      "documentId": "NLX-02-PATH",
+      "field": "SUBJID",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": "GBM-NL-902",
+      "predictedValue": "GBM-NL-902",
+      "valueCorrect": true,
+      "goldSpan": "GBM-NL-902",
+      "predictedSpans": [
+        "PATIËNTCODE: GBM-NL-902"
+      ],
+      "exactSpan": false
+    },
+    {
+      "documentId": "NLX-02-PATH",
+      "field": "SITEID",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": "SITE-03",
+      "predictedValue": "SITE-03",
+      "valueCorrect": true,
+      "goldSpan": "FICTIEF STREEKZIEKENHUIS WESTPARK",
+      "predictedSpans": [
+        "FICTIEF STREEKZIEKENHUIS WESTPARK — Revisie"
+      ],
+      "exactSpan": false
+    },
+    {
+      "documentId": "NLX-02-PATH",
+      "field": "HISTOLOGY",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": "glioblastoma_idh_mutant",
+      "predictedValue": "glioblastoma_idh_mutant",
+      "valueCorrect": true,
+      "goldSpan": "Glioblastoom, IDH-mutant",
+      "predictedSpans": [
+        "Conclusie: Glioblastoom, IDH-mutant"
+      ],
+      "exactSpan": false
+    },
+    {
+      "documentId": "NLX-02-PATH",
+      "field": "IDHSTAT",
+      "goldStatus": "abstained",
+      "predictedStatus": "proposed",
+      "goldValue": null,
+      "predictedValue": "mutant",
+      "valueCorrect": false,
+      "goldSpan": "",
+      "predictedSpans": [
+        "Aanvullende moleculaire uitslag: IDH1 R132H positief"
+      ],
+      "exactSpan": false
+    },
+    {
+      "documentId": "NLX-02-PATH",
+      "field": "MGMTPROM",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": "unmethylated",
+      "predictedValue": "unmethylated",
+      "valueCorrect": true,
+      "goldSpan": "MGMT-promotor: niet gemethyleerd",
+      "predictedSpans": [
+        "MGMT-promotor: niet gemethyleerd"
+      ],
+      "exactSpan": true
+    },
+    {
+      "documentId": "NLX-02-PATH",
+      "field": "MHSTDAT",
+      "goldStatus": "abstained",
+      "predictedStatus": "proposed",
+      "goldValue": null,
+      "predictedValue": "2023-10-05",
+      "valueCorrect": false,
+      "goldSpan": "",
+      "predictedSpans": [
+        "Aanvullende moleculaire uitslag: IDH1 R132H positief"
+      ],
+      "exactSpan": false
+    },
+    {
+      "documentId": "NLX-03-MRI",
+      "field": "EXTRES",
+      "goldStatus": "abstained",
+      "predictedStatus": "proposed",
+      "goldValue": null,
+      "predictedValue": "subtotal",
+      "valueCorrect": false,
+      "goldSpan": "",
+      "predictedSpans": [
+        "Na operatie is er vermoedelijk een subtotale resectie"
+      ],
+      "exactSpan": false
+    },
+    {
+      "documentId": "NLX-03-MRI",
+      "field": "PROGDAT",
+      "goldStatus": "abstained",
+      "predictedStatus": "abstained",
+      "goldValue": null,
+      "predictedValue": null,
+      "valueCorrect": true,
+      "goldSpan": "",
+      "predictedSpans": [],
+      "exactSpan": false
+    },
+    {
+      "documentId": "NLX-04-DIS",
+      "field": "SUBJID",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": "GBM-NL-904",
+      "predictedValue": "GBM-NL-904",
+      "valueCorrect": true,
+      "goldSpan": "GBM-NL-904",
+      "predictedSpans": [
+        "PATIËNTCODE: GBM-NL-904"
+      ],
+      "exactSpan": false
+    },
+    {
+      "documentId": "NLX-04-DIS",
+      "field": "SITEID",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": "SITE-01",
+      "predictedValue": "SITE-01",
+      "valueCorrect": true,
+      "goldSpan": "FICTIEF UMC ZUIDHAVEN",
+      "predictedSpans": [
+        "FICTIEF UMC ZUIDHAVEN — Ontslagbrief neuro-oncologie"
+      ],
+      "exactSpan": false
+    },
+    {
+      "documentId": "NLX-04-DIS",
+      "field": "SEX",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": "F",
+      "predictedValue": "F",
+      "valueCorrect": true,
+      "goldSpan": "Geslacht: vrouw",
+      "predictedSpans": [
+        "Geslacht: vrouw"
+      ],
+      "exactSpan": true
+    },
+    {
+      "documentId": "NLX-04-DIS",
+      "field": "AGE",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": 61,
+      "predictedValue": 61,
+      "valueCorrect": true,
+      "goldSpan": "Leeftijd bij diagnose: 61 jaar",
+      "predictedSpans": [
+        "Leeftijd bij diagnose: 61 jaar"
+      ],
+      "exactSpan": true
+    },
+    {
+      "documentId": "NLX-04-DIS",
+      "field": "KPS",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": 80,
+      "predictedValue": 80,
+      "valueCorrect": true,
+      "goldSpan": "Karnofsky Performance Status bij opname: 80%",
+      "predictedSpans": [
+        "Karnofsky Performance Status bij opname: 80%"
+      ],
+      "exactSpan": true
+    },
+    {
+      "documentId": "NLX-04-DIS",
+      "field": "RTDOSE",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": 60,
+      "predictedValue": 60,
+      "valueCorrect": true,
+      "goldSpan": "60 Gy",
+      "predictedSpans": [
+        "Voorgesteld schema: radiotherapie 60 Gy"
+      ],
+      "exactSpan": false
+    },
+    {
+      "documentId": "NLX-04-DIS",
+      "field": "RTFRAC",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": 30,
+      "predictedValue": 30,
+      "valueCorrect": true,
+      "goldSpan": "30 fracties",
+      "predictedSpans": [
+        "30 fracties"
+      ],
+      "exactSpan": true
+    },
+    {
+      "documentId": "NLX-04-DIS",
+      "field": "TMZPLNC",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": 6,
+      "predictedValue": 6,
+      "valueCorrect": true,
+      "goldSpan": "6 geplande cycli",
+      "predictedSpans": [
+        "6 geplande cycli temozolomide"
+      ],
+      "exactSpan": false
+    },
+    {
+      "documentId": "NLX-04-DIS",
+      "field": "AEGRADE",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": 2,
+      "predictedValue": 2,
+      "valueCorrect": true,
+      "goldSpan": "maximaal graad 2",
+      "predictedSpans": [
+        "Bijwerking: misselijkheid, maximaal graad 2"
+      ],
+      "exactSpan": false
+    },
+    {
+      "documentId": "NLX-05-MRI",
+      "field": "EXTRES",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": "gross_total",
+      "predictedValue": "gross_total",
+      "valueCorrect": true,
+      "goldSpan": "bruto totale resectie",
+      "predictedSpans": [
+        "Postoperatief beeld na bruto totale resectie"
+      ],
+      "exactSpan": false
+    },
+    {
+      "documentId": "NLX-05-MRI",
+      "field": "PROGDAT",
+      "goldStatus": "proposed",
+      "predictedStatus": "proposed",
+      "goldValue": "2026-05-09",
+      "predictedValue": "2026-05-09",
+      "valueCorrect": true,
+      "goldSpan": "progressie vastgesteld op 2026-05-09",
+      "predictedSpans": [
+        "RANO: progressie vastgesteld op 2026-05-09"
+      ],
+      "exactSpan": false
+    }
+  ],
+  "limitations": [
+    "Five fictional documents and 25 labelled document-field pairs; not a clinical estimate.",
+    "Single reference labeler; no inter-rater reliability measurement.",
+    "Small, purposive challenge set with limited vocabulary and report styles."
+  ]
+}
